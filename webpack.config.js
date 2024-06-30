@@ -24,7 +24,7 @@ Encore
         options['__VUE_PROD_DEVTOOLS__'] = JSON.stringify(false);
         options['__VUE_PROD_HYDRATION_MISMATCH_DETAILS__'] = JSON.stringify(false);
     })
-    .enablePostCssLoader() // Ajout d'un loader PostCSS si nécessaire
+    .enablePostCssLoader()
     .configureDevServerOptions(options => {
         options.liveReload = true;
         options.hot = true;
