@@ -15,4 +15,13 @@ class HomeController extends AbstractController
             'controller_name' => 'HomeController',
         ]);
     }
+
+    #[Route('/new', name: 'app_new_page')]
+    public function newPage(): Response
+    {
+        return $this->render('home/new.html.twig', [
+            'controller_path' => __FILE__,
+            'template_path' => __DIR__ . '/../../templates/new_page.html.twig',
+        ]);
+    }
 }

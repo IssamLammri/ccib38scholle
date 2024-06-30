@@ -1,6 +1,7 @@
+{# templates/new_page.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}New Page{% endblock %}
 
 {% block body %}
     <style>
@@ -8,11 +9,7 @@
         .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
     </style>
 
-    <div id="app">
-        <div class="example-wrapper">
-            <h1>Hello {{ controller_name }}! ✅</h1>
-            <Hello :test="'issam'"></Hello>
-        </div>
+    <div id="app" class="example-wrapper">
+        <New-page></New-page> <!-- Utilisez le nouveau composant de page Vue -->
     </div>
 {% endblock %}
-
