@@ -50,6 +50,10 @@ prune:
 clean-node-modules:
 	$(EXEC_APP) rm -rf node_modules yarn.lock
 
+.PHONY: make-migration
+make-migration:
+	$(EXEC_APP) php bin/console make:migration
+
 # Default target
 .PHONY: all
 all: build install-composer migrate install-node-modules dev
