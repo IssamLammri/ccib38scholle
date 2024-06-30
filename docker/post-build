@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Create necessary folders
+mkdir -p var/log/
+chmod -R oa+w var
+chmod -R 0777 data/exports_savefiles
+chmod -R 0777 data/imports_savefiles
+chmod -R 0777 data/renault_savefiles
+chmod -R 0777 data/certificats_orca
+
+# Remove unused folder
+rm -rf docker/
+rm -rf features/
+rm -rf fixtures/
+rm -rf node_modules/
+rm -rf tests/
