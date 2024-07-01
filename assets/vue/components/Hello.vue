@@ -1,8 +1,5 @@
 <template>
   <div>Hello {{ test }}!</div>
-  <div>ddddd  {{ test }}!</div>
-  <div>Hello {{ test }}!</div>
-  <div>Hello {{ test }}!</div>
 </template>
 
 <script>
