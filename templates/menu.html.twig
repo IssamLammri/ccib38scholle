@@ -1,17 +1,18 @@
 <!-- menu.html.twig -->
 <div class="sidebar">
+    <div class="sidebar-header">
+        <img src="{{ asset('static/icons/logo.jpg') }}" alt="Logo">
+    </div>
     <div class="sidebar-menu">
         <ul class="list-unstyled">
             <li>
-                <a href="{{ path('app_new_page') }}">
-                    <i class="fas fa-laptop"></i> {{ 'My profile'|trans }}
+                <a href="{{ path('app_home') }}">
+                    <i class="fas fa-tachometer-alt"></i> {{ 'Tableau de bord'|trans }}
                 </a>
-
             </li>
             <li>
-                <a href="{{ path('app_home') }}">
-                    <img src="{{ asset('static/icons/groupe.svg') }}" width="16" />
-                    {{ 'Home page'|trans }}
+                <a href="{{ path('app_new_page') }}">
+                    <i class="fas fa-calendar-alt"></i> {{ 'New page '|trans }}
                 </a>
             </li>
         </ul>

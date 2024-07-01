@@ -1,43 +1,13 @@
 <!-- navbar.html.twig -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-    <!-- Container wrapper -->
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
     <div class="container-fluid">
-        <!-- Toggle button -->
-        <button
-                class="navbar-toggler"
-                type="button"
-                data-mdb-toggle="collapse"
-                data-mdb-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-        >
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <!-- Collapsible wrapper -->
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <!-- Navbar brand -->
-            <a class="navbar-brand mt-2 mt-lg-0" href="#">
-                <img
-                        src="https://mdbcdn.b-cdn.net/img/logo/mdb-transaprent-noshadows.webp"
-                        height="15"
-                        alt="MDB Logo"
-                        loading="lazy"
-                />
-            </a>
-            <!-- Left links -->
-        </div>
-        <!-- Collapsible wrapper -->
-
-        <!-- Right elements -->
-        <div class="d-flex align-items-center">
-            <!-- Icon -->
-            <form class="d-flex input-group w-auto">
+        <div class="d-flex ms-auto align-items-center">
+            <!-- Search -->
+            <form class="d-flex input-group w-auto ms-3">
                 <input
                         type="search"
                         class="form-control rounded"
-                        placeholder="Search"
+                        placeholder="Rechercher dans l'application"
                         aria-label="Search"
                         aria-describedby="search-addon"
                 />
@@ -46,9 +16,9 @@
                 </span>
             </form>
             <!-- Notifications -->
-            <div class="dropdown">
+            <div class="dropdown ms-3">
                 <a
-                        class="text-reset me-3 dropdown-toggle hidden-arrow"
+                        class="text-reset dropdown-toggle hidden-arrow"
                         href="#"
                         id="navbarDropdownMenuLink"
                         role="button"
@@ -56,20 +26,15 @@
                         aria-expanded="false"
                 >
                     <i class="fas fa-bell"></i>
-                    <span class="badge rounded-pill badge-notification bg-danger">1</span>
+                    <span class="badge rounded-pill badge-notification bg-danger">76</span>
                 </a>
                 <ul
                         class="dropdown-menu dropdown-menu-end"
                         aria-labelledby="navbarDropdownMenuLink"
                 >
-                    <li>
-                        <a class="dropdown-item" href="#">Some news</a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">Another news</a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">Something else here</a>
+                    <li><a class="dropdown-item" href="#">Some news</a></li>
+                    <li><a class="dropdown-item" href="#">Another news</a></li>
+                    <li><a class="dropdown-item" href="#">Something else here</a></li>
                 </ul>
             </div>
             <!-- Avatar -->
@@ -86,7 +51,7 @@
                             src="https://mdbcdn.b-cdn.net/img/new/avatars/2.webp"
                             class="rounded-circle"
                             height="25"
-                            alt="Black and White Portrait of a Man"
+                            alt="Portrait"
                             loading="lazy"
                     />
                 </a>
@@ -94,18 +59,11 @@
                         class="dropdown-menu dropdown-menu-end"
                         aria-labelledby="navbarDropdownMenuAvatar"
                 >
-                    <li>
-                        <a class="dropdown-item" href="#">My profile</a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">Settings</a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">Logout</a>
+                    <li><a class="dropdown-item" href="#">My profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#">Logout</a></li>
                 </ul>
             </div>
         </div>
-        <!-- Right elements -->
     </div>
-    <!-- Container wrapper -->
 </nav>
