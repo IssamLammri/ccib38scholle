@@ -1,7 +1,7 @@
 
-# Healthventure
+# schollccib
 
-Welcome to the healthventure project! This guide will help you set up and run the project from scratch.
+Welcome to the schollccib project! This guide will help you set up and run the project from scratch.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ Before you begin, make sure you have the following installed on your machine:
 First, clone the repository to your local machine using Git:
 
 ```bash
-gh repo clone IssamLammri/healthventure
+gh repo clone IssamLammri/schollccib
 ```
 
 ### 2. Build and Run Docker Containers
@@ -118,7 +118,7 @@ docker-compose exec app php bin/console doctrine:migrations:migrate
 A brief overview of the project structure:
 
 ```plaintext
-healthventure/
+schollccib/
 ├── assets/
 ├── bin/
 ├── config/

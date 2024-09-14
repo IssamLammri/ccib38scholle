@@ -5,16 +5,16 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    container_name: healthventure_app
+    container_name: schollccib_app
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
     networks:
-      - healthventure_network
+      - schollccib_network
     depends_on:
       - database
     environment:
-      DATABASE_URL: mysql://root:issam@database:3306/healthventure
+      DATABASE_URL: mysql://root:issam@database:3306/schollccib
     ports:
       - "9081:9000"
 
@@ -22,13 +22,13 @@ services:
     build:
       context: docker/web
       dockerfile: Dockerfile
-    container_name: healthventure_nginx
+    container_name: schollccib_nginx
     ports:
       - "8081:80"
     volumes:
       - .:/var/www/html
     networks:
-      - healthventure_network
+      - schollccib_network
     depends_on:
       - app
 
@@ -36,20 +36,20 @@ services:
     build:
       context: .
       dockerfile: docker/mysql/Dockerfile
-    container_name: healthventure_db
+    container_name: schollccib_db
     environment:
       MYSQL_ROOT_PASSWORD: issam
-      MYSQL_DATABASE: healthventure
+      MYSQL_DATABASE: schollccib
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - healthventure_network
+      - schollccib_network
     ports:
       - "3308:3306"
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
-    container_name: healthventure_phpmyadmin
+    container_name: schollccib_phpmyadmin
     environment:
       PMA_HOST: database
       MYSQL_ROOT_PASSWORD: issam
@@ -58,10 +58,10 @@ services:
     depends_on:
       - database
     networks:
-      - healthventure_network
+      - schollccib_network
 
 volumes:
   db_data:
 
 networks:
-  healthventure_network:
+  schollccib_network:

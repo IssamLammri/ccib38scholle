@@ -1,5 +1,5 @@
 
-# Makefile for healthventure project
+# Makefile for schollccib project
 
 # Variables
 COMPOSE = docker-compose
