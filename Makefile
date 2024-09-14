@@ -1,5 +1,5 @@
 
-# Makefile for HealthVenture project
+# Makefile for healthventure project
 
 # Variables
 COMPOSE = docker-compose
@@ -13,6 +13,10 @@ build:
 .PHONY: install-composer
 install-composer:
 	$(EXEC_APP) composer install
+
+.PHONY: update-structure
+update-structure:
+	$(EXEC_APP) php bin/console make:migration
 
 .PHONY: migrate
 migrate:

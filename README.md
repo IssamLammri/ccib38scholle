@@ -1,7 +1,7 @@
 
-# HealthVenture
+# Healthventure
 
-Welcome to the HealthVenture project! This guide will help you set up and run the project from scratch.
+Welcome to the healthventure project! This guide will help you set up and run the project from scratch.
 
 ## Prerequisites
 
@@ -118,7 +118,7 @@ docker-compose exec app php bin/console doctrine:migrations:migrate
 A brief overview of the project structure:
 
 ```plaintext
-healthVenture/
+healthventure/
 ├── assets/
 ├── bin/
 ├── config/
