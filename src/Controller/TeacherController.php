@@ -5,23 +5,44 @@ namespace App\Controller;
 use App\Entity\Teacher;
 use App\Form\TeacherType;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/teacher')]
 class TeacherController extends AbstractController
 {
     #[Route('/', name: 'app_teacher_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $teachers = $entityManager
-            ->getRepository(Teacher::class)
-            ->findAll();
+        $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
+        $limit = 10; // Limite des résultats par page
+        $search = $request->query->get('search', ''); // Filtre de recherche
+
+        $queryBuilder = $entityManager->getRepository(Teacher::class)
+            ->createQueryBuilder('t');
+
+        // Filtrer par lastName ou firstName si la recherche est présente
+        if (!empty($search)) {
+            $queryBuilder
+                ->where('t.lastName LIKE :search')
+                ->orWhere('t.firstName LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        $queryBuilder
+            ->setFirstResult(($page - 1) * $limit) // Offset
+            ->setMaxResults($limit); // Limite
+
+        $paginator = new Paginator($queryBuilder);
 
         return $this->render('teacher/index.html.twig', [
-            'teachers' => $teachers,
+            'teachers' => $paginator,
+            'current_page' => $page,
+            'total_pages' => ceil(count($paginator) / $limit),
+            'search' => $search
         ]);
     }
 
@@ -74,7 +95,7 @@ class TeacherController extends AbstractController
     #[Route('/{id}', name: 'app_teacher_delete', methods: ['POST'])]
     public function delete(Request $request, Teacher $teacher, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$teacher->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$teacher->getId(), $request->get('_token'))) {
             $entityManager->remove($teacher);
             $entityManager->flush();
         }

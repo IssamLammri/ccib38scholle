@@ -1,45 +1,95 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Teacher index{% endblock %}
+{% block title %}List of Teachers{% endblock %}
 
 {% block body %}
-    <h1>Teacher index</h1>
+    <div class="mt-5">
+        <h1 class="mb-4">Teacher List</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>LastName</th>
-                <th>FirstName</th>
-                <th>Email</th>
-                <th>PhoneNumber</th>
-                <th>EducationLevel</th>
-                <th>Specialities</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for teacher in teachers %}
-            <tr>
-                <td>{{ teacher.id }}</td>
-                <td>{{ teacher.lastName }}</td>
-                <td>{{ teacher.firstName }}</td>
-                <td>{{ teacher.email }}</td>
-                <td>{{ teacher.phoneNumber }}</td>
-                <td>{{ teacher.educationLevel }}</td>
-                <td>{{ teacher.specialities ? teacher.specialities|join(', ') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_teacher_show', {'id': teacher.id}) }}">show</a>
-                    <a href="{{ path('app_teacher_edit', {'id': teacher.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="8">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <!-- Search Form -->
+        <form method="get" action="{{ path('app_teacher_index') }}" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Search by name or speciality" value="{{ app.request.query.get('search') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
 
-    <a href="{{ path('app_teacher_new') }}">Create new</a>
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{{ path('app_teacher_new') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Create New Teacher
+            </a>
+        </div>
+
+        <div class="table-responsive" style="margin-bottom: 20px">
+            <table class="table table-bordered table-hover table-striped" style="margin: auto;">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>LastName</th>
+                    <th>FirstName</th>
+                    <th>Email</th>
+                    <th>PhoneNumber</th>
+                    <th>EducationLevel</th>
+                    <th>Specialities</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for teacher in teachers %}
+                    <tr>
+                        <td>{{ teacher.id }}</td>
+                        <td>{{ teacher.lastName }}</td>
+                        <td>{{ teacher.firstName }}</td>
+                        <td>{{ teacher.email }}</td>
+                        <td>{{ teacher.phoneNumber }}</td>
+                        <td>{{ teacher.educationLevel }}</td>
+                        <td>{{ teacher.specialities ? teacher.specialities|join(', ') : '' }}</td>
+                        <td class="text-center">
+                            <a style="margin: 5px" href="{{ path('app_teacher_show', {'id': teacher.id}) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Show
+                            </a>
+                            <a style="margin: 5px" href="{{ path('app_teacher_edit', {'id': teacher.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a style="margin: 5px" href="{{ path('app_teacher_delete', {'id': teacher.id}) }}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">No records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ path('app_teacher_index', {page: current_page - 1, search: app.request.query.get('search')}) }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for i in 1..total_pages %}
+                    <li class="page-item {% if i == current_page %}active{% endif %}">
+                        <a class="page-link" href="{{ path('app_teacher_index', {page: i, search: app.request.query.get('search')}) }}">{{ i }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if current_page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ path('app_teacher_index', {page: current_page + 1, search: app.request.query.get('search')}) }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 {% endblock %}

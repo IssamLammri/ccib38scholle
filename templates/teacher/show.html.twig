@@ -1,46 +1,57 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Teacher{% endblock %}
+{% block title %}Teacher Details{% endblock %}
 
 {% block body %}
-    <h1>Teacher</h1>
+    <div class="container mt-5">
+        <div class="mb-3">
+            <a href="{{ path('app_teacher_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to list
+            </a>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ teacher.id }}</td>
-            </tr>
-            <tr>
-                <th>LastName</th>
-                <td>{{ teacher.lastName }}</td>
-            </tr>
-            <tr>
-                <th>FirstName</th>
-                <td>{{ teacher.firstName }}</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>{{ teacher.email }}</td>
-            </tr>
-            <tr>
-                <th>PhoneNumber</th>
-                <td>{{ teacher.phoneNumber }}</td>
-            </tr>
-            <tr>
-                <th>EducationLevel</th>
-                <td>{{ teacher.educationLevel }}</td>
-            </tr>
-            <tr>
-                <th>Specialities</th>
-                <td>{{ teacher.specialities ? teacher.specialities|join(', ') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <h1 class="mb-4">Teacher Details</h1>
 
-    <a href="{{ path('app_teacher_index') }}">back to list</a>
+        <div class="card p-4">
+            <table class="table table-bordered">
+                <tbody>
+                <tr>
+                    <th>Id</th>
+                    <td>{{ teacher.id }}</td>
+                </tr>
+                <tr>
+                    <th>LastName</th>
+                    <td>{{ teacher.lastName }}</td>
+                </tr>
+                <tr>
+                    <th>FirstName</th>
+                    <td>{{ teacher.firstName }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ teacher.email }}</td>
+                </tr>
+                <tr>
+                    <th>PhoneNumber</th>
+                    <td>{{ teacher.phoneNumber }}</td>
+                </tr>
+                <tr>
+                    <th>Education Level</th>
+                    <td>{{ teacher.educationLevel }}</td>
+                </tr>
+                <tr>
+                    <th>Specialities</th>
+                    <td>{{ teacher.specialities ? teacher.specialities|join(', ') : 'N/A' }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_teacher_edit', {'id': teacher.id}) }}">edit</a>
-
-    {{ include('teacher/_delete_form.html.twig') }}
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ path('app_teacher_edit', {'id': teacher.id}) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            {{ include('teacher/_delete_form.html.twig') }}
+        </div>
+    </div>
 {% endblock %}
