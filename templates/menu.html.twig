@@ -6,13 +6,33 @@
     <div class="sidebar-menu">
         <ul class="list-unstyled">
             <li>
-                <a href="{{ path('app_home') }}">
-                    <i class="fas fa-tachometer-alt"></i> {{ 'Tableau de bord'|trans }}
+                <a href="{{ path('app_student_index') }}">
+                    <i class="fas fa-user-graduate"></i> {{ 'Les élèves'|trans }}
                 </a>
             </li>
             <li>
-                <a href="{{ path('app_new_page') }}">
-                    <i class="fas fa-calendar-alt"></i> {{ 'New page '|trans }}
+                <a href="{{ path('app_parent_entity_index') }}">
+                    <i class="fas fa-user-friends"></i> {{ 'Parents'|trans }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_study_class_index') }}">
+                    <i class="fas fa-school"></i> {{ 'Classes'|trans }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_teacher_index') }}">
+                    <i class="far fa-id-card"></i> {{ 'Enseignants'|trans }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_room_index') }}">
+                    <i class="fas fa-door-open"></i> {{ 'Salles'|trans }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_session_index') }}">
+                    <i class="fas fa-chalkboard-teacher"></i> {{ 'Sessions'|trans }}
                 </a>
             </li>
         </ul>

@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Student{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <!-- Bouton back to list en haut à gauche -->
+        <div class="mb-3">
+            <a href="{{ path('app_student_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to list
+            </a>
+        </div>
+
+        <h1 class="mb-4">Edit Student</h1>
+
+        <div class="card p-4">
+            <!-- Formulaire d'édition -->
+            {{ form_start(form) }}
+
+            <div class="row">
+                <!-- Partie gauche: informations sur l'étudiant -->
+                <div class="col-md-6">
+                    <h4>Student Information</h4>
+                    <div class="form-group mb-3">
+                        {{ form_label(form.lastName, 'Last Name') }}
+                        {{ form_widget(form.lastName, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_label(form.firstName, 'First Name') }}
+                        {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_label(form.birthDate, 'Birth Date') }}
+                        {{ form_widget(form.birthDate, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_label(form.gender, 'Gender') }}
+                        {{ form_widget(form.gender, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+
+                <!-- Partie droite: autres informations -->
+                <div class="col-md-6">
+                    <h4>&nbsp;</h4> <!-- Keeps alignment consistent -->
+                    <div class="form-group mb-3">
+                        {{ form_label(form.address, 'Address') }}
+                        {{ form_widget(form.address, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_label(form.postalCode, 'Postal Code') }}
+                        {{ form_widget(form.postalCode, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_label(form.city, 'City') }}
+                        {{ form_widget(form.city, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Partie commune en bas -->
+            <div class="mt-4">
+                <h4>Additional Information</h4>
+                <div class="form-group mb-3">
+                    {{ form_label(form.level, 'Level') }}
+                    {{ form_widget(form.level, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form_label(form.parent, 'Parent') }}
+                    {{ form_widget(form.parent, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+
+            <!-- Bouton de mise à jour et supprimer -->
+            <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-primary">{{ button_label|default('Update') }}</button>
+                {{ include('student/_delete_form.html.twig', {'button_label': 'Delete', 'class': 'btn btn-danger'}) }}
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

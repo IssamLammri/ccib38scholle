@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Student Details{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <!-- Bouton back to list en haut à gauche -->
+        <div class="mb-3">
+            <a href="{{ path('app_student_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to list
+            </a>
+        </div>
+
+        <h1 class="mb-4">Student Details</h1>
+
+        <div class="card p-4">
+            <div class="row">
+                <!-- Partie principale avec les informations de l'étudiant -->
+                <div class="col-md-12">
+                    <h4>Student Information</h4>
+                    <table class="table table-bordered">
+                        <tbody>
+                        <tr>
+                            <th>Last Name</th>
+                            <td>{{ student.lastName ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>First Name</th>
+                            <td>{{ student.firstName ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Birth Date</th>
+                            <td>{{ student.birthDate ? student.birthDate|date('Y-m-d') : 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Gender</th>
+                            <td>{{ student.gender ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Address</th>
+                            <td>{{ student.address ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Postal Code</th>
+                            <td>{{ student.postalCode ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>City</th>
+                            <td>{{ student.city ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Level</th>
+                            <td>{{ student.level ?? 'Not available' }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Boutons Edit et Delete alignés -->
+            <div class="d-flex justify-content-end mt-4">
+                <a style="margin-right: 10px" href="{{ path('app_student_edit', {'id': student.id}) }}" class="btn btn-warning mr-2">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                {{ include('student/_delete_form.html.twig', {'button_label': 'Delete', 'class': 'btn btn-danger'}) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

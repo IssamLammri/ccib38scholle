@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Parent Details{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <!-- Bouton back to list en haut à gauche -->
+        <div class="mb-3">
+            <a href="{{ path('app_parent_entity_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to list
+            </a>
+        </div>
+
+        <h1 class="mb-4">Parent Details</h1>
+
+        <div class="card p-4">
+            <div class="row">
+                <!-- Partie Père à gauche -->
+                <div class="col-md-6">
+                    <h4>Father Information</h4>
+                    <table class="table table-bordered">
+                        <tbody>
+                        <tr>
+                            <th>Father Last Name</th>
+                            <td>{{ parent_entity.fatherLastName ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Father First Name</th>
+                            <td>{{ parent_entity.fatherFirstName ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Father Email</th>
+                            <td>{{ parent_entity.fatherEmail ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Father Phone</th>
+                            <td>{{ parent_entity.fatherPhone ?? 'Not available' }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Partie Mère à droite -->
+                <div class="col-md-6">
+                    <h4>Mother Information</h4>
+                    <table class="table table-bordered">
+                        <tbody>
+                        <tr>
+                            <th>Mother Last Name</th>
+                            <td>{{ parent_entity.motherLastName ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother First Name</th>
+                            <td>{{ parent_entity.motherFirstName ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother Email</th>
+                            <td>{{ parent_entity.motherEmail ?? 'Not available' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother Phone</th>
+                            <td>{{ parent_entity.motherPhone ?? 'Not available' }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Partie commune en bas -->
+            <div class="mt-4">
+                <h4>Family Information</h4>
+                <table class="table table-bordered">
+                    <tbody>
+                    <tr>
+                        <th>Family Status</th>
+                        <td>{{ parent_entity.familyStatus ?? 'Not available' }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Boutons Edit et Delete alignés -->
+            <div class="d-flex justify-content-end mt-4">
+                <a style="margin-right: 10px" href="{{ path('app_parent_entity_edit', {'id': parent_entity.id}) }}" class="btn btn-warning mr-2">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                {{ include('parent_entity/_delete_form.html.twig', {'button_label': 'Delete', 'class': 'btn btn-danger'}) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
