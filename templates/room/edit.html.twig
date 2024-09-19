@@ -3,11 +3,52 @@
 {% block title %}Edit Room{% endblock %}
 
 {% block body %}
-    <h1>Edit Room</h1>
+    <div class="container mt-5">
+        <!-- Back to list button -->
+        <div class="mb-3">
+            <a href="{{ path('app_room_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to list
+            </a>
+        </div>
 
-    {{ include('room/_form.html.twig', {'button_label': 'Update'}) }}
+        <h1 class="mb-4">Edit Room</h1>
 
-    <a href="{{ path('app_room_index') }}">back to list</a>
+        <div class="card p-4">
+            <!-- Edit form -->
+            {{ form_start(form) }}
 
-    {{ include('room/_delete_form.html.twig') }}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        {{ form_label(form.name, 'Name') }}
+                        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        {{ form_label(form.maxStudents, 'Max Students') }}
+                        {{ form_widget(form.maxStudents, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form_label(form.comment, 'Comment') }}
+                {{ form_widget(form.comment, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <!-- Save button -->
+            <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-primary">{{ button_label|default('Update') }}</button>
+                <a href="{{ path('app_room_index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Delete button -->
+        <div class="d-flex justify-content-end mt-4">
+            {{ include('room/_delete_form.html.twig', {'button_label': 'Delete', 'class': 'btn btn-danger'}) }}
+        </div>
+    </div>
 {% endblock %}

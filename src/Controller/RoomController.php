@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Room;
 use App\Form\RoomType;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,16 +15,37 @@ use Symfony\Component\Routing\Attribute\Route;
 class RoomController extends AbstractController
 {
     #[Route('/', name: 'app_room_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $rooms = $entityManager
-            ->getRepository(Room::class)
-            ->findAll();
+        $page = $request->query->getInt('page', 1); // Current page, default is 1
+        $limit = 10; // Limit results per page
+        $search = $request->query->get('search', ''); // Search filter
+
+        $queryBuilder = $entityManager->getRepository(Room::class)
+            ->createQueryBuilder('r');
+
+        // Filter by room name or comment if search is present
+        if (!empty($search)) {
+            $queryBuilder
+                ->where('r.name LIKE :search')
+                ->orWhere('r.comment LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        $queryBuilder
+            ->setFirstResult(($page - 1) * $limit) // Offset
+            ->setMaxResults($limit); // Limit
+
+        $paginator = new Paginator($queryBuilder);
 
         return $this->render('room/index.html.twig', [
-            'rooms' => $rooms,
+            'rooms' => $paginator,
+            'current_page' => $page,
+            'total_pages' => ceil(count($paginator) / $limit),
+            'search' => $search
         ]);
     }
+
 
     #[Route('/new', name: 'app_room_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
