@@ -1,39 +1,89 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}StudyClass index{% endblock %}
+{% block title %}List of Study Classes{% endblock %}
 
 {% block body %}
-    <h1>StudyClass index</h1>
+    <div class="mt-5">
+        <h1 class="mb-4">Study Class List</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Level</th>
-                <th>Speciality</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for study_class in study_classes %}
-            <tr>
-                <td>{{ study_class.id }}</td>
-                <td>{{ study_class.name }}</td>
-                <td>{{ study_class.level }}</td>
-                <td>{{ study_class.speciality }}</td>
-                <td>
-                    <a href="{{ path('app_study_class_show', {'id': study_class.id}) }}">show</a>
-                    <a href="{{ path('app_study_class_edit', {'id': study_class.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <!-- Search Form -->
+        <form method="get" action="{{ path('app_study_class_index') }}" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Search by name, level or speciality" value="{{ app.request.query.get('search') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
 
-    <a href="{{ path('app_study_class_new') }}">Create new</a>
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{{ path('app_study_class_new') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Create New Study Class
+            </a>
+        </div>
+
+        <div class="table-responsive" style="margin-bottom: 20px">
+            <table class="table table-bordered table-hover table-striped" style="margin: auto;">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Level</th>
+                    <th>Speciality</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for study_class in study_classes %}
+                    <tr>
+                        <td>{{ study_class.id }}</td>
+                        <td>{{ study_class.name }}</td>
+                        <td>{{ study_class.level }}</td>
+                        <td>{{ study_class.speciality }}</td>
+                        <td class="text-center">
+                            <a style="margin: 5px" href="{{ path('app_study_class_show', {'id': study_class.id}) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Show
+                            </a>
+                            <a style="margin: 5px" href="{{ path('app_study_class_edit', {'id': study_class.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a style="margin: 5px" href="{{ path('app_study_class_delete', {'id': study_class.id}) }}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ path('app_study_class_index', {page: current_page - 1, search: app.request.query.get('search')}) }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for i in 1..total_pages %}
+                    <li class="page-item {% if i == current_page %}active{% endif %}">
+                        <a class="page-link" href="{{ path('app_study_class_index', {page: i, search: app.request.query.get('search')}) }}">{{ i }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if current_page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ path('app_study_class_index', {page: current_page + 1, search: app.request.query.get('search')}) }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 {% endblock %}

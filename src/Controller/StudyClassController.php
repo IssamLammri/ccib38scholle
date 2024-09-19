@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\StudyClass;
 use App\Form\StudyClassType;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,16 +15,38 @@ use Symfony\Component\Routing\Attribute\Route;
 class StudyClassController extends AbstractController
 {
     #[Route('/', name: 'app_study_class_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $studyClasses = $entityManager
-            ->getRepository(StudyClass::class)
-            ->findAll();
+        $page = $request->query->getInt('page', 1); // Current page, default is 1
+        $limit = 10; // Limit results per page
+        $search = $request->query->get('search', ''); // Search filter
+
+        $queryBuilder = $entityManager->getRepository(StudyClass::class)
+            ->createQueryBuilder('sc');
+
+        // Filter by name, level, or speciality if search is present
+        if (!empty($search)) {
+            $queryBuilder
+                ->where('sc.name LIKE :search')
+                ->orWhere('sc.level LIKE :search')
+                ->orWhere('sc.speciality LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        $queryBuilder
+            ->setFirstResult(($page - 1) * $limit) // Offset
+            ->setMaxResults($limit); // Limit
+
+        $paginator = new Paginator($queryBuilder);
 
         return $this->render('study_class/index.html.twig', [
-            'study_classes' => $studyClasses,
+            'study_classes' => $paginator,
+            'current_page' => $page,
+            'total_pages' => ceil(count($paginator) / $limit),
+            'search' => $search
         ]);
     }
+
 
     #[Route('/new', name: 'app_study_class_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
