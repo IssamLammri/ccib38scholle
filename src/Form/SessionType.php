@@ -18,23 +18,32 @@ class SessionType extends AbstractType
         $builder
             ->add('startTime', null, [
                 'widget' => 'single_text',
+                'label' => 'Start Time',
+                'attr' => ['class' => 'form-control']
             ])
             ->add('endTime', null, [
                 'widget' => 'single_text',
+                'label' => 'End Time',
+                'attr' => ['class' => 'form-control']
             ])
             ->add('room', EntityType::class, [
                 'class' => Room::class,
-                'choice_label' => 'id',
+                'choice_label' => 'name',
+                'label' => 'Room',
+                'attr' => ['class' => 'form-control']
             ])
             ->add('studyClass', EntityType::class, [
                 'class' => StudyClass::class,
-                'choice_label' => 'id',
+                'choice_label' => 'name',
+                'label' => 'Study Class',
+                'attr' => ['class' => 'form-control']
             ])
             ->add('teacher', EntityType::class, [
                 'class' => Teacher::class,
-                'choice_label' => 'id',
-            ])
-        ;
+                'choice_label' => 'lastName',
+                'label' => 'Teacher',
+                'attr' => ['class' => 'form-control']
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -1,30 +1,55 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Session{% endblock %}
+{% block title %}Session Details{% endblock %}
 
 {% block body %}
-    <h1>Session</h1>
+    <div class="container mt-5">
+        <!-- Back to list button -->
+        <div class="mb-3">
+            <a href="{{ path('app_session_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to list
+            </a>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ session.id }}</td>
-            </tr>
-            <tr>
-                <th>StartTime</th>
-                <td>{{ session.startTime ? session.startTime|date('H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>EndTime</th>
-                <td>{{ session.endTime ? session.endTime|date('H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <h1 class="mb-4">Session Details</h1>
 
-    <a href="{{ path('app_session_index') }}">back to list</a>
+        <div class="card p-4">
+            <table class="table table-bordered">
+                <tbody>
+                <tr>
+                    <th>Id</th>
+                    <td>{{ session.id }}</td>
+                </tr>
+                <tr>
+                    <th>Start Time</th>
+                    <td>{{ session.startTime ? session.startTime|date('Y-m-d H:i') : 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <th>End Time</th>
+                    <td>{{ session.endTime ? session.endTime|date('Y-m-d H:i') : 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <th>Room</th>
+                    <td>{{ session.room.name }}</td>
+                </tr>
+                <tr>
+                    <th>Teacher</th>
+                    <td>{{ session.teacher.lastName }} {{ session.teacher.firstName }}</td>
+                </tr>
+                <tr>
+                    <th>Study Class</th>
+                    <td>{{ session.studyClass.name }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_session_edit', {'id': session.id}) }}">edit</a>
-
-    {{ include('session/_delete_form.html.twig') }}
+        <!-- Buttons: Edit and Delete -->
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ path('app_session_edit', {'id': session.id}) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            {{ include('session/_delete_form.html.twig') }}
+        </div>
+    </div>
 {% endblock %}

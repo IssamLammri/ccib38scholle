@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Session;
 use App\Form\SessionType;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,16 +15,41 @@ use Symfony\Component\Routing\Attribute\Route;
 class SessionController extends AbstractController
 {
     #[Route('/', name: 'app_session_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $sessions = $entityManager
-            ->getRepository(Session::class)
-            ->findAll();
+        $page = $request->query->getInt('page', 1); // Current page, default is 1
+        $limit = 10; // Limit results per page
+        $search = $request->query->get('search', ''); // Search filter
+
+        $queryBuilder = $entityManager->getRepository(Session::class)
+            ->createQueryBuilder('s')
+            ->join('s.room', 'r')
+            ->join('s.teacher', 't')
+            ->join('s.studyClass', 'sc');
+
+        // Search by room name, teacher name, or study class if search is present
+        if (!empty($search)) {
+            $queryBuilder
+                ->where('r.name LIKE :search')
+                ->orWhere('t.lastName LIKE :search')
+                ->orWhere('sc.name LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        $queryBuilder
+            ->setFirstResult(($page - 1) * $limit) // Offset
+            ->setMaxResults($limit); // Limit
+
+        $paginator = new Paginator($queryBuilder);
 
         return $this->render('session/index.html.twig', [
-            'sessions' => $sessions,
+            'sessions' => $paginator,
+            'current_page' => $page,
+            'total_pages' => ceil(count($paginator) / $limit),
+            'search' => $search
         ]);
     }
+
 
     #[Route('/new', name: 'app_session_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -74,7 +100,7 @@ class SessionController extends AbstractController
     #[Route('/{id}', name: 'app_session_delete', methods: ['POST'])]
     public function delete(Request $request, Session $session, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$session->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $session->getId(), $request->request->get('_token'))) {
             $entityManager->remove($session);
             $entityManager->flush();
         }
