@@ -1,12 +1,11 @@
 
 # schollccib
 
-Welcome to the schollccib project! This guide will help you set up and run the project from scratch.
+Welcome to the **schollccib** project! Follow this guide to set up and run the project from scratch.
 
 ## Prerequisites
 
-Before you begin, make sure you have the following installed on your machine:
-
+Ensure you have the following installed before starting:
 - [Git](https://git-scm.com/)
 - [Docker](https://www.docker.com/products/docker-desktop)
 - [Docker Compose](https://docs.docker.com/compose/install/)
@@ -14,238 +13,176 @@ Before you begin, make sure you have the following installed on your machine:
 
 ## Getting Started
 
-### 1. Clone the Repository
+### 1. Clone the Project
 
-First, clone the repository to your local machine using Git:
-
-```bash
-gh repo clone IssamLammri/schollccib
-```
-
-### 2. Build and Run Docker Containers
-
-Use Docker Compose to build and run the containers:
+Clone the repository to your local machine using Git:
 
 ```bash
-docker-compose up --build
+git clone https://github.com/IssamLammri/ccib38scholle.git
 ```
 
-### 3. Install PHP Dependencies
+### 2. Build the Containers
 
-Open a new terminal window and install the PHP dependencies using Composer:
+In the root directory of the project, use the Makefile to build and run the containers:
+
+```bash
+make build
+```
+
+### 3. Start Development Environment
+
+After building, run the development environment:
+
+```bash
+make dev
+```
+
+### 4. Set Up the Database
+
+Create a new database named **`schollccib`** in your phpMyAdmin environment at [http://localhost:8082](http://localhost:8082). Then, update the database structure:
+
+```bash
+make update-structure
+```
+
+Run the migrations:
+
+```bash
+make migrate
+```
+
+### 5. Your Project is Ready!
+
+Your project is now set up and ready for further development. You can start developing your application.
+
+## Running Commands
+
+To execute commands within the project, you must be in the root directory and prefix commands with:
+
+```bash
+docker-compose exec app
+```
+
+For example, to install Composer dependencies:
 
 ```bash
 docker-compose exec app composer install
 ```
 
-### 4. Set Up the Database
+## Available Makefile Commands
 
-Run the database migrations to set up the database schema:
+The Makefile includes several commands to simplify project management. Here are some examples:
 
-```bash
-docker-compose exec app php bin/console doctrine:migrations:migrate
-```
+- **Build Containers**:
 
-### 5. Access the Application
-
-- **Symfony Application**: Open your browser and navigate to [http://localhost:8081](http://localhost:8081).
-- **phpMyAdmin**: Open your browser and navigate to [http://localhost:8082](http://localhost:8082). Log in with \`root\` as the username and \`issam\` as the password.
-
-## Additional Commands
-
-### Docker Compose Commands
-
-- **List Containers**: Display the status of the running containers.
-
-  ```bash
-  docker-compose ps
-  ```
-
-- **Stop and Remove Containers, Networks, Images, and Volumes**: This will stop and remove all containers, networks, images, and volumes defined in the `docker-compose.yml` file.
-
-  ```bash
-  docker-compose down --rmi all
-  ```
-
-- **Remove Unused Data**: This command will remove all unused containers, networks, images (both dangling and unreferenced), and optionally, volumes.
-
-  ```bash
-  docker system prune -af
-  ```
-
-- **Rebuild and Start Containers**: This will rebuild the images and start the containers.
-
-  ```bash
-  docker-compose up --build
-  ```
-
-### Node.js Commands
-
-- **Remove Node Modules and Yarn Lock**: This will remove the `node_modules` directory and `yarn.lock` file from the app container.
-
-  ```bash
-  docker-compose exec app rm -rf node_modules yarn.lock
-  ```
-
-- **Install Node Modules**: This will install the Node.js dependencies defined in `package.json` using Yarn.
-
-  ```bash
-  docker-compose exec app yarn install
-  ```
-
-- **Run Development Server**: This will start the development server with file watching enabled.
-
-  ```bash
-  docker-compose exec app yarn run dev --watch
-  ```
-
-### Symfony Commands
-
-- **Clear Symfony Cache**:
-
-  ```bash
-  docker-compose exec app php bin/console cache:clear
-  ```
-
-- **Run Tests**:
-
-  ```bash
-  docker-compose exec app php bin/phpunit
-  ```
-
-## Project Structure
-
-A brief overview of the project structure:
-
-```plaintext
-schollccib/
-├── assets/
-├── bin/
-├── config/
-├── docker/
-│   ├── mysql/
-│   │   └── Dockerfile
-│   ├── php/
-│   │   ├── Dockerfile
-│   │   └── startup.sh
-│   └── web/
-│       ├── Dockerfile
-│       └── default.conf
-├── migrations/
-├── public/
-├── src/
-├── templates/
-├── tests/
-├── translations/
-├── var/
-├── vendor/
-├── .env
-├── .env.test
-├── .gitignore
-├── compose.override.yaml
-├── composer.json
-├── composer.lock
-├── docker-compose.yml
-├── importmap.php
-├── phpunit.xml.dist
-└── symfony.lock
-```
-
-## Troubleshooting
-
-If you encounter any issues, please check the following:
-
-### Ensure all Docker containers are running:
-
-```bash
-docker ps
-```
-
-### Check the logs for any errors:
-
-```bash
-docker-compose logs
-```
-
-Feel free to open an issue if you encounter any problems or need further assistance.
-
-## Makefile Commands
-
-The project includes a Makefile to simplify the use of Docker and other commands. Below are the available commands:
-
-- **Build and Start Containers**:
-
+  Build and start Docker containers.
   ```bash
   make build
   ```
 
 - **Install Composer Dependencies**:
 
+  Install all PHP dependencies via Composer.
   ```bash
   make install-composer
   ```
 
-- **Run Database Migrations**:
+- **Update Database Structure**:
 
+  Create a new migration for the database.
+  ```bash
+  make update-structure
+  ```
+
+- **Run Migrations**:
+
+  Execute pending migrations to update the database schema.
   ```bash
   make migrate
   ```
 
 - **Install Node Modules**:
 
+  Install the JavaScript dependencies via Yarn.
   ```bash
   make install-node-modules
   ```
 
 - **Start Development Server**:
 
+  Run the Symfony development server and watch for changes with Yarn.
   ```bash
   make dev
   ```
 
 - **Clear Symfony Cache**:
 
+  Clear the Symfony application cache.
   ```bash
   make clear-cache
   ```
 
-- **Run Tests**:
+- **Run Unit Tests**:
 
+  Run the test suite using PHPUnit.
   ```bash
   make test
   ```
 
 - **List Docker Containers**:
 
+  Display the current status of all running Docker containers.
   ```bash
   make ps
   ```
 
 - **Stop and Remove Containers, Networks, Images, and Volumes**:
 
+  Shut down and clean up the environment.
   ```bash
   make down
   ```
 
 - **Remove Unused Data**:
 
+  Clean up all unused Docker resources.
   ```bash
   make prune
   ```
 
 - **Remove Node Modules and Yarn Lock**:
 
+  Clean up Node.js environment by deleting `node_modules` and `yarn.lock`.
   ```bash
   make clean-node-modules
   ```
 
+- **All-in-One Command**:
 
-- **All-in-One**: Build, install dependencies, migrate database, and start the development server::
-
+  Build the project, install dependencies, run migrations, and start the development environment:
   ```bash
   make all
   ```
 
+## Accessing the Application
+
+- **Symfony Application**: [http://localhost:8081](http://localhost:8081)
+- **phpMyAdmin**: [http://localhost:8082](http://localhost:8082) (Username: `root`, Password: `issam`)
+
+## Troubleshooting
+
+If you run into any issues, ensure all Docker containers are running:
+
+```bash
+docker ps
+```
+
+Check the logs for any errors:
+
+```bash
+docker-compose logs
+```
+
 ## License
 
-This project is licensed under the Issam LAMMRI License.
+This project is licensed under the **Issam LAMMRI License**.
