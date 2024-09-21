@@ -28,6 +28,7 @@ install-node-modules:
 
 .PHONY: dev
 dev:
+	$(EXEC_APP) php bin/console fos:js-routing:dump --format=json --target=public/js/fos_js_routes.json
 	$(EXEC_APP) yarn run dev --watch
 
 .PHONY: clear-cache

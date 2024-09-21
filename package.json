@@ -15,6 +15,9 @@
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
-    "@hotwired/stimulus-webpack-helpers": "^1.0.1"
+    "@hotwired/stimulus-webpack-helpers": "^1.0.1",
+    "axios": "^1.7.7",
+    "bootstrap": "^5.3.3",
+    "vue-axios": "^3.5.2"
   }
 }

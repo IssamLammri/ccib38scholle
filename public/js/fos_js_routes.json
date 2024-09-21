@@ -1,0 +1,1 @@
+{"base_url":"","routes":{"app_registration_academic_support_request":{"tokens":[["text","\/soutien-scolaire\/inscription-requests"]],"defaults":[],"requirements":[],"hosttokens":[],"methods":["POST"],"schemes":[]}},"prefix":"","host":"localhost","port":"","scheme":"http","locale":""}
