@@ -25,6 +25,7 @@ migrate:
 .PHONY: install-node-modules
 install-node-modules:
 	$(EXEC_APP) yarn install
+	$(EXEC_APP) npm install @popperjs/core
 
 .PHONY: dev
 dev:
