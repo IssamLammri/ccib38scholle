@@ -3,6 +3,10 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 
 #[ORM\Entity]
 class ParentEntity
@@ -10,37 +14,53 @@ class ParentEntity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['read_payment'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment'])]
     private ?string $fatherLastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment'])]
     private ?string $fatherFirstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment'])]
     private ?string $fatherEmail = null;
 
     #[ORM\Column(type: 'string', length: 20)]
+    #[Groups(['read_payment'])]
     private ?string $fatherPhone = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment'])]
     private ?string $motherLastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment'])]
     private ?string $motherFirstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment'])]
     private ?string $motherEmail = null;
 
     #[ORM\Column(type: 'string', length: 20)]
+    #[Groups(['read_payment'])]
     private ?string $motherPhone = null;
 
     #[ORM\Column(type: 'string', length: 20)]
     private ?string $familyStatus = null; // Married or Divorced
 
-    #[ORM\OneToOne(mappedBy: 'parent', cascade: ['persist', 'remove'])]
-    private ?Student $student = null;
+    #[ORM\OneToMany(targetEntity: Student::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
+    #[Groups(['read_payment'])]
+    private Collection $students;
+
+    public function __construct()
+    {
+        $this->students = new ArrayCollection();
+    }
+
 
     // Getters and Setters
 
@@ -157,21 +177,36 @@ class ParentEntity
         return $this;
     }
 
-    public function getStudent(): ?Student
+    public function getStudents(): Collection
     {
-        return $this->student;
+        return $this->students;
     }
 
-    public function setStudent(?Student $student): self
+    public function addStudent(Student $student): self
     {
-        // set (or unset) the owning side of the relation if necessary
-        $newParent = null === $student ? null : $this;
-        if ($student->getParent() !== $newParent) {
-            $student->setParent($newParent);
+        if (!$this->students->contains($student)) {
+            $this->students[] = $student;
+            $student->setParent($this);
         }
 
-        $this->student = $student;
+        return $this;
+    }
+
+    public function removeStudent(Student $student): self
+    {
+        if ($this->students->removeElement($student)) {
+            // set the owning side to null (unless already changed)
+            if ($student->getParent() === $this) {
+                $student->setParent(null);
+            }
+        }
 
         return $this;
+    }
+
+    #[Groups(['read_payment'])]
+    public function  getFullNameParent(): string
+    {
+        return $this->fatherLastName . ' ' . $this->fatherFirstName . ' - ' . $this->motherLastName . ' ' . $this->motherFirstName;
     }
 }

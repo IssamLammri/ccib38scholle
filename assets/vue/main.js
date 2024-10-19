@@ -4,6 +4,8 @@ import axios from 'axios'; // Importer Axios
 import VueAxios from 'vue-axios'; // Importer VueAxios pour l'intégration
 import Hello from './components/Hello.vue';
 import NewPage from './pages/NewPage.vue';
+import ListPayments from './pages/payment/ListPayments.vue';
+import StudyClass from './pages/studyClass/StudyClass.vue';
 import RegistrationPageAcademicSupport from './pages/RegistrationPageAcademicSupport.vue';
 import FooterComponent from "./components/FooterComponent.vue";
 import * as bootstrap from 'bootstrap'
@@ -29,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Enregistrement des composants
     app.component('Hello', Hello);
     app.component('NewPage', NewPage);
+    app.component('ListPayments', ListPayments);
+    app.component('StudyClass', StudyClass);
     app.component('RegistrationPageAcademicSupport', RegistrationPageAcademicSupport);
     app.component('FooterComponent', FooterComponent);
 

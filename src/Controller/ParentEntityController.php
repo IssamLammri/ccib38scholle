@@ -73,8 +73,10 @@ class ParentEntityController extends AbstractController
     #[Route('/{id}', name: 'app_parent_entity_show', methods: ['GET'])]
     public function show(ParentEntity $parentEntity): Response
     {
+        $students = $parentEntity->getStudents();
         return $this->render('parent_entity/show.html.twig', [
             'parent_entity' => $parentEntity,
+            'students' => $students,
         ]);
     }
 

@@ -4,35 +4,40 @@
         <img src="{{ asset('static/icons/logoccib38.webp') }}" alt="Logo">
     </div>
     <div class="sidebar-menu">
-        <ul class="list-unstyled">
+        <ul class="list-unstyled" style="font-size: 20px">
             <li>
                 <a href="{{ path('app_student_index') }}">
-                    <i class="fas fa-user-graduate"></i> {{ 'Les élèves'|trans }}
+                    <i class="fas fa-user-graduate m-3"></i> {{ 'Les élèves'|trans }}
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_parent_entity_index') }}">
-                    <i class="fas fa-user-friends"></i> {{ 'Parents'|trans }}
+                    <i class="fas fa-user-friends m-3"></i> {{ 'Parents'|trans }}
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_study_class_index') }}">
-                    <i class="fas fa-school"></i> {{ 'Classes'|trans }}
+                    <i class="fas fa-school m-3"></i> {{ 'Classes'|trans }}
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_teacher_index') }}">
-                    <i class="far fa-id-card"></i> {{ 'Enseignants'|trans }}
+                    <i class="far fa-id-card m-3"></i> {{ 'Enseignants'|trans }}
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_room_index') }}">
-                    <i class="fas fa-door-open"></i> {{ 'Salles'|trans }}
+                    <i class="fas fa-door-open m-3"></i> {{ 'Salles'|trans }}
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_session_index') }}">
-                    <i class="fas fa-chalkboard-teacher"></i> {{ 'Sessions'|trans }}
+                    <i class="fas fa-chalkboard-teacher m-3"></i> {{ 'Sessions'|trans }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('payments_list') }}">
+                    <i class="fa-solid fa-dollar-sign m-3"></i> {{ 'Paymenets'|trans }}
                 </a>
             </li>
         </ul>

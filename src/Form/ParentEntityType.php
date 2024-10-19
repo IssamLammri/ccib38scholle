@@ -57,10 +57,6 @@ class ParentEntityType extends AbstractType
                 ],
                 'placeholder' => 'Select family status'
             ])
-            ->add('student', EntityType::class, [
-                'class' => Student::class,
-                'label' => 'Assigned Student'
-            ])
         ;
     }
 

@@ -4544,7 +4544,12 @@ vue-axios@^3.5.2:
     hash-sum "^2.0.0"
     watchpack "^2.4.0"
 
-"vue@^2.6 || ^3.2.14", "vue@^3.0.0 || ^2.0.0", vue@^3.4.31, vue@3.4.31:
+vue-spinner@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/vue-spinner/-/vue-spinner-1.0.4.tgz"
+  integrity sha512-GNG2F+8BLX201JT/jUX+84Gsi3ZteVQwt9K7mues3ts9FcQ95dGn7uu6a5ndSxdYYUEzfh1KngZiOE0u+l4itA==
+
+"vue@^2.6 || ^3.2.14", "vue@^3.0.0 || ^2.0.0", vue@^3.3.0, vue@^3.4.31, vue@3.4.31:
   version "3.4.31"
   resolved "https://registry.npmjs.org/vue/-/vue-3.4.31.tgz"
   integrity sha512-njqRrOy7W3YLAlVqSKpBebtZpDVg21FPoaq1I7f/+qqBThK9ChAIjkRWgeP6Eat+8C+iia4P3OYqpATP21BCoQ==
@@ -4554,6 +4559,11 @@ vue-axios@^3.5.2:
     "@vue/runtime-dom" "3.4.31"
     "@vue/server-renderer" "3.4.31"
     "@vue/shared" "3.4.31"
+
+vuetify@^3.7.0-beta.1:
+  version "3.7.0-beta.1"
+  resolved "https://registry.npmjs.org/vuetify/-/vuetify-3.7.0-beta.1.tgz"
+  integrity sha512-F6a+pSG7dLrU28sGlR8r4WMuBsLMprOsDpaywGopNrGk351Hs4AAhx/y88ROGUEf28yAPShSM86bPnD30xNyDw==
 
 watchpack@^2.4.0, watchpack@^2.4.1:
   version "2.4.1"

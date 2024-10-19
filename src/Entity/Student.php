@@ -2,7 +2,10 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 class Student
@@ -10,15 +13,19 @@ class Student
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['read_study_class','read_student_class_registered'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment','read_student_class_registered'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment','read_student_class_registered'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'date')]
+    #[Groups(['read_student_class_registered'])]
     private ?\DateTimeInterface $birthDate = null;
 
     #[ORM\Column(type: 'array')]
@@ -37,11 +44,23 @@ class Student
     private ?string $city = null;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(['read_student_class_registered'])]
     private ?int $level = null;
 
-    #[ORM\OneToOne(inversedBy: 'student', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'students')]
     #[ORM\JoinColumn(nullable: false)]
     private ?ParentEntity $parent = null;
+
+    #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'student')]
+    private Collection $payments;
+
+    #[ORM\OneToMany(targetEntity: StudentClassRegistered::class, mappedBy: 'student')]
+    private Collection $registrations;
+
+    public function __construct()
+    {
+        $this->registrations = new ArrayCollection();
+    }
 
     // Getters and Setters
 
@@ -163,7 +182,7 @@ class Student
         return $this->parent;
     }
 
-    public function setParent(ParentEntity $parent): self
+    public function setParent(?ParentEntity $parent): self
     {
         $this->parent = $parent;
 
@@ -173,5 +192,64 @@ class Student
     public function __toString(): string
     {
         return $this->getLastName() . ' ' . $this->getFirstName();
+    }
+
+
+    /**
+     * @return Collection<int, Payment>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payment $payment): self
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments[] = $payment;
+            $payment->setStudent($this); // Relation inverse
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payment $payment): self
+    {
+        if ($this->payments->removeElement($payment)) {
+            if ($payment->getStudent() === $this) {
+                $payment->setStudent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StudentClassRegistered>
+     */
+    public function getRegistrations(): Collection
+    {
+        return $this->registrations;
+    }
+
+    public function addRegistration(StudentClassRegistered $registration): self
+    {
+        if (!$this->registrations->contains($registration)) {
+            $this->registrations[] = $registration;
+            $registration->setStudent($this); // Relation inverse
+        }
+
+        return $this;
+    }
+
+    public function removeRegistration(StudentClassRegistered $registration): self
+    {
+        if ($this->registrations->removeElement($registration)) {
+            if ($registration->getStudent() === $this) {
+                $registration->setStudent(null); // Relation inverse
+            }
+        }
+
+        return $this;
     }
 }
