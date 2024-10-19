@@ -56,8 +56,7 @@ class ParentEntityType extends AbstractType
                     'Divorced' => 'divorced',
                 ],
                 'placeholder' => 'Select family status'
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

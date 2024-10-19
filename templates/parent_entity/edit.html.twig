@@ -18,13 +18,6 @@
             {{ form_start(form) }}
 
             <div class="row">
-                <!-- Assigned Student -->
-                <div class="form-group mb-3">
-                    <h4> {{ form_label(form.student, 'Assigned Student') }}</h4>
-                    {{ form_widget(form.student, {'attr': {'class': 'form-control'}}) }}
-                </div>
-            </div>
-            <div class="row">
                 <!-- Partie Père à gauche -->
                 <div class="col-md-6">
                     <h4>Father Information</h4>
@@ -75,6 +68,33 @@
                     {{ form_label(form.familyStatus, 'Family Status') }}
                     {{ form_widget(form.familyStatus, {'attr': {'class': 'form-control'}}) }}
                 </div>
+            </div>
+
+            <!-- Bouton pour afficher/masquer la section des enfants -->
+            <div class="mt-4">
+                <h4>Assigned Students</h4>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Birth Date</th>
+                        <th>Level</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for student in parent_entity.getStudents  %}
+                        <tr>
+                            <td>{{ student.lastName }} {{ student.firstName }}</td>
+                            <td>{{ student.birthDate ? student.birthDate|date('d-m-Y') : 'Not available' }}</td>
+                            <td>{{ student.level ?? 'Not available' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center">No students assigned</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
 
             <!-- Bouton de mise à jour -->
