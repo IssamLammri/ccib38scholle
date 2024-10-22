@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "@symfony/webpack-encore": "^4.6.1",
+    "@symfony/webpack-encore": "^4.7.0",
     "@vue/compiler-sfc": "^3.4.31",
     "core-js": "^3.23",
     "postcss-loader": "^7.0.0",
