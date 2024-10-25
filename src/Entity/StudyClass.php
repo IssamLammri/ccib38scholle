@@ -111,7 +111,7 @@ class StudyClass
 
     public function __toString(): string
     {
-        return $this->getName();
+        return $this->getName().' - '.$this->getSpeciality();
     }
 
     #[Groups(['read_study_class','read_session'])]

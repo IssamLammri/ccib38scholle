@@ -8,6 +8,7 @@ use App\Entity\StudyClass;
 use App\Entity\Teacher;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -16,15 +17,25 @@ class SessionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('startTime', null, [
+            ->add('startTime', DateTimeType::class, [
                 'widget' => 'single_text',
                 'label' => 'Start Time',
-                'attr' => ['class' => 'form-control']
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'jj-mm-aaaa hh:mm' // Placeholder for date format
+                ],
+                'format' => 'dd-MM-yyyy HH:mm', // Custom format for date and time
+                'html5' => false, // Disable HTML5 to use the custom format
             ])
-            ->add('endTime', null, [
+            ->add('endTime', DateTimeType::class, [
                 'widget' => 'single_text',
                 'label' => 'End Time',
-                'attr' => ['class' => 'form-control']
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'jj-mm-aaaa hh:mm' // Placeholder for date format
+                ],
+                'format' => 'dd-MM-yyyy HH:mm', // Custom format for date and time
+                'html5' => false, // Disable HTML5 to use the custom format
             ])
             ->add('room', EntityType::class, [
                 'class' => Room::class,
@@ -34,7 +45,6 @@ class SessionType extends AbstractType
             ])
             ->add('studyClass', EntityType::class, [
                 'class' => StudyClass::class,
-                'choice_label' => 'name',
                 'label' => 'Study Class',
                 'attr' => ['class' => 'form-control']
             ])
