@@ -17,11 +17,11 @@ class Student
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_student_class_registered'])]
+    #[Groups(['read_payment','read_student_class_registered','student_session_read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_student_class_registered'])]
+    #[Groups(['read_payment','read_student_class_registered','student_session_read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'date')]
@@ -251,5 +251,25 @@ class Student
         }
 
         return $this;
+    }
+
+    #[Groups(['read_payment','read_student_class_registered','student_session_read'])]
+    public function getLevelClass(): string
+    {
+        return match ($this->level) {
+            1 => 'CP',
+            2 => 'CE1',
+            3 => 'CE2',
+            4 => 'CM1',
+            5 => 'CM2',
+            6 => '6ème',
+            7 => '5ème',
+            8 => '4ème',
+            9 => '3ème',
+            10 => '2nde',
+            11 => '1ère',
+            12 => 'Terminale',
+            default => 'Niveau inconnu',
+        };
     }
 }

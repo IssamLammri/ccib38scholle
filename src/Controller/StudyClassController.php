@@ -2,10 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\SessionStudyClassPresence;
 use App\Entity\StudentClassRegistered;
 use App\Entity\StudyClass;
 use App\Form\StudyClassType;
 use App\Model\ApiResponseTrait;
+use App\Repository\SessionRepository;
+use App\Repository\SessionStudyClassPresenceRepository;
 use App\Repository\StudentClassRegisteredRepository;
 use App\Repository\StudentRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,7 +26,9 @@ class StudyClassController extends AbstractController
     public function __construct(
         private StudentClassRegisteredRepository $studentClassRegisteredRepository,
         private StudentRepository $studentRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private SessionStudyClassPresenceRepository $sessionStudyClassPresenceRepository,
+        private SessionRepository $sessionRepository
     ) {
     }
 
@@ -103,6 +108,11 @@ class StudyClassController extends AbstractController
                 if ($student) {
                     $studentClassRegistered = new StudentClassRegistered($studyClass, $student);
                     $this->entityManager->persist($studentClassRegistered);
+                    $futureSessions = $this->sessionRepository->findFutureSessions($studentClassRegistered->getStudyClass());
+                    foreach ($futureSessions as $session){
+                        $sessionStudyClassPresence = new SessionStudyClassPresence($student, $session);
+                        $this->entityManager->persist($sessionStudyClassPresence);
+                    }
                 }
             }
         }
@@ -114,6 +124,13 @@ class StudyClassController extends AbstractController
     public function deleteStudentFromClass(Request $request, StudentClassRegistered $studentClassRegistered): Response
     {
         $this->entityManager->remove($studentClassRegistered);
+        $futureSessions = $this->sessionRepository->findFutureSessions($studentClassRegistered->getStudyClass());
+        foreach ($futureSessions as $session){
+            $sessionStudyClassPresence = $this->sessionStudyClassPresenceRepository->findOneBy(['student' => $studentClassRegistered->getStudent(), 'session' => $session]);
+            if ($sessionStudyClassPresence){
+                $this->entityManager->remove($sessionStudyClassPresence);
+            }
+        }
         $this->entityManager->flush();
         return $this->apiResponse('Inscription request');
     }

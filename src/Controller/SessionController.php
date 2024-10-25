@@ -3,7 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Session;
+use App\Entity\SessionStudyClassPresence;
+use App\Entity\StudentClassRegistered;
 use App\Form\SessionType;
+use App\Model\ApiResponseTrait;
+use App\Repository\SessionStudyClassPresenceRepository;
+use App\Repository\StudentClassRegisteredRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +19,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/session')]
 class SessionController extends AbstractController
 {
+    // create a constructor with the required fields
+    use ApiResponseTrait;
+
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        public StudentClassRegisteredRepository $studentClassRegisteredRepository,
+        private SessionStudyClassPresenceRepository $sessionStudyClassPresenceRepository
+    ) {
+    }
     #[Route('/', name: 'app_session_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
@@ -60,6 +74,12 @@ class SessionController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($session);
+            $allStudentsToAddASession = $this->studentClassRegisteredRepository->findStudentsInStudyClass($session->getStudyClass());
+            /** @var StudentClassRegistered $student */
+            foreach ($allStudentsToAddASession as $student) {
+                $sessionStudyClassPresence = new SessionStudyClassPresence($student->getStudent(), $session);
+                $entityManager->persist($sessionStudyClassPresence);
+            }
             $entityManager->flush();
 
             return $this->redirectToRoute('app_session_index', [], Response::HTTP_SEE_OTHER);
@@ -71,11 +91,39 @@ class SessionController extends AbstractController
         ]);
     }
 
+    #[Route('/delete-student-from-session/{id}', name: 'delete_student_from_session', options: ['expose' => true], methods: ['POST'])]
+    public function deleteStudentFromClass(Request $request, SessionStudyClassPresence $sessionStudyClassPresence): Response
+    {
+        $this->entityManager->remove($sessionStudyClassPresence);
+        $this->entityManager->flush();
+        return $this->apiResponse('Inscription request');
+    }
+
+    #[Route('/mark-student-absent-in-session/{id}', name: 'mark_student_absent_in_session', options: ['expose' => true], methods: ['POST'])]
+    public function markStudentAbsentInSession(SessionStudyClassPresence $sessionStudyClassPresence): Response
+    {
+        $sessionStudyClassPresence->setIsPresent(false);
+        $this->entityManager->flush();
+
+        return $this->json(['message' => "L'étudiant a été marqué comme absent."], Response::HTTP_OK);
+    }
+
+    #[Route('/mark-student-present-in-session/{id}', name: 'mark_student_present_in_session', options: ['expose' => true], methods: ['POST'])]
+    public function markStudentPresentInSession(SessionStudyClassPresence $sessionStudyClassPresence): Response
+    {
+        $sessionStudyClassPresence->setIsPresent(true);
+        $this->entityManager->flush();
+
+        return $this->json(['message' => "L'étudiant a été marqué comme présent."], Response::HTTP_OK);
+    }
+
     #[Route('/{id}', name: 'app_session_show', methods: ['GET'])]
     public function show(Session $session): Response
     {
+        $allStudentsSessionSession = $this->sessionStudyClassPresenceRepository->findBy(['session' => $session]);
         return $this->render('session/show.html.twig', [
             'session' => $session,
+            'studentsSession' => $allStudentsSessionSession,
         ]);
     }
 

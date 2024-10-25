@@ -15,6 +15,7 @@ class StudentClassRegistered
     private ?int $id = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
+    #[Groups(['read_student_class_registered'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'registrations')]

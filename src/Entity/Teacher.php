@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 class Teacher
@@ -13,9 +14,11 @@ class Teacher
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_session'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_session'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]

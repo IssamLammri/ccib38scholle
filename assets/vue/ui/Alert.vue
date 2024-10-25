@@ -1,16 +1,16 @@
 <template>
   <div
-    class="alert alert-dismissible align-items-start d-flex fade justify-content-between p-3 show"
-    :class="`alert-${type}`"
-    role="alert"
+      class="alert alert-dismissible d-flex align-items-center justify-content-between p-3 show"
+      :class="`alert-${type}`"
+      role="alert"
   >
-    <div v-html="text" />
+    <span class="flex-grow-1" v-html="text"></span>
     <button
-      type="button"
-      class="btn-close d-block position-relative ps-3"
-      data-bs-dismiss="alert"
-      aria-label="Close"
-    />
+        type="button"
+        class="btn-close ms-3"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+    ></button>
   </div>
 </template>
 
@@ -29,3 +29,13 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.alert {
+  display: flex;
+  align-items: center;
+}
+.btn-close {
+  margin-left: auto;
+}
+</style>

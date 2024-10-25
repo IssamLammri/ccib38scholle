@@ -6,6 +6,7 @@ import Hello from './components/Hello.vue';
 import NewPage from './pages/NewPage.vue';
 import ListPayments from './pages/payment/ListPayments.vue';
 import StudyClass from './pages/studyClass/StudyClass.vue';
+import SessionShow from './pages/session/SessionShow.vue';
 import RegistrationPageAcademicSupport from './pages/RegistrationPageAcademicSupport.vue';
 import FooterComponent from "./components/FooterComponent.vue";
 import * as bootstrap from 'bootstrap'
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('NewPage', NewPage);
     app.component('ListPayments', ListPayments);
     app.component('StudyClass', StudyClass);
+    app.component('SessionShow', SessionShow);
     app.component('RegistrationPageAcademicSupport', RegistrationPageAcademicSupport);
     app.component('FooterComponent', FooterComponent);
 
