@@ -40,7 +40,7 @@
                     <tr>
                         <td>{{ study_class.id }}</td>
                         <td>{{ study_class.name }}</td>
-                        <td>{{ study_class.level }}</td>
+                        <td>{{ study_class.getLevelClass }}</td>
                         <td>{{ study_class.speciality }}</td>
                         <td class="text-center">
                             <a style="margin: 5px" href="{{ path('app_study_class_show', {'id': study_class.id}) }}" class="btn btn-info btn-sm">
