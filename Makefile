@@ -16,7 +16,7 @@ install-composer:
 
 .PHONY: update-structure
 update-structure:
-	$(EXEC_APP) php bin/console make:migration
+	$(EXEC_APP) php bin/console doctrine:migrations:diff
 
 .PHONY: migrate
 migrate:

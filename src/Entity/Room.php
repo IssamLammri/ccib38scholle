@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 class Room
@@ -13,12 +14,14 @@ class Room
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_session'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'integer')]
     private ?int $maxStudents = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['read_session'])]
     private ?string $comment = null;
 
     // Getters and Setters
