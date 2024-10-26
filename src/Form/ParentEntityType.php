@@ -63,6 +63,9 @@ class ParentEntityType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => ParentEntity::class,
+            'csrf_protection' => true, // Ensures CSRF protection is enabled
+            'csrf_field_name' => '_token',
+            'csrf_token_id'   => 'parent_entity', // Unique identifier for CSRF token
         ]);
     }
 }

@@ -96,6 +96,7 @@
                     </tbody>
                 </table>
             </div>
+            {{ form_row(form._token) }} {# This explicitly includes the CSRF token #}
 
             <!-- Bouton de mise à jour -->
             <div class="d-flex justify-content-between mt-4">

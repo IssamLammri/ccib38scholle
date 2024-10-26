@@ -89,7 +89,7 @@ class ParentEntityController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_parent_entity_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_parent_entity_show', ['id' => $parentEntity->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('parent_entity/edit.html.twig', [
