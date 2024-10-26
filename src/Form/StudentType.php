@@ -57,7 +57,6 @@ class StudentType extends AbstractType
             ])
             ->add('parent', EntityType::class, [
                 'class' => ParentEntity::class,
-                // Remove choice_label to use __toString() method automatically
                 'label' => 'Parent',
                 'placeholder' => 'Select a parent',
             ]);
@@ -67,6 +66,9 @@ class StudentType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Student::class,
+            'csrf_protection' => true,            // Enable CSRF protection
+            'csrf_field_name' => '_token',        // CSRF field name
+            'csrf_token_id'   => 'student_edit',  // Unique CSRF token ID for this form
         ]);
     }
 }

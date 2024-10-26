@@ -69,7 +69,7 @@
                     {{ form_widget(form.parent, {'attr': {'class': 'form-control'}}) }}
                 </div>
             </div>
-
+            {{ form_row(form._token) }}
             <!-- Bouton de mise à jour et supprimer -->
             <div class="d-flex justify-content-between mt-4">
                 <button class="btn btn-primary">{{ button_label|default('Update') }}</button>

@@ -84,7 +84,7 @@ class StudentController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_student_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_student_show', ['id' => $student->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('student/edit.html.twig', [
