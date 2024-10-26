@@ -31,18 +31,6 @@ class StudentType extends AbstractType
                 'label' => 'Birth Date',
                 'attr' => ['placeholder' => 'Enter birth date'],
             ])
-            /*->add('previousClasses', CollectionType::class, [
-                'label' => 'Previous Classes',
-                'entry_type' => TextType::class,
-                'allow_add' => true,
-                'allow_delete' => true,
-                'prototype' => true,
-                'by_reference' => false,
-                'attr' => [
-                    'class' => 'previous-classes-collection',
-                    'placeholder' => 'Enter previous classes'
-                ]
-            ])*/
             ->add('gender', ChoiceType::class, [
                 'label' => 'Gender',
                 'choices'  => [
@@ -69,11 +57,10 @@ class StudentType extends AbstractType
             ])
             ->add('parent', EntityType::class, [
                 'class' => ParentEntity::class,
-                'choice_label' => 'id',
+                // Remove choice_label to use __toString() method automatically
                 'label' => 'Parent',
-                'placeholder' => 'Select a parent'
-            ])
-        ;
+                'placeholder' => 'Select a parent',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

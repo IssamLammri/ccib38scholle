@@ -204,6 +204,21 @@ class ParentEntity
         return $this;
     }
 
+    public function __toString(): string
+    {
+        if ($this->fatherLastName === 'Vide' || $this->fatherFirstName === 'Vide') {
+            $father = '';
+        }else{
+            $father = $this->fatherLastName . ' ' . $this->fatherFirstName;
+        }
+        if ($this->motherLastName === 'Vide' || $this->motherFirstName === 'Vide') {
+            $mother = '';
+        } else {
+            $mother = $this->motherLastName . ' ' . $this->motherFirstName;
+        }
+        return  $father . ' - ' . $mother;
+    }
+
     #[Groups(['read_payment'])]
     public function  getFullNameParent(): string
     {
