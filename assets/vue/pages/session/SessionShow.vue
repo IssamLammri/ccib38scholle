@@ -1,6 +1,35 @@
 <template>
   <div class="container mt-5">
-    <!-- Le reste du template est inchangé -->
+    <div class="row">
+      <div class="col-7">
+        <h1> {{session.studyClass.name}} ({{session.studyClass.speciality}}) </h1>
+        <h4>Le {{formatDate(session.startTime)}} de {{formatTime(session.startTime)}} à {{formatTime(session.endTime)}} </h4>
+        <span class="badge rounded-pill badge-primary m-2" style="font-size: 18px"> {{session.room.name}} - {{session.room.comment}} </span>
+        <span class="badge rounded-pill badge-info m-2"  style="font-size: 18px"> {{session.studyClass.levelClass}} </span>
+      </div>
+
+      <div class="col-3">
+        <div class="me-3 p-2">
+          <div class="d-flex mb-3 mb-sm-0 flex-column p-2 mx-auto">
+             <span class="stakeholder-infos text-center d-inline-block align-top mt-1">
+                <strong class="d-block author fs-6">Professeur</strong>
+              </span>
+            <span class="stakeholder-photo text-center d-inline-block align-top">
+                <img
+                    src="/static/icons/prof_icon.jpg"
+                    class="rounded-circle module-logo"
+                    style="width: 8rem;"
+                >
+              </span>
+            <span class="stakeholder-infos text-center d-inline-block align-top mt-1">
+                <strong class="d-block author fs-6">{{session.teacher.firstName}} {{session.teacher.lastName}}</strong>
+              </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <alert v-if="messageAlert" :text="messageAlert" :type="typeAlert"></alert>
+
     <div class="row mt-4">
       <h2>Liste des élèves</h2>
       <table class="table table-hover">
