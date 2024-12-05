@@ -32,7 +32,7 @@
                   <small class="text-muted">{{ formatBirthDate(student.birthDate) }}</small>
                 </div>
                 <div class="text-end w-50">
-                  <small class="text-muted">Niveau: {{ student.level }}</small>
+                  <small class="text-muted">{{ student.levelClass }}</small>
                 </div>
               </div>
             </li>
@@ -43,7 +43,7 @@
             <h6>Élèves sélectionnés :</h6>
             <ul>
               <li v-for="student in selectedStudents" :key="student.id">
-                {{ student.firstName }} {{ student.lastName }} - Niveau: {{ student.level }}
+                {{ student.firstName }} {{ student.lastName }} - {{ student.levelClass }}
               </li>
             </ul>
           </div>
