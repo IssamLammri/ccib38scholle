@@ -148,6 +148,10 @@ class SessionController extends AbstractController
     #[Route('/{id}', name: 'app_session_delete', methods: ['POST'])]
     public function delete(Request $request, Session $session, EntityManagerInterface $entityManager): Response
     {
+        $allStudentsSessionPresences = $this->sessionStudyClassPresenceRepository->findBy(['session' => $session]);
+        foreach ($allStudentsSessionPresences as $studentSessionPresence) {
+            $entityManager->remove($studentSessionPresence);
+        }
         if ($this->isCsrfTokenValid('delete' . $session->getId(), $request->request->get('_token'))) {
             $entityManager->remove($session);
             $entityManager->flush();
