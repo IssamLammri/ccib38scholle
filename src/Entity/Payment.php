@@ -45,7 +45,6 @@ class Payment
     #[Groups(['read_payment'])]
     private ?string $month = null;
 
-
     public function getId(): ?int
     {
         return $this->id;
