@@ -48,7 +48,7 @@
         <td>{{ studentClassRegistered.student.lastName }}</td>
         <td>{{ studentClassRegistered.student.firstName }}</td>
         <td>{{ new Date(studentClassRegistered.student.birthDate).toLocaleDateString() }}</td>
-        <td>{{ studentClassRegistered.student.level }}</td>
+        <td>{{ studentClassRegistered.student.levelClass }}</td>
         <td>
           <button data-bs-auto-close="outside"
                   data-bs-toggle="modal"

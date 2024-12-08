@@ -29,7 +29,6 @@ class PaymentController extends AbstractController
         $allPayments = $this->paymentRepository->findAll();
         $parents = $this->parentsRepository->findAll();
 
-
         return $this->render('payment/list.html.twig', [
             'allPayments' => $allPayments,
             'parents' => $parents,

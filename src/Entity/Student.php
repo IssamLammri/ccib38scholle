@@ -13,7 +13,7 @@ class Student
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_study_class','read_student_class_registered'])]
+    #[Groups(['read_study_class','read_student_class_registered','read_payment'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
@@ -55,6 +55,7 @@ class Student
     private Collection $payments;
 
     #[ORM\OneToMany(targetEntity: StudentClassRegistered::class, mappedBy: 'student')]
+    #[Groups(['read_payment'])]
     private Collection $registrations;
 
     public function __construct()
