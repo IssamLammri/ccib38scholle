@@ -7,14 +7,24 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+
+#[IsGranted('ROLE_USER')]
 class HomeController extends AbstractController
 {
     public function __construct(private EntityManagerInterface $entityManager, private UserPasswordHasherInterface $hasher)
     {
     }
-    #[Route('/home', name: 'app_home')]
+    #[Route('/', name: 'app_home')]
     public function index(): Response
+    {
+        return $this->redirectToRoute('app_login');
+    }
+
+
+    #[Route('/home', name: 'app_first_page')]
+    public function firstPage(): Response
     {
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',

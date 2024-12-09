@@ -1,37 +1,49 @@
-{% extends 'base.html.twig' %}
+{% extends 'base.guest.html.twig' %}
 
 {% block title %}Log in!{% endblock %}
-
 {% block body %}
-<form method="post">
-    {% if error %}
-        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-    {% endif %}
-
-    {% if app.user %}
-        <div class="mb-3">
-            You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+    <section class="h-100 gradient-form" style="background-color: #eee; min-height: 100vh;">
+        <div class="container-fluid py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-md-10 col-sm-12">
+                    <div class="card rounded-3 text-black">
+                        <div class="row g-0">
+                            <!-- Partie gauche : Formulaire -->
+                            <div class="col-lg-6 col-md-12">
+                                <div class="card-body p-md-5 mx-md-4">
+                                    <div class="text-center">
+                                        <img src="{{ asset('static/icons/logoccib38.webp') }}"
+                                             style="max-width: 100%; height: auto;" alt="logo">
+                                        <h4 class="mt-1 mb-5 pb-1">Bienvenu au CCIB38</h4>
+                                    </div>
+                                    <form method="post">
+                                        <div class="form-outline mb-4">
+                                            <input type="email" id="inputEmail" value="{{ last_username }}" name="email" class="form-control border" autocomplete="email" required />
+                                            <label class="form-label" for="inputEmail">Username</label>
+                                        </div>
+                                        <div class="form-outline mb-4">
+                                            <input type="password" id="inputPassword" name="password" class="form-control border" autocomplete="current-password" required />
+                                            <label class="form-label" for="inputPassword">Password</label>
+                                        </div>
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}" />
+                                        <div class="text-center pt-1 mb-5 pb-1">
+                                            <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">Se connecter</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- Partie droite : Image -->
+                            <div class="col-lg-6 d-none d-md-flex align-items-center gradient-custom-2">
+                                <div class="text-center w-100">
+                                    <img src="{{ asset('static/images/login_picture.webp') }}"
+                                         style="width: 100%; height: auto;" alt="image">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    {% endif %}
+    </section>
 
-    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-    <label for="inputEmail">Email</label>
-    <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-    <label for="inputPassword">Password</label>
-    <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-
-    <input type="hidden" name="_csrf_token"
-           value="{{ csrf_token('authenticate') }}"
-    >
-
-    <div class="checkbox mb-3">
-        <label>
-            <input type="checkbox" name="_remember_me"> Remember me
-        </label>
-    </div>
-
-    <button class="btn btn-lg btn-primary" type="submit">
-        Sign in
-    </button>
-</form>
 {% endblock %}

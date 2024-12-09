@@ -10,8 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/parent')]
+#[IsGranted('ROLE_USER')]
 class ParentEntityController extends AbstractController
 {
     #[Route('/', name: 'app_parent_entity_index', methods: ['GET'])]

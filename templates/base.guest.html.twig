@@ -10,17 +10,37 @@
         <!-- Google Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap" rel="stylesheet"/>
         <!-- MDBootstrap CSS -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.css" rel="stylesheet"/>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css" rel="stylesheet">
         <!-- Your custom CSS -->
         <link href="{{ asset('build/app.css') }}" rel="stylesheet">
         {{ encore_entry_link_tags('app') }}
         <style>
+            /* Ajuste la hauteur minimum pour remplir l'écran */
+            .gradient-form {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Supprime les marges excessives */
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            /* Cacher l'image sur les écrans < 768px */
+            @media (max-width: 768px) {
+                .gradient-custom-2 {
+                    display: none;
+                }
+            }
 
         </style>
     {% endblock %}
     {% block javascripts %}
         <!-- MDBootstrap JS -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
         {{ encore_entry_script_tags('app') }}
         {% block importmap %}{{ importmap('app') }}{% endblock %}
     {% endblock %}
