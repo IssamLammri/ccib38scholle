@@ -15,7 +15,24 @@
         <link href="{{ asset('build/app.css') }}" rel="stylesheet">
         {{ encore_entry_link_tags('app') }}
         <style>
+            .form-check-inline {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+            }
 
+            .form-check-inline input {
+                margin-right: 10px;
+            }
+
+            .form-check {
+                margin-bottom: 10px;
+            }
+
+            .form-check-label {
+                font-size: 16px;
+                margin-left: 5px;
+            }
         </style>
     {% endblock %}
     {% block javascripts %}

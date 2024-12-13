@@ -4,10 +4,15 @@
         <img src="{{ asset('static/icons/logoccib38.webp') }}" alt="Logo">
     </div>
     <div class="sidebar-menu">
-        <ul class="list-unstyled" style="font-size: 20px">
+        <ul class="list-unstyled" style="font-size: 16px">
+            <li>
+                <a href="{{ path('user_index') }}">
+                    <i class="fas fa-chalkboard-teacher m-3"></i> {{ 'Utilisateurs'|trans }}
+                </a>
+            </li>
             <li>
                 <a href="{{ path('app_student_index') }}">
-                    <i class="fas fa-user-graduate m-3"></i> {{ 'Les élèves'|trans }}
+                    <i class="fas fa-user-graduate m-3"></i> {{ 'Élèves'|trans }}
                 </a>
             </li>
             <li>

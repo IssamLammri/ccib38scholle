@@ -3,55 +3,107 @@
 {% block title %}Register{% endblock %}
 
 {% block body %}
-    {% for flash_error in app.flashes('verify_email_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-    {% endfor %}
+    <section class="h-100">
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col">
+                    <div class="card card-registration my-4 shadow">
+                        <div class="row g-0">
+                            <!-- Image Column -->
+                            <div class="col-xl-6 d-none d-xl-block">
+                                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/img4.webp"
+                                     alt="Sample photo" class="img-fluid"
+                                     style="border-top-left-radius: .25rem; border-bottom-left-radius: .25rem;" />
+                            </div>
 
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Register</h1>
+                            <!-- Form Column -->
+                            <div class="col-xl-6">
+                                <div class="card-body p-md-5 text-black">
+                                    <h4 class="mb-5 text-uppercase text-center">Formulaire d'inscription de l'utilisateur</h4>
 
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="card">
-                    <div class="card-body">
-                        {{ form_start(registrationForm, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                                    {{ form_start(registrationForm, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
 
-                        <div class="mb-3">
-                            {{ form_label(registrationForm.firstName, 'First Name', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(registrationForm.firstName, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.firstName) }}
+                                    <!-- First Name and Last Name -->
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="form-outline">
+                                                {{ form_widget(registrationForm.firstName, {'attr': {'class': 'form-control form-control-lg border'}}) }}
+                                                {{ form_label(registrationForm.firstName, 'Prénom', {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_errors(registrationForm.firstName) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div class="form-outline">
+                                                {{ form_widget(registrationForm.lastName, {'attr': {'class': 'form-control form-control-lg border'}}) }}
+                                                {{ form_label(registrationForm.lastName, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_errors(registrationForm.lastName) }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="mb-4 form-outline">
+                                        {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control form-control-lg border'}}) }}
+                                        {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_errors(registrationForm.email) }}
+                                    </div>
+
+                                    <!-- Password -->
+                                    <div class="mb-4 form-outline">
+                                        {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control form-control-lg border'}}) }}
+                                        {{ form_label(registrationForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_errors(registrationForm.plainPassword) }}
+                                    </div>
+
+                                    <!-- Roles -->
+                                    <div class="mb-4">
+                                        <label class="form-label">Rôle</label>
+                                        <div class="form-check-inline">
+                                            <div class="form-check m-1">
+                                                {{ form_widget(registrationForm.roles.0, {'attr': {'class': 'form-check-input'}}) }}
+                                                {{ form_label(registrationForm.roles.0, 'Utilisateur', {'label_attr': {'class': 'form-check-label'}}) }}
+                                            </div>
+                                            <div class="form-check m-1">
+                                                {{ form_widget(registrationForm.roles.1, {'attr': {'class': 'form-check-input'}}) }}
+                                                {{ form_label(registrationForm.roles.1, 'Admin', {'label_attr': {'class': 'form-check-label'}}) }}
+                                            </div>
+                                            <div class="form-check m-1">
+                                                {{ form_widget(registrationForm.roles.2, {'attr': {'class': 'form-check-input'}}) }}
+                                                {{ form_label(registrationForm.roles.2, 'Manager', {'label_attr': {'class': 'form-check-label'}}) }}
+                                            </div>
+                                            <div class="form-check m-1">
+                                                {{ form_widget(registrationForm.roles.3, {'attr': {'class': 'form-check-input'}}) }}
+                                                {{ form_label(registrationForm.roles.3, 'Enseignant', {'label_attr': {'class': 'form-check-label'}}) }}
+                                            </div>
+                                            <div class="form-check m-1">
+                                                {{ form_widget(registrationForm.roles.4, {'attr': {'class': 'form-check-input'}}) }}
+                                                {{ form_label(registrationForm.roles.4, 'Parent', {'label_attr': {'class': 'form-check-label'}}) }}
+                                            </div>
+                                        </div>
+                                        {{ form_errors(registrationForm.roles) }}
+                                    </div>
+
+                                    <!-- Agree to Terms -->
+                                    <div class="mb-4 form-check m-2">
+                                        {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                                        {{ form_label(registrationForm.agreeTerms, 'Accepter les conditions', {'label_attr': {'class': 'form-check-label'}}) }}
+                                        {{ form_errors(registrationForm.agreeTerms) }}
+                                    </div>
+
+
+                                    <!-- Buttons -->
+                                    <div class="d-flex justify-content-end pt-3">
+                                        <button type="reset" class="btn btn-light btn-lg border">Reset all</button>
+                                        <button type="submit" class="btn btn-warning btn-lg ms-2">Submit form</button>
+                                    </div>
+
+                                    {{ form_end(registrationForm) }}
+                                </div>
+                            </div>
                         </div>
-
-                        <div class="mb-3">
-                            {{ form_label(registrationForm.lastName, 'Last Name', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(registrationForm.lastName, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.lastName) }}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.email) }}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form_label(registrationForm.plainPassword, 'Password', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.plainPassword) }}
-                        </div>
-
-                        <div class="mb-3 form-check">
-                            {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
-                            {{ form_label(registrationForm.agreeTerms, 'Agree to terms', {'label_attr': {'class': 'form-check-label'}}) }}
-                            {{ form_errors(registrationForm.agreeTerms) }}
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100">Register</button>
-
-                        {{ form_end(registrationForm) }}
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 {% endblock %}
