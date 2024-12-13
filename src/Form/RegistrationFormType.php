@@ -5,37 +5,59 @@ namespace App\Form;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class RegistrationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('email')
             ->add('firstName', TextType::class, [
-                'required' => false,
                 'label' => 'First Name',
+                'attr' => ['class' => 'form-control'],
                 'constraints' => [
-                    new Length([
-                        'max' => 255,
-                        'maxMessage' => 'Your first name cannot be longer than {{ limit }} characters',
+                    new NotBlank([
+                        'message' => 'Veuillez entrer votre prénom.',
                     ]),
                 ],
             ])
             ->add('lastName', TextType::class, [
-                'required' => false,
                 'label' => 'Last Name',
+                'attr' => ['class' => 'form-control'],
                 'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez entrer votre nom.',
+                    ]),
+                ],
+            ])
+            ->add('email', TextType::class, [
+                'label' => 'Email',
+                'attr' => ['class' => 'form-control'],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez entrer votre adresse email.',
+                    ]),
+                ],
+            ])
+            ->add('plainPassword', PasswordType::class, [
+                'label' => 'Password',
+                'mapped' => false,
+                'attr' => ['autocomplete' => 'new-password', 'class' => 'form-control'],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez entrer un mot de passe.',
+                    ]),
                     new Length([
-                        'max' => 255,
-                        'maxMessage' => 'Your last name cannot be longer than {{ limit }} characters',
+                        'min' => 6,
+                        'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères.',
+                        'max' => 4096,
                     ]),
                 ],
             ])
@@ -43,25 +65,28 @@ class RegistrationFormType extends AbstractType
                 'mapped' => false,
                 'constraints' => [
                     new IsTrue([
-                        'message' => 'You should agree to our terms.',
+                        'message' => 'Vous devez accepter les conditions.',
                     ]),
                 ],
+                'label' => 'Accepter les conditions',
             ])
-            ->add('plainPassword', PasswordType::class, [
-                'mapped' => false,
-                'attr' => ['autocomplete' => 'new-password'],
+            ->add('roles', ChoiceType::class, [
+                'choices' => [
+                    'User' => 'ROLE_USER',
+                    'Admin' => 'ROLE_ADMIN',
+                    'Manager' => 'ROLE_MANAGER',
+                    'Teacher' => 'ROLE_TEACHER',
+                    'Parent' => 'ROLE_PARENT',
+                ],
+                'expanded' => true, // Transforme les options en boutons radio
+                'multiple' => true, // Permet plusieurs rôles sélectionnés
+                'label' => 'Role',
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Please enter a password',
-                    ]),
-                    new Length([
-                        'min' => 6,
-                        'minMessage' => 'Your password should be at least {{ limit }} characters',
-                        'max' => 4096,
+                        'message' => 'Veuillez sélectionner au moins un rôle.',
                     ]),
                 ],
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

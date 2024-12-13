@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Utilisateur{% endblock %}
+
+{% block body %}
+    <section class="h-100">
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col">
+                    <div class="card card-registration my-4 shadow">
+                        <div class="row g-0">
+                            <!-- Bouton retour -->
+                            <div class="col-md-12">
+                                <div class="mb-3 mt-3">
+                                    <a href="{{ path('user_index') }}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Form Column -->
+                            <div class="col-xl-12">
+                                <div class="card-body p-md-5 text-black">
+                                    <h4 class="mb-5 text-uppercase text-center">Modifier l'utilisateur</h4>
+
+                                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+
+                                    <!-- Prénom et Nom -->
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="form-outline">
+                                                {{ form_widget(form.firstName, {'attr': {'class': 'form-control form-control-lg border'}}) }}
+                                                {{ form_label(form.firstName, 'Prénom', {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_errors(form.firstName) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div class="form-outline">
+                                                {{ form_widget(form.lastName, {'attr': {'class': 'form-control form-control-lg border'}}) }}
+                                                {{ form_label(form.lastName, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_errors(form.lastName) }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="mb-4 form-outline">
+                                        {{ form_widget(form.email, {'attr': {'class': 'form-control form-control-lg border'}}) }}
+                                        {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_errors(form.email) }}
+                                    </div>
+
+                                    <!-- Rôles (Visible uniquement pour les administrateurs) -->
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                        <div class="mb-4">
+                                            <label class="form-label">Rôle</label>
+                                            <div class="form-check-inline">
+                                                <div class="form-check m-1">
+                                                    {{ form_widget(form.roles.0, {'attr': {'class': 'form-check-input'}}) }}
+                                                    {{ form_label(form.roles.0, 'Utilisateur', {'label_attr': {'class': 'form-check-label'}}) }}
+                                                </div>
+                                                <div class="form-check m-1">
+                                                    {{ form_widget(form.roles.1, {'attr': {'class': 'form-check-input'}}) }}
+                                                    {{ form_label(form.roles.1, 'Admin', {'label_attr': {'class': 'form-check-label'}}) }}
+                                                </div>
+                                                <div class="form-check m-1">
+                                                    {{ form_widget(form.roles.2, {'attr': {'class': 'form-check-input'}}) }}
+                                                    {{ form_label(form.roles.2, 'Manager', {'label_attr': {'class': 'form-check-label'}}) }}
+                                                </div>
+                                                <div class="form-check m-1">
+                                                    {{ form_widget(form.roles.3, {'attr': {'class': 'form-check-input'}}) }}
+                                                    {{ form_label(form.roles.3, 'Enseignant', {'label_attr': {'class': 'form-check-label'}}) }}
+                                                </div>
+                                                <div class="form-check m-1">
+                                                    {{ form_widget(form.roles.4, {'attr': {'class': 'form-check-input'}}) }}
+                                                    {{ form_label(form.roles.4, 'Parent', {'label_attr': {'class': 'form-check-label'}}) }}
+                                                </div>
+                                            </div>
+                                            {{ form_errors(form.roles) }}
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Mot de passe -->
+                                    <h5 class="mt-4">Changer le mot de passe</h5>
+                                    <div class="mb-3">
+                                        {{ form_label(form.oldPassword, 'Ancien mot de passe') }}
+                                        {{ form_widget(form.oldPassword, {'attr': {'class': 'form-control', 'placeholder': 'Entrez votre mot de passe actuel'}}) }}
+                                        {{ form_errors(form.oldPassword) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(form.newPassword, 'Nouveau mot de passe') }}
+                                        {{ form_widget(form.newPassword, {'attr': {'class': 'form-control', 'placeholder': 'Entrez un nouveau mot de passe'}}) }}
+                                        {{ form_errors(form.newPassword) }}
+                                    </div>
+
+                                    <!-- Boutons -->
+                                    <div class="d-flex justify-content-end pt-3">
+                                        <button type="submit" class="btn btn-success me-2">Enregistrer</button>
+                                        <a href="{{ path('user_index') }}" class="btn btn-secondary">Retour</a>
+                                    </div>
+
+                                    {{ form_end(form) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
