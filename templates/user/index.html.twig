@@ -57,13 +57,16 @@
                         <td>{{ user.email }}</td>
                         <td>{{ user.roles|join(', ') }}</td>
                         <td class="text-center">
-                            <a style="margin: 5px" href="{{ path('user_edit', {'id': user.id}) }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-edit"></i> Edit
+                            <a href="{{ path('user_send_email', {'id': user.id}) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-envelope"></i> Envoyer un email
+                            </a>
+                            <a href="{{ path('user_edit', {'id': user.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Modifier
                             </a>
                             <form method="post" action="{{ path('user_delete', {'id': user.id}) }}" style="display: inline;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">
-                                    <i class="fas fa-trash"></i> Delete
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr ?')">
+                                    <i class="fas fa-trash"></i> Supprimer
                                 </button>
                             </form>
                         </td>
