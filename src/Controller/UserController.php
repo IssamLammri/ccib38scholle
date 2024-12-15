@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserEditFormType;
+use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -50,6 +51,34 @@ class UserController extends AbstractController
         ]);
     }
 
+    #[Route('/user/send-email/{id}', name: 'user_send_email', methods: ['GET'])]
+    public function sendEmail(int $id, EntityManagerInterface $entityManager, MailService $mailService): Response
+    {
+        $user = $entityManager->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            $this->addFlash('error', 'Utilisateur introuvable.');
+            return $this->redirectToRoute('user_index');
+        }
+
+        try {
+            $mailService->sendEmail(
+                $user->getEmail(),
+                'Test Bienvenue sur notre plateforme',
+                'email/welcome.html.twig',
+                [
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'email' => $user->getEmail(),
+                ]
+            );
+            $this->addFlash('success', 'Email envoyé avec succès à ' . $user->getEmail());
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de l\'email : ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('user_index');
+    }
 
     #[Route('/edit/{id}', name: 'user_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, User $user, UserPasswordHasherInterface $passwordHashed, EntityManagerInterface $entityManager): Response
