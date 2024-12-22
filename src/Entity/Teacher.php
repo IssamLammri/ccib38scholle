@@ -33,7 +33,9 @@ class Teacher
     #[ORM\Column(type: 'array')]
     private array $specialities = [];
 
-    // Getters and Setters
+    #[ORM\OneToOne(targetEntity: User::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -108,6 +110,18 @@ class Teacher
     public function setSpecialities(array $specialities): self
     {
         $this->specialities = $specialities;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }

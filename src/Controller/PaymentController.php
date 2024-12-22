@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_ADMIN')]
+#[Route('/payment')]
 class PaymentController extends AbstractController
 {
     public function __construct(
@@ -25,7 +26,7 @@ class PaymentController extends AbstractController
     {
     }
 
-    #[Route('/payments', name: 'payments_list')]
+    #[Route('/list', name: 'payments_list')]
     public function allPayment(Request $request): Response
     {
         $allPayments = $this->paymentRepository->findAll();
@@ -37,7 +38,7 @@ class PaymentController extends AbstractController
         ]);
     }
 
-    #[Route('/payment/new', name: 'payment_new')]
+    #[Route('/new', name: 'payment_new')]
     public function newPayment(Request $request): Response
     {
         $payment = new Payment();
@@ -57,7 +58,7 @@ class PaymentController extends AbstractController
         ]);
     }
 
-    #[Route('/payment/receipt/{id}', name: 'payment_receipt')]
+    #[Route('/receipt/{id}', name: 'payment_receipt')]
     public function paymentReceipt(int $id, EntityManagerInterface $entityManager): Response
     {
         $payment = $entityManager->getRepository(Payment::class)->find($id);

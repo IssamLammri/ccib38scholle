@@ -14,5 +14,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # Enregistrement du transformer en tant que service
+    # Configuration du listener pour Doctrine
+    App\EventListener\UserCreationListener:
+        tags:
+            - { name: 'doctrine.event_listener', event: 'postPersist' }
+
+    # Transformer enregistré comme service
     App\Form\DataTransformer\CommaSeparatedToArrayTransformer: ~

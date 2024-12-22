@@ -33,6 +33,119 @@
                 font-size: 16px;
                 margin-left: 5px;
             }
+            .alert-centered {
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1050;
+                max-width: 80%; /* Pour limiter la largeur */
+                text-align: center;
+            }
+            /* Styles pour les tableaux */
+            .table {
+                border-radius: 10px;
+                overflow: hidden;
+            }
+
+            .table-hover tbody tr:hover {
+                background-color: #f9f9f9;
+            }
+
+            .table-light th {
+                background-color: #f8f9fa;
+                color: #333;
+            }
+            /* Conteneur principal */
+            .container {
+                margin-top: 20px;
+            }
+
+            /* Carte */
+            .card {
+                border-radius: 10px;
+                border: 1px solid #e0e0e0;
+                background-color: #ffffff;
+            }
+
+            /* Champs du formulaire */
+            .form-label {
+                font-weight: 600;
+                color: #333;
+            }
+
+            .form-control {
+                border-radius: 5px;
+                border: 1px solid #ced4da;
+            }
+
+            /* Boutons */
+            .btn-outline-secondary {
+                color: #6c757d;
+                border-color: #6c757d;
+            }
+
+            .btn-outline-secondary:hover {
+                background-color: #6c757d;
+                color: #fff;
+            }
+
+            .btn-success {
+                background-color: #28a745;
+                border-color: #28a745;
+            }
+
+            .btn-success:hover {
+                background-color: #218838;
+                border-color: #1e7e34;
+            }
+
+            .align-middle {
+                vertical-align: middle;
+            }
+
+            /* Styles des boutons */
+            .btn-outline-info {
+                color: #17a2b8;
+                border-color: #17a2b8;
+            }
+
+            .btn-outline-info:hover {
+                background-color: #17a2b8;
+                color: white;
+            }
+
+            .btn-outline-warning {
+                color: #ffc107;
+                border-color: #ffc107;
+            }
+
+            .btn-outline-warning:hover {
+                background-color: #ffc107;
+                color: white;
+            }
+
+            .btn-outline-danger {
+                color: #dc3545;
+                border-color: #dc3545;
+            }
+
+            .btn-outline-danger:hover {
+                background-color: #dc3545;
+                color: white;
+            }
+
+            /* Pagination */
+            .pagination .page-link {
+                color: #333;
+            }
+
+            .pagination .active .page-link {
+                background-color: #007bff;
+                border-color: #007bff;
+                color: white;
+            }
+
         </style>
     {% endblock %}
     {% block javascripts %}
@@ -47,6 +160,14 @@
 <div class="content">
     {% include 'menu.html.twig' %}
     <div class="main-content">
+        {% for type, messages in app.flashes %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show alert-centered" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
         {% block body %}{% endblock %}
     </div>
 </div>

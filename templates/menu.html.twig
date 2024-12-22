@@ -5,46 +5,54 @@
     </div>
     <div class="sidebar-menu">
         <ul class="list-unstyled" style="font-size: 16px">
-            <li>
-                <a href="{{ path('user_index') }}">
-                    <i class="fas fa-chalkboard-teacher m-3"></i> {{ 'Utilisateurs'|trans }}
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('app_student_index') }}">
-                    <i class="fas fa-user-graduate m-3"></i> {{ 'Élèves'|trans }}
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('app_parent_entity_index') }}">
-                    <i class="fas fa-user-friends m-3"></i> {{ 'Parents'|trans }}
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('app_study_class_index') }}">
-                    <i class="fas fa-school m-3"></i> {{ 'Classes'|trans }}
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('app_teacher_index') }}">
-                    <i class="far fa-id-card m-3"></i> {{ 'Enseignants'|trans }}
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('app_room_index') }}">
-                    <i class="fas fa-door-open m-3"></i> {{ 'Salles'|trans }}
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('app_session_index') }}">
-                    <i class="fas fa-chalkboard-teacher m-3"></i> {{ 'Sessions'|trans }}
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('payments_list') }}">
-                    <i class="fa-solid fa-dollar-sign m-3"></i> {{ 'Paymenets'|trans }}
-                </a>
-            </li>
+            {% if(is_granted('ROLE_ADMIN')) %}
+                <li>
+                    <a href="{{ path('user_index') }}">
+                        <i class="fas fa-chalkboard-teacher m-3"></i> {{ 'Utilisateurs'|trans }}
+                    </a>
+                </li>
+            {% endif %}
+            {% if(is_granted('ROLE_MANAGER')) %}
+                <li>
+                    <a href="{{ path('app_student_index') }}">
+                        <i class="fas fa-user-graduate m-3"></i> {{ 'Élèves'|trans }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_parent_entity_index') }}">
+                        <i class="fas fa-user-friends m-3"></i> {{ 'Parents'|trans }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_teacher_index') }}">
+                        <i class="far fa-id-card m-3"></i> {{ 'Enseignants'|trans }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_room_index') }}">
+                        <i class="fas fa-door-open m-3"></i> {{ 'Salles'|trans }}
+                    </a>
+                </li>
+            {% endif %}
+            {% if(is_granted('ROLE_TEACHER')) %}
+                <li>
+                    <a href="{{ path('app_study_class_index') }}">
+                        <i class="fas fa-school m-3"></i> {{ 'Classes'|trans }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_session_index') }}">
+                        <i class="fas fa-chalkboard-teacher m-3"></i> {{ 'Sessions'|trans }}
+                    </a>
+                </li>
+            {% endif %}
+            {% if(is_granted('ROLE_ADMIN')) %}
+                <li>
+                    <a href="{{ path('payments_list') }}">
+                        <i class="fa-solid fa-dollar-sign m-3"></i> {{ 'Paymenets'|trans }}
+                    </a>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </div>

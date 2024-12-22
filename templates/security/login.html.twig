@@ -3,6 +3,14 @@
 {% block title %}Log in!{% endblock %}
 {% block body %}
     <section class="h-100 gradient-form" style="background-color: #eee; min-height: 100vh;">
+        {% for type, messages in app.flashes %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show alert-centered" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
         <div class="container-fluid py-5 h-100">
             <div class="row d-flex justify-content-center align-items-center h-100">
                 <div class="col-md-10 col-sm-12">
@@ -29,6 +37,9 @@
                                         <div class="text-center pt-1 mb-5 pb-1">
                                             <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">Se connecter</button>
                                         </div>
+                                        <div class="text-center">
+                                            <a href="{{ path('forgot_password') }}" class="text-muted">Mot de passe oublié ?</a>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -45,5 +56,4 @@
             </div>
         </div>
     </section>
-
 {% endblock %}
