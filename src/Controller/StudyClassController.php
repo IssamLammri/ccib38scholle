@@ -11,6 +11,7 @@ use App\Repository\SessionRepository;
 use App\Repository\SessionStudyClassPresenceRepository;
 use App\Repository\StudentClassRegisteredRepository;
 use App\Repository\StudentRepository;
+use App\Repository\StudyClassRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_TEACHER')]
 #[Route('/study-class')]
 class StudyClassController extends AbstractController
 {
@@ -34,17 +35,15 @@ class StudyClassController extends AbstractController
     ) {
     }
 
-    #[Route('/', name: 'app_study_class_index', options: ['expose' => true], methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager, Request $request): Response
+    #[Route('/', name: 'app_study_class_index', methods: ['GET'])]
+    public function index(StudyClassRepository $studyClassRepository, Request $request): Response
     {
-        $page = $request->query->getInt('page', 1); // Current page, default is 1
-        $limit = 10; // Limit results per page
-        $search = $request->query->get('search', ''); // Search filter
+        $page = $request->query->getInt('page', 1);
+        $limit = 10;
+        $search = $request->query->get('search', '');
 
-        $queryBuilder = $entityManager->getRepository(StudyClass::class)
-            ->createQueryBuilder('sc');
+        $queryBuilder = $studyClassRepository->createQueryBuilder('sc');
 
-        // Filter by name, level, or speciality if search is present
         if (!empty($search)) {
             $queryBuilder
                 ->where('sc.name LIKE :search')
@@ -53,19 +52,27 @@ class StudyClassController extends AbstractController
                 ->setParameter('search', '%' . $search . '%');
         }
 
-        $queryBuilder
-            ->setFirstResult(($page - 1) * $limit) // Offset
-            ->setMaxResults($limit); // Limit
+        $queryBuilder->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
 
         $paginator = new Paginator($queryBuilder);
+
+        // Fetch student counts for each class
+        $studentCounts = $studyClassRepository->getStudentCounts();
+        $studentCountMap = [];
+        foreach ($studentCounts as $count) {
+            $studentCountMap[$count['id']] = $count['studentCount'];
+        }
 
         return $this->render('study_class/index.html.twig', [
             'study_classes' => $paginator,
             'current_page' => $page,
             'total_pages' => ceil(count($paginator) / $limit),
-            'search' => $search
+            'search' => $search,
+            'student_count_map' => $studentCountMap, // Add the map to the template
         ]);
     }
+
 
 
     #[Route('/new', name: 'app_study_class_new', methods: ['GET', 'POST'])]

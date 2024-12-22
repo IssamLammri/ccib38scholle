@@ -1,116 +1,81 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Parent Details{% endblock %}
+{% block title %}Détails du Parent{% endblock %}
 
 {% block body %}
     <div class="container mt-5">
-        <!-- Bouton back to list en haut à gauche -->
+        <!-- Bouton retour -->
         <div class="mb-3">
             <a href="{{ path('app_parent_entity_index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to list
+                <i class="fas fa-arrow-left"></i> Retour à la liste
             </a>
         </div>
 
-        <h1 class="mb-4">Parent Details</h1>
+        <!-- Titre principal -->
+        <h1 class="text-center mb-5">Fiche Parent</h1>
 
-        <div class="card p-4">
+        <div class="card shadow p-4">
+            <!-- Informations du Père -->
+            <h2 class="mb-4 text-primary">Informations sur le Père</h2>
             <div class="row">
-                <!-- Partie Père à gauche -->
                 <div class="col-md-6">
-                    <h4>Father Information</h4>
-                    <table class="table table-bordered">
-                        <tbody>
-                        <tr>
-                            <th>Father Last Name</th>
-                            <td>{{ parent_entity.fatherLastName ?? 'Not available' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Father First Name</th>
-                            <td>{{ parent_entity.fatherFirstName ?? 'Not available' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Father Email</th>
-                            <td>{{ parent_entity.fatherEmail ?? 'Not available' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Father Phone</th>
-                            <td>{{ parent_entity.fatherPhone ?? 'Not available' }}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Partie Mère à droite -->
-                <div class="col-md-6">
-                    <h4>Mother Information</h4>
-                    <table class="table table-bordered">
-                        <tbody>
-                        <tr>
-                            <th>Mother Last Name</th>
-                            <td>{{ parent_entity.motherLastName ?? 'Not available' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Mother First Name</th>
-                            <td>{{ parent_entity.motherFirstName ?? 'Not available' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Mother Email</th>
-                            <td>{{ parent_entity.motherEmail ?? 'Not available' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Mother Phone</th>
-                            <td>{{ parent_entity.motherPhone ?? 'Not available' }}</td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <p><strong>Nom :</strong> {{ parent_entity.fatherLastName ?? 'Non disponible' }}</p>
+                    <p><strong>Prénom :</strong> {{ parent_entity.fatherFirstName ?? 'Non disponible' }}</p>
+                    <p><strong>Email :</strong> {{ parent_entity.fatherEmail ?? 'Non disponible' }}</p>
+                    <p><strong>Téléphone :</strong> {{ parent_entity.fatherPhone ?? 'Non disponible' }}</p>
                 </div>
             </div>
 
-            <!-- Partie commune en bas -->
-            <div class="mt-4">
-                <h4>Family Information</h4>
-                <table class="table table-bordered">
-                    <tbody>
-                    <tr>
-                        <th>Family Status</th>
-                        <td>{{ parent_entity.familyStatus ?? 'Not available' }}</td>
-                    </tr>
-                    </tbody>
-                </table>
+            <!-- Informations de la Mère -->
+            <h2 class="mt-5 mb-4 text-success">Informations sur la Mère</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Nom :</strong> {{ parent_entity.motherLastName ?? 'Non disponible' }}</p>
+                    <p><strong>Prénom :</strong> {{ parent_entity.motherFirstName ?? 'Non disponible' }}</p>
+                    <p><strong>Email :</strong> {{ parent_entity.motherEmail ?? 'Non disponible' }}</p>
+                    <p><strong>Téléphone :</strong> {{ parent_entity.motherPhone ?? 'Non disponible' }}</p>
+                </div>
             </div>
 
-            <!-- Partie pour afficher les étudiants associés -->
-            <div class="mt-4">
-                <h4>Assigned Students</h4>
+            <!-- Informations sur la Famille -->
+            <h2 class="mt-5 mb-4 text-info">Informations sur la Famille</h2>
+            <div>
+                <p><strong>Statut familial :</strong> {{ parent_entity.familyStatus ?? 'Non disponible' }}</p>
+            </div>
+
+            <!-- Liste des étudiants associés -->
+            <h2 class="mt-5 mb-4 text-secondary">Étudiants Associés</h2>
+            <div>
                 <table class="table table-bordered table-hover">
                     <thead class="table-light">
                     <tr>
-                        <th>Full Name</th>
-                        <th>Birth Date</th>
-                        <th>Level</th>
+                        <th>Nom complet</th>
+                        <th>Date de naissance</th>
+                        <th>Niveau</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for student in students %}
                         <tr>
                             <td>{{ student.lastName }} {{ student.firstName }}</td>
-                            <td>{{ student.birthDate ? student.birthDate|date('d-m-Y') : 'Not available' }}</td>
-                            <td>{{ student.level ?? 'Not available' }}</td>
+                            <td>{{ student.birthDate ? student.birthDate|date('d/m/Y') : 'Non disponible' }}</td>
+                            <td>{{ student.level ?? 'Non disponible' }}</td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="3" class="text-center">No students assigned</td>
+                            <td colspan="3" class="text-center">Aucun étudiant associé</td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
 
-            <div class="d-flex justify-content-end mt-4">
-                <a style="margin-right: 10px" href="{{ path('app_parent_entity_edit', {'id': parent_entity.id}) }}" class="btn btn-warning mr-2">
-                    <i class="fas fa-edit"></i> Edit
+            <!-- Boutons Modifier et Supprimer -->
+            <div class="d-flex justify-content-end mt-5">
+                <a href="{{ path('app_parent_entity_edit', {'id': parent_entity.id}) }}" class="btn btn-warning mr-2">
+                    <i class="fas fa-edit"></i> Modifier
                 </a>
-                {{ include('parent_entity/_delete_form.html.twig', {'button_label': 'Delete', 'class': 'btn btn-danger'}) }}
+                {{ include('parent_entity/_delete_form.html.twig', {'button_label': 'Supprimer', 'class': 'btn btn-danger'}) }}
             </div>
         </div>
     </div>

@@ -39,19 +39,26 @@
                         {{ form_widget(form.room, {'attr': {'class': 'form-control'}}) }}
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.studyClass, 'Study Class') }}
-                        {{ form_widget(form.studyClass, {'attr': {'class': 'form-control'}}) }}
+
+                {% if form.studyClass is defined %}
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            {{ form_label(form.studyClass, 'Study Class') }}
+                            {{ form_widget(form.studyClass, {'attr': {'class': 'form-control'}}) }}
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.teacher, 'Teacher') }}
-                        {{ form_widget(form.teacher, {'attr': {'class': 'form-control'}}) }}
+                {% endif %}
+
+                {% if is_manager %}
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            {{ form_label(form.teacher, 'Teacher') }}
+                            {{ form_widget(form.teacher, {'attr': {'class': 'form-control'}}) }}
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             </div>
+
 
             <!-- Update button -->
             <div class="d-flex justify-content-between mt-4">

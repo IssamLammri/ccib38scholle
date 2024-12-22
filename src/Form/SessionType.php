@@ -42,24 +42,36 @@ class SessionType extends AbstractType
                 'choice_label' => 'name',
                 'label' => 'Room',
                 'attr' => ['class' => 'form-control']
-            ])
-            ->add('studyClass', EntityType::class, [
+            ]);
+
+        // Condition pour le champ 'studyClass'
+        if (!$options['is_edit']) {
+            $builder->add('studyClass', EntityType::class, [
                 'class' => StudyClass::class,
                 'label' => 'Study Class',
                 'attr' => ['class' => 'form-control']
-            ])
-            ->add('teacher', EntityType::class, [
+            ]);
+        }
+
+        // Condition pour le champ 'teacher'
+        if ($options['is_manager']) {
+            $builder->add('teacher', EntityType::class, [
                 'class' => Teacher::class,
                 'choice_label' => 'lastName',
                 'label' => 'Teacher',
                 'attr' => ['class' => 'form-control']
             ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Session::class,
+            'is_manager' => false, // Par défaut non Manager
+            'is_edit' => false,    // Par défaut en mode création
         ]);
     }
+
+
 }

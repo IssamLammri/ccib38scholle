@@ -5,20 +5,23 @@ namespace App\Controller;
 use App\Entity\Session;
 use App\Entity\SessionStudyClassPresence;
 use App\Entity\StudentClassRegistered;
+use App\Entity\Teacher;
 use App\Form\SessionType;
 use App\Model\ApiResponseTrait;
+use App\Repository\SessionRepository;
 use App\Repository\SessionStudyClassPresenceRepository;
 use App\Repository\StudentClassRegisteredRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_TEACHER')]
 #[Route('/session')]
-#[IsGranted('ROLE_USER')]
 class SessionController extends AbstractController
 {
     // create a constructor with the required fields
@@ -27,7 +30,8 @@ class SessionController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         public StudentClassRegisteredRepository $studentClassRegisteredRepository,
-        private SessionStudyClassPresenceRepository $sessionStudyClassPresenceRepository
+        private SessionStudyClassPresenceRepository $sessionStudyClassPresenceRepository,
+        private SessionRepository $sessionRepository
     ) {
     }
     #[Route('/', name: 'app_session_index', methods: ['GET'])]
@@ -37,26 +41,12 @@ class SessionController extends AbstractController
         $limit = 10; // Limit results per page
         $search = $request->query->get('search', ''); // Search filter
 
-        $queryBuilder = $entityManager->getRepository(Session::class)
-            ->createQueryBuilder('s')
-            ->join('s.room', 'r')
-            ->join('s.teacher', 't')
-            ->join('s.studyClass', 'sc');
-
-        // Search by room name, teacher name, or study class if search is present
-        if (!empty($search)) {
-            $queryBuilder
-                ->where('r.name LIKE :search')
-                ->orWhere('t.lastName LIKE :search')
-                ->orWhere('sc.name LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
+        if ($this->isGranted('ROLE_MANAGER')) {
+            $paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search);
+        } else {
+            $paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search,$this->getUser());
         }
-
-        $queryBuilder
-            ->setFirstResult(($page - 1) * $limit) // Offset
-            ->setMaxResults($limit); // Limit
-
-        $paginator = new Paginator($queryBuilder);
+        //$paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search,$this->getUser());
 
         return $this->render('session/index.html.twig', [
             'sessions' => $paginator,
@@ -66,15 +56,27 @@ class SessionController extends AbstractController
         ]);
     }
 
-
     #[Route('/new', name: 'app_session_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, Security $security): Response
     {
         $session = new Session();
-        $form = $this->createForm(SessionType::class, $session);
+        $user = $this->getUser();
+        $isManager = $security->isGranted('ROLE_MANAGER'); // Vérifie si l'utilisateur est Manager
+
+        // Créer le formulaire avec l'option 'is_manager'
+        $form = $this->createForm(SessionType::class, $session, [
+            'is_manager' => $isManager,
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Si l'utilisateur est un Teacher, définir automatiquement le Teacher
+            if (!$isManager) {
+                $teacher = $entityManager->getRepository(Teacher::class)->findOneBy(['user' => $user]);
+                $session->setTeacher($teacher);
+            }
+
             $entityManager->persist($session);
             $allStudentsToAddASession = $this->studentClassRegisteredRepository->findStudentsInStudyClass($session->getStudyClass());
             /** @var StudentClassRegistered $student */
@@ -84,14 +86,16 @@ class SessionController extends AbstractController
             }
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_session_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_session_show', ['id' => $session->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('session/new.html.twig', [
             'session' => $session,
             'form' => $form,
+            'is_manager' => $isManager,
         ]);
     }
+
 
     #[Route('/delete-student-from-session/{id}', name: 'delete_student_from_session', options: ['expose' => true], methods: ['POST'])]
     public function deleteStudentFromClass(Request $request, SessionStudyClassPresence $sessionStudyClassPresence): Response
@@ -130,9 +134,17 @@ class SessionController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_session_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Session $session, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Session $session, EntityManagerInterface $entityManager, Security $security): Response
     {
-        $form = $this->createForm(SessionType::class, $session);
+        $user = $this->getUser();
+        $isManager = $security->isGranted('ROLE_MANAGER'); // Vérifiez si l'utilisateur est Manager
+
+        // Créer le formulaire avec l'option 'is_manager' et 'is_edit'
+        $form = $this->createForm(SessionType::class, $session, [
+            'is_manager' => $isManager,
+            'is_edit' => true, // On est en mode édition
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -144,6 +156,7 @@ class SessionController extends AbstractController
         return $this->render('session/edit.html.twig', [
             'session' => $session,
             'form' => $form,
+            'is_manager' => $isManager, // Passer la variable pour Twig
         ]);
     }
 

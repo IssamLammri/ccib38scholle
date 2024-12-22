@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Teacher;
+use App\Entity\User;
 use App\Form\TeacherType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -12,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_MANAGER')]
 #[Route('/teacher')]
 class TeacherController extends AbstractController
 {
@@ -56,7 +57,15 @@ class TeacherController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $userTeacher = (new User())
+                ->setEmail($teacher->getEmail())
+                ->setFirstName($teacher->getFirstName())
+                ->setLastName($teacher->getLastName())
+                ->setRoles(['ROLE_TEACHER'])
+                ->setPassword('password');
+
             $entityManager->persist($teacher);
+            $entityManager->persist($userTeacher);
             $entityManager->flush();
 
             return $this->redirectToRoute('app_teacher_index', [], Response::HTTP_SEE_OTHER);

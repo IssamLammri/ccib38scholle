@@ -47,9 +47,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $isVerified = false;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $verificationToken = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $tokenExpiration = null;
+
 
     public function __construct()
     {
+        $token = bin2hex(random_bytes(32));
+        $this->setVerificationToken($token);
+        $this->setTokenExpiration(new \DateTimeImmutable('+10 minutes'));
     }
 
 
@@ -63,7 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(string $email): self
     {
         $this->email = $email;
 
@@ -133,9 +142,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->firstName;
     }
 
-    public function setFirstName(?string $firstName): void
+    public function setFirstName(?string $firstName): self
     {
         $this->firstName = $firstName;
+
+        return $this;
     }
 
     public function getLastName(): ?string
@@ -143,9 +154,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->lastName;
     }
 
-    public function setLastName(?string $lastName): void
+    public function setLastName(?string $lastName): self
     {
         $this->lastName = $lastName;
+
+        return $this;
     }
 
     public function isVerified(): bool
@@ -168,5 +181,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAgreeTerms(?bool $agreeTerms): void
     {
         $this->agreeTerms = $agreeTerms;
+    }
+
+    public function getVerificationToken(): ?string
+    {
+        return $this->verificationToken;
+    }
+
+    public function setVerificationToken(?string $verificationToken): self
+    {
+        $this->verificationToken = $verificationToken;
+        return $this;
+    }
+
+    public function getTokenExpiration(): ?\DateTimeImmutable
+    {
+        return $this->tokenExpiration;
+    }
+
+    public function setTokenExpiration(?\DateTimeImmutable $tokenExpiration): self
+    {
+        $this->tokenExpiration = $tokenExpiration;
+        return $this;
     }
 }

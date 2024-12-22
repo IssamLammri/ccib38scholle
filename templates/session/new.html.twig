@@ -1,62 +1,67 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Session{% endblock %}
+{% block title %}Créer une Nouvelle Session{% endblock %}
 
 {% block body %}
     <div class="container mt-5">
-        <!-- Back to list button -->
-        <div class="mb-3">
-            <a href="{{ path('app_session_index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to list
+        <!-- Bouton retour -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{{ path('app_session_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
             </a>
+            <h1 class="text-primary mb-0">Créer une Nouvelle Session</h1>
         </div>
 
-        <h1 class="mb-4">Create New Session</h1>
-
-        <div class="card p-4">
-            <!-- Create form -->
+        <!-- Formulaire -->
+        <div class="card shadow-sm p-4">
             {{ form_start(form) }}
 
+            <!-- Horaires -->
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group mb-3">
-                        {{ form_label(form.startTime, 'Start Time') }}
+                        {{ form_label(form.startTime, 'Heure de Début', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.startTime, {'attr': {'class': 'form-control'}}) }}
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group mb-3">
-                        {{ form_label(form.endTime, 'End Time') }}
+                        {{ form_label(form.endTime, 'Heure de Fin', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.endTime, {'attr': {'class': 'form-control'}}) }}
                     </div>
                 </div>
             </div>
 
+            <!-- Salle, Classe, Enseignant -->
             <div class="row">
                 <div class="col-md-4">
                     <div class="form-group mb-3">
-                        {{ form_label(form.room, 'Room') }}
+                        {{ form_label(form.room, 'Salle', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.room, {'attr': {'class': 'form-control'}}) }}
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group mb-3">
-                        {{ form_label(form.studyClass, 'Study Class') }}
+                        {{ form_label(form.studyClass, 'Classe', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.studyClass, {'attr': {'class': 'form-control'}}) }}
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.teacher, 'Teacher') }}
-                        {{ form_widget(form.teacher, {'attr': {'class': 'form-control'}}) }}
+                {% if is_manager %}
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            {{ form_label(form.teacher, 'Enseignant', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.teacher, {'attr': {'class': 'form-control'}}) }}
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             </div>
 
-            <!-- Save button -->
+            <!-- Boutons -->
             <div class="d-flex justify-content-between mt-4">
-                <button class="btn btn-success">{{ button_label|default('Create') }}</button>
-                <a href="{{ path('app_session_index') }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ path('app_session_index') }}" class="btn btn-outline-secondary">Annuler</a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> {{ button_label|default('Créer') }}
+                </button>
             </div>
 
             {{ form_end(form) }}

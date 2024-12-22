@@ -1,14 +1,16 @@
-<!-- ListPayments.vue -->
 <template>
   <div class="modal fade" id="newStudentModal" tabindex="-1" aria-labelledby="newStudentModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered"> <!-- Ajout de la classe pour centrer le modal -->
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
+        <!-- En-tête du modal -->
         <div class="modal-header">
-          <h5 class="modal-title" id="newStudentModal">Ajouter un élève</h5>
+          <h5 class="modal-title">Ajouter un élève</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+
+        <!-- Corps du modal -->
         <div class="modal-body">
-          <!-- Input pour rechercher les étudiants -->
+          <!-- Champ de recherche -->
           <input
               type="text"
               v-model="searchTerm"
@@ -16,46 +18,47 @@
               class="form-control mb-3"
           />
 
+          <!-- Liste des étudiants filtrés -->
           <ul class="list-group">
             <li
                 v-for="student in filteredStudents"
                 :key="student.id"
-                :class="['list-group-item d-flex justify-content-between align-items-center', { 'active': isSelected(student) }]"
+                :class="['list-group-item', 'd-flex', 'justify-content-between', { 'active': isSelected(student) }]"
                 @click="toggleSelectStudent(student)"
             >
+              <div>{{ student.firstName }} {{ student.lastName }}</div>
               <div>
-                {{ student.firstName }} {{ student.lastName }}
-              </div>
-              <div class="d-flex justify-content-between align-items-center"
-              style="width: 60%">
-                <div class="text-center w-50">
-                  <small class="text-muted">{{ formatBirthDate(student.birthDate) }}</small>
-                </div>
-                <div class="text-end w-50">
-                  <small class="text-muted">{{ student.levelClass }}</small>
-                </div>
+                <small class="text-muted">{{ formatBirthDate(student.birthDate) }}</small>
+                <span class="ms-3 badge bg-light text-dark">{{ student.levelClass }}</span>
               </div>
             </li>
           </ul>
+        </div>
 
-          <!-- Affichage des informations des étudiants sélectionnés -->
-          <div v-if="selectedStudents.length" class="mt-3">
-            <h6>Élèves sélectionnés :</h6>
-            <ul>
-              <li v-for="student in selectedStudents" :key="student.id">
+        <!-- Bloc des étudiants sélectionnés -->
+        <div class="selected-students p-3 border-top">
+          <h6 class="fw-bold mb-2">Élèves sélectionnés :</h6>
+          <div v-if="selectedStudents.length">
+            <ul class="list-unstyled mb-0">
+              <li v-for="student in selectedStudents" :key="student.id" class="text-muted">
                 {{ student.firstName }} {{ student.lastName }} - {{ student.levelClass }}
               </li>
             </ul>
           </div>
+          <div v-else class="text-muted">Aucun élève sélectionné</div>
         </div>
+
+        <!-- Pied du modal -->
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-          <button type="button" class="btn btn-primary" @click="addSelectedStudents">Ajouter</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+          <button type="button" class="btn btn-primary btn-sm" @click="addSelectedStudents">Ajouter</button>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+
 
 <script>
 import axios from "axios";
@@ -135,29 +138,57 @@ export default {
   }
 }
 </script>
-
 <style scoped>
-/* Style pour indiquer une ligne sélectionnée (bootstrap gère 'active') */
+/* Agrandir la largeur du modal */
+.modal-dialog {
+  max-width: 800px;
+  width: 90%;
+}
+
+/* Fixer la hauteur de la zone de liste des étudiants avec un défilement */
+.modal-body {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+/* Bloc des étudiants sélectionnés */
+.selected-students {
+  background-color: #f8f9fa;
+  max-height: 150px;
+  overflow-y: auto;
+  border-radius: 0 0 10px 10px; /* Adoucir les coins en bas */
+}
+
+/* Style pour indiquer une sélection */
 .list-group-item.active {
-  background-color: #007bff;
-  color: white;
+  background-color: #007bff !important;
+  color: white !important;
+  border-color: #007bff;
 }
 
-/* Centrer le modal */
-.modal-dialog-centered {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh; /* Hauteur minimale égale à la hauteur de la fenêtre */
+/* Style pour la liste */
+.list-group-item {
+  cursor: pointer;
+  border: none;
 }
 
-/* Style pour le contenu supplémentaire */
-.d-flex .text-center {
-  flex: 1;
+.list-group-item:hover {
+  background-color: #f8f9fa;
 }
 
-.d-flex .text-end {
-  flex: 1;
-  text-align: right;
+/* Style général du modal */
+.modal-content {
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Style pour les badges */
+.badge {
+  font-size: 0.8rem;
+}
+
+.fw-bold {
+  font-weight: 600;
 }
 </style>
