@@ -24,7 +24,7 @@ class Payment
     #[Groups(['read_payment'])]
     private ?Student $student = null;
 
-    #[ORM\ManyToOne(targetEntity: StudyClass::class)]
+    #[ORM\ManyToOne(targetEntity: StudyClass::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(['read_payment'])]
     private ?StudyClass $studyClass = null;

@@ -1,72 +1,77 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}List of Students{% endblock %}
+{% block title %}Liste des Étudiants{% endblock %}
 
 {% block body %}
-    <div class="mt-5">
-        <h1 class="mb-4">Student List</h1>
+    <div class="container mt-5">
+        <!-- Titre principal -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-primary">Liste des Étudiants</h1>
+            <a href="{{ path('app_student_new') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Ajouter un Étudiant
+            </a>
+        </div>
 
-        <!-- Search Form -->
+        <!-- Formulaire de recherche -->
         <form method="get" action="{{ path('app_student_index') }}" class="mb-4">
-            <div class="row">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control" placeholder="Search by name or email" value="{{ app.request.query.get('search') }}">
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par nom ou email"
+                           value="{{ app.request.query.get('search') }}">
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary">Search</button>
+                <div class="col-md-4 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
                 </div>
             </div>
         </form>
 
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{{ path('app_student_new') }}" class="btn btn-success">
-                <i class="fas fa-plus"></i> Create New Student
-            </a>
-        </div>
-
-        <div class="table-responsive" style="margin-bottom: 30px">
-            <table class="table table-bordered table-hover table-striped" style="margin: auto;">
-                <thead class="thead-dark">
+        <!-- Tableau des étudiants -->
+        <div class="table-responsive shadow-sm">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
                 <tr>
-                    <th>Id</th>
-                    <th>Last Name</th>
-                    <th>First Name</th>
-                    <th>Birth Date</th>
-                    <th>Gender</th>
-                    <th>Address</th>
-                    <th>Postal Code</th>
-                    <th>City</th>
-                    <th>Level</th>
-                    <th class="text-center">Actions</th>
+                    <th style="width: 10%;">Nom</th>
+                    <th style="width: 10%;">Prénom</th>
+                    <th style="width: 15%;">Date de Naissance</th>
+                    <th style="width: 10%;">Genre</th>
+                    <th style="width: 10%;">Code Postal</th>
+                    <th style="width: 10%;">Ville</th>
+                    <th style="width: 10%;">Niveau</th>
+                    <th style="width: 10%;" class="text-center">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for student in students %}
                     <tr>
-                        <td>{{ student.id }}</td>
                         <td>{{ student.lastName }}</td>
                         <td>{{ student.firstName }}</td>
-                        <td>{{ student.birthDate ? student.birthDate|date('Y-m-d') : 'N/A' }}</td>
+                        <td>{{ student.birthDate ? student.birthDate|date('d/m/Y') : 'N/A' }}</td>
                         <td>{{ student.gender }}</td>
-                        <td>{{ student.address }}</td>
                         <td>{{ student.postalCode }}</td>
                         <td>{{ student.city }}</td>
-                        <td>{{ student.level }}</td>
+                        <td>{{ student.levelClass }}</td>
                         <td class="text-center">
-                            <a style="margin: 5px" href="{{ path('app_student_show', {'id': student.id}) }}" class="btn btn-info btn-sm">
-                                <i class="fas fa-eye"></i> Show
-                            </a>
-                            <a style="margin: 5px" href="{{ path('app_student_edit', {'id': student.id}) }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <a style="margin: 5px" href="{{ path('app_student_delete', {'id': student.id}) }}" class="btn btn-danger btn-sm">
-                                <i class="fas fa-trash"></i> Delete
-                            </a>
+                            <div class="btn-group" role="group">
+                                <a href="{{ path('app_student_show', {'id': student.id}) }}" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('app_student_edit', {'id': student.id}) }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_student_delete', {'id': student.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ student.id) }}">
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="10" class="text-center">No records found</td>
+                        <td colspan="10" class="text-center text-muted">Aucun étudiant trouvé.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -74,23 +79,29 @@
         </div>
 
         <!-- Pagination -->
-        <nav>
+        <nav aria-label="Pagination" class="mt-4">
             <ul class="pagination justify-content-center">
                 {% if current_page > 1 %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ path('app_student_index', {page: current_page - 1, search: app.request.query.get('search')}) }}">Previous</a>
+                        <a class="page-link" href="{{ path('app_student_index', {page: current_page - 1, search: app.request.query.get('search')}) }}">
+                            Précédent
+                        </a>
                     </li>
                 {% endif %}
 
                 {% for i in 1..total_pages %}
                     <li class="page-item {% if i == current_page %}active{% endif %}">
-                        <a class="page-link" href="{{ path('app_student_index', {page: i, search: app.request.query.get('search')}) }}">{{ i }}</a>
+                        <a class="page-link" href="{{ path('app_student_index', {page: i, search: app.request.query.get('search')}) }}">
+                            {{ i }}
+                        </a>
                     </li>
                 {% endfor %}
 
                 {% if current_page < total_pages %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ path('app_student_index', {page: current_page + 1, search: app.request.query.get('search')}) }}">Next</a>
+                        <a class="page-link" href="{{ path('app_student_index', {page: current_page + 1, search: app.request.query.get('search')}) }}">
+                            Suivant
+                        </a>
                     </li>
                 {% endif %}
             </ul>

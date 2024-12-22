@@ -1,38 +1,42 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}List of Rooms{% endblock %}
+{% block title %}Liste des Salles{% endblock %}
 
 {% block body %}
-    <div class="mt-5">
-        <h1 class="mb-4">Room List</h1>
+    <div class="container mt-5">
+        <!-- Titre principal -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-primary">Liste des Salles</h1>
+            <a href="{{ path('app_room_new') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Ajouter une Salle
+            </a>
+        </div>
 
-        <!-- Search Form -->
+        <!-- Formulaire de recherche -->
         <form method="get" action="{{ path('app_room_index') }}" class="mb-4">
-            <div class="row">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control" placeholder="Search by name or comment" value="{{ app.request.query.get('search') }}">
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par nom ou commentaire"
+                           value="{{ app.request.query.get('search') }}">
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary">Search</button>
+                <div class="col-md-4 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
                 </div>
             </div>
         </form>
 
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{{ path('app_room_new') }}" class="btn btn-success">
-                <i class="fas fa-plus"></i> Create New Room
-            </a>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover table-striped">
-                <thead class="thead-dark">
+        <!-- Tableau des salles -->
+        <div class="table-responsive shadow-sm">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
                 <tr>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Max Students</th>
-                    <th>Comment</th>
-                    <th class="text-center">Actions</th>
+                    <th style="width: 10%;">ID</th>
+                    <th style="width: 25%;">Nom</th>
+                    <th style="width: 20%;">Étudiants Max</th>
+                    <th style="width: 30%;">Commentaire</th>
+                    <th style="width: 15%;" class="text-center">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -43,20 +47,25 @@
                         <td>{{ room.maxStudents }}</td>
                         <td>{{ room.comment }}</td>
                         <td class="text-center">
-                            <a style="margin: 5px" href="{{ path('app_room_show', {'id': room.id}) }}" class="btn btn-info btn-sm">
-                                <i class="fas fa-eye"></i> Show
-                            </a>
-                            <a style="margin: 5px" href="{{ path('app_room_edit', {'id': room.id}) }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <a style="margin: 5px" href="{{ path('app_room_delete', {'id': room.id}) }}" class="btn btn-danger btn-sm">
-                                <i class="fas fa-trash"></i> Delete
-                            </a>
+                            <div class="btn-group" role="group">
+                                <a href="{{ path('app_room_show', {'id': room.id}) }}" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('app_room_edit', {'id': room.id}) }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_room_delete', {'id': room.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette salle ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ room.id) }}">
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="5" class="text-center">No records found</td>
+                        <td colspan="5" class="text-center text-muted">Aucune salle trouvée.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -64,23 +73,29 @@
         </div>
 
         <!-- Pagination -->
-        <nav>
+        <nav aria-label="Pagination" class="mt-4">
             <ul class="pagination justify-content-center">
                 {% if current_page > 1 %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ path('app_room_index', {page: current_page - 1, search: app.request.query.get('search')}) }}">Previous</a>
+                        <a class="page-link" href="{{ path('app_room_index', {page: current_page - 1, search: app.request.query.get('search')}) }}">
+                            Précédent
+                        </a>
                     </li>
                 {% endif %}
 
                 {% for i in 1..total_pages %}
                     <li class="page-item {% if i == current_page %}active{% endif %}">
-                        <a class="page-link" href="{{ path('app_room_index', {page: i, search: app.request.query.get('search')}) }}">{{ i }}</a>
+                        <a class="page-link" href="{{ path('app_room_index', {page: i, search: app.request.query.get('search')}) }}">
+                            {{ i }}
+                        </a>
                     </li>
                 {% endfor %}
 
                 {% if current_page < total_pages %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ path('app_room_index', {page: current_page + 1, search: app.request.query.get('search')}) }}">Next</a>
+                        <a class="page-link" href="{{ path('app_room_index', {page: current_page + 1, search: app.request.query.get('search')}) }}">
+                            Suivant
+                        </a>
                     </li>
                 {% endif %}
             </ul>
