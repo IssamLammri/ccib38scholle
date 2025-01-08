@@ -19,7 +19,7 @@ class Payment
     #[Groups(['read_payment'])]
     private ?ParentEntity $parent = null;
 
-    #[ORM\ManyToOne(targetEntity: Student::class)]
+    #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(['read_payment'])]
     private ?Student $student = null;
@@ -31,7 +31,11 @@ class Payment
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     #[Groups(['read_payment'])]
-    private ?float $amountPaid = null;
+    private ?string $amountPaid = null;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment'])]
+    private ?string $serviceType = null;
 
     #[ORM\Column(type: 'date')]
     #[Groups(['read_payment'])]
@@ -41,9 +45,19 @@ class Payment
     #[Groups(['read_payment'])]
     private ?string $paymentType = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups(['read_payment'])]
     private ?string $month = null;
+
+    #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'payments')]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['read_payment'])]
+    private ?Invoice $invoice = null;
+
+
+    #[ORM\Column(type: 'text', length: 255, nullable: true)]
+    #[Groups(['read_payment'])]
+    private ?string $comment= null;
 
     public function getId(): ?int
     {
@@ -83,12 +97,12 @@ class Payment
         return $this;
     }
 
-    public function getAmountPaid(): ?float
+    public function getAmountPaid(): ?string
     {
         return $this->amountPaid;
     }
 
-    public function setAmountPaid(float $amountPaid): self
+    public function setAmountPaid(string $amountPaid): self
     {
         $this->amountPaid = $amountPaid;
         return $this;
@@ -115,4 +129,48 @@ class Payment
         $this->paymentType = $paymentType;
         return $this;
     }
+
+    public function getMonth(): ?string
+    {
+        return $this->month;
+    }
+
+    public function setMonth(string $month): self
+    {
+        $this->month = $month;
+        return $this;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
+    }
+
+    public function getServiceType(): ?string
+    {
+        return $this->serviceType;
+    }
+
+    public function setServiceType(string $serviceType): self
+    {
+        $this->serviceType = $serviceType;
+        return $this;
+    }
+    public function getInvoice(): ?Invoice
+    {
+        return $this->invoice;
+    }
+
+    public function setInvoice(?Invoice $invoice): self
+    {
+        $this->invoice = $invoice;
+        return $this;
+    }
+
 }

@@ -35,7 +35,7 @@ class StudyClassController extends AbstractController
     ) {
     }
 
-    #[Route('/', name: 'app_study_class_index', methods: ['GET'])]
+    #[Route('/', name: 'app_study_class_index', options: ['expose' => true], methods: ['GET'])]
     public function index(StudyClassRepository $studyClassRepository, Request $request): Response
     {
         $page = $request->query->getInt('page', 1);

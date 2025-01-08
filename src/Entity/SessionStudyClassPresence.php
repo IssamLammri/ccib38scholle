@@ -27,8 +27,7 @@ class SessionStudyClassPresence
     #[ORM\JoinColumn(nullable: true)]
     private ?Session $session = null;
 
-    #[ORM\Column(type: 'boolean')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => null])]
     #[Groups(['student_session_read'])]
     private ?bool $isPresent = null;
 
