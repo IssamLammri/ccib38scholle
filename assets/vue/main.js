@@ -5,6 +5,8 @@ import VueAxios from 'vue-axios'; // Importer VueAxios pour l'intégration
 import Hello from './components/Hello.vue';
 import NewPage from './pages/NewPage.vue';
 import ListPayments from './pages/payment/ListPayments.vue';
+import ListInvoice from './pages/invoice/ListInvoice.vue';
+import ShowInvoice from './pages/invoice/ShowInvoice.vue';
 import StudyClass from './pages/studyClass/StudyClass.vue';
 import SessionShow from './pages/session/SessionShow.vue';
 import RegistrationPageAcademicSupport from './pages/RegistrationPageAcademicSupport.vue';
@@ -33,6 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('Hello', Hello);
     app.component('NewPage', NewPage);
     app.component('ListPayments', ListPayments);
+    app.component('ListInvoice', ListInvoice);
+    app.component('ShowInvoice', ShowInvoice);
     app.component('StudyClass', StudyClass);
     app.component('SessionShow', SessionShow);
     app.component('RegistrationPageAcademicSupport', RegistrationPageAcademicSupport);

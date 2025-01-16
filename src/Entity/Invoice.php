@@ -55,12 +55,13 @@ class Invoice
         return $this->parent;
     }
 
-    public function setParent(ParentEntity $parent): self
+    public function setParent(?ParentEntity $parent): self
     {
         $this->parent = $parent;
         return $this;
     }
 
+    #[Groups(['read_invoice'])]
     public function getPayments(): iterable
     {
         return $this->payments;

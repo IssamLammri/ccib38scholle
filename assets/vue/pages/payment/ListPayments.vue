@@ -170,7 +170,6 @@ export default {
       this.axios
           .get(this.$routing.generate("all_payments"))
           .then((response) => {
-            console.log(response.data.payments)
             this.payments = response.data.payments;
             this.parents = response.data.parents;
           })

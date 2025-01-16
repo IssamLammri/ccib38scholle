@@ -254,7 +254,7 @@ class Student
         return $this;
     }
 
-    #[Groups(['read_payment','read_student_class_registered','student_session_read'])]
+    #[Groups(['read_payment','read_student_class_registered','student_session_read','read_invoice'])]
     public function getLevelClass(): string
     {
         return match ($this->level) {
@@ -272,5 +272,11 @@ class Student
             12 => 'Terminale',
             default => 'Niveau inconnu',
         };
+    }
+
+    #[Groups(['read_invoice'])]
+    public function getFullName(): string
+    {
+        return $this->getLastName() . ' ' . $this->getFirstName();
     }
 }

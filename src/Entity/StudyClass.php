@@ -17,7 +17,7 @@ class StudyClass
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_student','read_study_class','read_session'])]
+    #[Groups(['read_payment','read_student','read_study_class','read_session','read_invoice'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'integer')]
@@ -25,7 +25,7 @@ class StudyClass
     private ?int $level = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_study_class','read_session','read_payment'])]
+    #[Groups(['read_study_class','read_session','read_payment','read_invoice'])]
     private ?string $speciality = null;
 
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'studyClass')]

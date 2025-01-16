@@ -16,25 +16,25 @@ class Payment
 
     #[ORM\ManyToOne(targetEntity: ParentEntity::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?ParentEntity $parent = null;
 
     #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?Student $student = null;
 
     #[ORM\ManyToOne(targetEntity: StudyClass::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?StudyClass $studyClass = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?string $amountPaid = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?string $serviceType = null;
 
     #[ORM\Column(type: 'date')]
@@ -42,11 +42,11 @@ class Payment
     private ?\DateTimeInterface $paymentDate = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?string $paymentType = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?string $month = null;
 
     #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'payments')]
@@ -56,7 +56,7 @@ class Payment
 
 
     #[ORM\Column(type: 'text', length: 255, nullable: true)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?string $comment= null;
 
     public function getId(): ?int

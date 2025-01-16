@@ -56,9 +56,13 @@ class ParentEntity
     #[Groups(['read_payment'])]
     private Collection $students;
 
+    #[ORM\OneToMany(targetEntity: Invoice::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
+    private Collection $invoices;
+
     public function __construct()
     {
         $this->students = new ArrayCollection();
+        $this->invoices = new ArrayCollection();
     }
 
 
@@ -219,9 +223,41 @@ class ParentEntity
         return  $father . ' - ' . $mother;
     }
 
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     public function  getFullNameParent(): string
     {
         return $this->fatherLastName . ' ' . $this->fatherFirstName . ' - ' . $this->motherLastName . ' ' . $this->motherFirstName;
     }
+
+    #[Groups(['read_payment','read_invoice'])]
+    public function getEmailContact(): string
+    {
+        return $this->motherEmail ?? $this->fatherEmail ?? 'ecole@ccib38.com';
+    }
+    public function getInvoices(): Collection
+    {
+        return $this->invoices;
+    }
+
+    public function addInvoice(Invoice $invoice): self
+    {
+        if (!$this->invoices->contains($invoice)) {
+            $this->invoices[] = $invoice;
+            $invoice->setParent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvoice(Invoice $invoice): self
+    {
+        if ($this->invoices->removeElement($invoice)) {
+            if ($invoice->getParent() === $this) {
+                $invoice->setParent(null);
+            }
+        }
+
+        return $this;
+    }
+
 }
