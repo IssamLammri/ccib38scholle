@@ -71,7 +71,7 @@
 
             <!-- Enfants et Matières -->
             <div v-if="selectedParent && selectedParent.students.length" class="mb-4">
-              <h6 class="fw-bold">Sélectionner les enfants et leurs matières pour le paiement:</h6>
+              <h6 class="fw-bold">Sélectionner les enfants :</h6>
               <div v-for="student in selectedParent.students" :key="student.id" class="mb-3">
                 <div class="form-check">
                   <input
@@ -87,9 +87,9 @@
                   </label>
                 </div>
 
-                <!-- Afficher les matières de l'enfant sélectionné -->
+                <!-- Afficher les matières uniquement si paymentType est 'soutien' -->
                 <ul
-                    v-if="selectedChildren.includes(student.id) && student.registrations.length"
+                    v-if="paymentType === 'soutien' && selectedChildren.includes(student.id) && student.registrations.length"
                     class="list-group list-group-flush ms-4"
                 >
                   <h6 class="text-muted">Les matières dans lesquelles {{ student.firstName }} est inscrit.</h6>
@@ -139,6 +139,33 @@
               />
             </div>
 
+            <!-- Remise -->
+            <div class="mb-4">
+              <label for="discount" class="form-label fw-bold">Remise (€)</label>
+              <input
+                  type="number"
+                  v-model="discount"
+                  class="form-control"
+                  id="discount"
+                  placeholder="Entrer une remise (facultatif)"
+              />
+            </div>
+
+            <!-- Type de paiement -->
+            <div class="mb-4">
+              <label for="paymentTypeSelect" class="form-label fw-bold">Type de paiement</label>
+              <select
+                  v-model="paymentMethod"
+                  class="form-select"
+                  id="paymentTypeSelect"
+              >
+                <option disabled value="">Sélectionner un type de paiement</option>
+                <option value="Espèces">Espèces</option>
+                <option value="Carte bancaire">Carte bancaire</option>
+                <option value="Chèque">Chèque</option>
+              </select>
+            </div>
+
             <!-- Cas Soutien scolaire : mois -->
             <div v-if="paymentType === 'soutien'" class="mb-3">
               <label for="monthSelect" class="form-label">Mois de soutien scolaire</label>
@@ -157,7 +184,15 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-          <button type="submit" class="btn btn-primary" form="newPaymentForm" @click.prevent="submitPayment">Enregistrer</button>
+          <button
+              type="submit"
+              class="btn btn-primary"
+              form="newPaymentForm"
+              @click.prevent="submitPayment"
+              :disabled="isSubmitDisabled"
+          >
+            Enregistrer
+          </button>
         </div>
       </div>
     </div>
@@ -181,18 +216,19 @@ export default {
   },
   data() {
     return {
-      dropdownVisible: false, // Pour afficher/masquer la liste déroulante
+      dropdownVisible: false,
       searchQuery: "",
       selectedParent: null,
       selectedChildren: [],
       selectedClasses: {},
       totalAmount: 0,
       paidAmount: 0,
+      discount: 0,
+      paymentMethod: '',
       paymentType: 'soutien',
-      arabTranche: '',
       selectedMonth: '',
       comment: '',
-      parentSearchQuery: '', // Pour stocker la recherche du parent
+      parentSearchQuery: '',
       months: [
         'Janvier',
         'Février',
@@ -205,11 +241,30 @@ export default {
         'Septembre',
         'Octobre',
         'Novembre',
-        'Décembre'
-      ]
+        'Décembre',
+      ],
     };
   },
   computed: {
+    isSubmitDisabled() {
+      if (this.paymentType === 'soutien') {
+        return (
+            !this.selectedMonth || // Mois non sélectionné
+            !this.paidAmount || // Montant payé manquant ou égal à 0
+            this.paidAmount <= 0 ||
+            !this.paymentMethod || // Type de paiement non sélectionné
+            !this.selectedChildren.length || // Aucun enfant sélectionné
+            Object.keys(this.selectedClasses).length === 0
+        );
+      }
+      return (
+          !this.paidAmount ||
+          this.paidAmount <= 0 ||
+          !this.paymentMethod || // Type de paiement non sélectionné
+          !this.selectedChildren.length ||
+          Object.keys(this.selectedClasses).length === 0
+      );
+    },
     filteredParents() {
       // Filtrer les parents selon la recherche
       if (!this.parentSearchQuery) {
@@ -257,24 +312,48 @@ export default {
         this.totalAmount += classes.length * 25;
       });
     },
+    resetForm() {
+      this.selectedParent = null;
+      this.selectedChildren = [];
+      this.selectedClasses = {};
+      this.totalAmount = 0;
+      this.paidAmount = 0;
+      this.discount = 0;
+      this.paymentMethod = '';
+      this.paymentType = 'soutien';
+      this.selectedMonth = '';
+      this.comment = '';
+      this.parentSearchQuery = '';
+    },
     submitPayment() {
-      if (
-          this.selectedParent &&
-          this.selectedChildren.length > 0 &&
-          this.totalAmount > 0
-      ) {
+      if (!this.isSubmitDisabled) {
         const paymentData = {
           parent: this.selectedParent,
           totalAmount: this.totalAmount,
           paidAmount: this.paidAmount,
+          discount: this.discount,
+          paymentMethod: this.paymentMethod,
+          paymentType: this.paymentType,
+          selectedMonth: this.selectedMonth,
+          comment: this.comment,
           selectedChildren: this.selectedChildren.map((id) => ({
             id,
-            classes: this.selectedClasses[id] || []
-          }))
+            classes: this.selectedClasses[id] || [],
+          })),
         };
-        console.log('Paiement soumis:', paymentData);
+
+        this.axios
+            .post(this.$routing.generate("payment_new"), paymentData)
+            .then(() => {
+              this.$emit("payment-added");
+              this.resetForm();
+            })
+            .catch((error) => {
+              console.error("Erreur lors de l'enregistrement :", error);
+              alert("Erreur lors de l'enregistrement du paiement.");
+            });
       } else {
-        alert('Veuillez remplir tous les champs requis.');
+        alert("Veuillez remplir tous les champs requis.");
       }
     }
   }
@@ -320,5 +399,9 @@ export default {
 .list-group-item:hover {
   background-color: #3d93ea;
 }
-
+.btn-primary:disabled {
+  background-color: #d6d6d6;
+  border-color: #d6d6d6;
+  cursor: not-allowed;
+}
 </style>

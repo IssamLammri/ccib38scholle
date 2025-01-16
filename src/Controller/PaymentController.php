@@ -2,13 +2,19 @@
 
 namespace App\Controller;
 
+use App\Entity\Invoice;
+use App\Entity\ParentEntity;
 use App\Entity\Payment;
+use App\Entity\Student;
+use App\Entity\StudyClass;
 use App\Form\PaymentType;
+use App\Model\ApiResponseTrait;
 use App\Repository\ParentsRepository;
 use App\Repository\PaymentRepository;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,12 +24,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/payment')]
 class PaymentController extends AbstractController
 {
+    use ApiResponseTrait;
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private PaymentRepository $paymentRepository,
         private ParentsRepository $parentsRepository,
-    )
-    {
+    ){
     }
 
     #[Route('/list', name: 'payments_list')]
@@ -38,24 +45,84 @@ class PaymentController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'payment_new')]
+    #[Route('/all', name: 'all_payments', options: ['expose' => true], methods: ['GET'])]
+    public function getAllPayments(): JsonResponse
+    {
+        $payments = $this->paymentRepository->findAll();
+        $parents = $this->parentsRepository->findAll();
+
+        return $this->json([
+            'payments' => $payments,
+            'parents' => $parents,
+        ], 200, [], ['groups' => 'read_payment']);
+    }
+
+
+    #[Route('/new', name: 'payment_new', options: ['expose' => true], methods: ['POST'])]
     public function newPayment(Request $request): Response
     {
-        $payment = new Payment();
-        $form = $this->createForm(PaymentType::class, $payment);
-        $form->handleRequest($request);
+        $data = json_decode($request->getContent(), true);
+        $parentId = $data['parent']['id'];
+        $paidAmount = $data['paidAmount'];
+        $discount = $data['discount'];
+        $selectedChildren = $data['selectedChildren'];
+        $parent = $this->entityManager->getRepository(ParentEntity::class)->find($parentId);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->persist($payment);
-            $this->entityManager->flush();
+        $invoice = new Invoice();
+        $invoice->setParent($parent);
+        $invoice->setInvoiceDate(new \DateTime());
+        $invoice->setTotalAmount($paidAmount);
+        $invoice->setDiscount($discount);
+        $invoice->setComment($data['comment']);
 
-            // Générer un reçu (optionnel)
-            return $this->redirectToRoute('payment_receipt', ['id' => $payment->getId()]);
+        $serviceType = $data['paymentType'];
+
+        foreach ($selectedChildren as $childData) {
+            $child = $this->entityManager->getRepository(Student::class)->find($childData['id']);
+            if ($serviceType === 'arab') {
+                $payment = new Payment();
+                $payment->setParent($parent);
+                $payment->setStudent($child);
+                $payment->setAmountPaid($paidAmount / count($selectedChildren));
+                $payment->setPaymentDate(new \DateTime());
+                $payment->setPaymentType($data['paymentMethod']);
+                $payment->setServiceType($serviceType);
+                $payment->setComment($data['comment']);
+                $payment->setInvoice($invoice);
+
+                $this->entityManager->persist($payment);
+            } elseif ($serviceType === 'soutien') {
+                $totalClasses = 0;
+                foreach ($selectedChildren as $childDataClasse) {
+                    $totalClasses += count($childDataClasse['classes']);
+                }
+
+                $amountPerClass = ($paidAmount - $discount) / $totalClasses;
+
+                foreach ($childData['classes'] as $classData) {
+                    $studyClass = $this->entityManager->getRepository(StudyClass::class)->find($classData['id']);
+
+                    $payment = new Payment();
+                    $payment->setParent($parent);
+                    $payment->setStudent($child);
+                    $payment->setStudyClass($studyClass);
+                    $payment->setAmountPaid($amountPerClass);
+                    $payment->setPaymentDate(new \DateTime());
+                    $payment->setPaymentType($data['paymentMethod']);
+                    $payment->setServiceType($serviceType);
+                    $payment->setMonth($data['selectedMonth']);
+                    $payment->setComment($data['comment']);
+                    $payment->setInvoice($invoice);
+
+                    $this->entityManager->persist($payment);
+                }
+            }
         }
 
-        return $this->render('payment/new.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $this->entityManager->persist($invoice);
+        $this->entityManager->flush();
+
+        return $this->apiResponse('Paiements et facture créés avec succès.');
     }
 
     #[Route('/receipt/{id}', name: 'payment_receipt')]
@@ -71,4 +138,24 @@ class PaymentController extends AbstractController
             'payment' => $payment,
         ]);
     }
+
+    #[Route('/delete/{id}', name: 'payment_delete', options: ['expose' => true], methods: ['DELETE'])]
+    public function deletePayment(int $id): JsonResponse
+    {
+        $payment = $this->paymentRepository->find($id);
+
+        if (!$payment) {
+            return $this->json([
+                'message' => 'Le paiement avec cet ID n\'existe pas.',
+            ], 404);
+        }
+
+        $this->entityManager->remove($payment);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'message' => 'Le paiement a été supprimé avec succès.',
+        ], 200);
+    }
+
 }

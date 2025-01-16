@@ -16,34 +16,48 @@ class Payment
 
     #[ORM\ManyToOne(targetEntity: ParentEntity::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?ParentEntity $parent = null;
 
-    #[ORM\ManyToOne(targetEntity: Student::class)]
+    #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?Student $student = null;
 
     #[ORM\ManyToOne(targetEntity: StudyClass::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?StudyClass $studyClass = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Groups(['read_payment'])]
-    private ?float $amountPaid = null;
+    #[Groups(['read_payment','read_invoice'])]
+    private ?string $amountPaid = null;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_payment','read_invoice'])]
+    private ?string $serviceType = null;
 
     #[ORM\Column(type: 'date')]
     #[Groups(['read_payment'])]
     private ?\DateTimeInterface $paymentDate = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_invoice'])]
     private ?string $paymentType = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['read_payment','read_invoice'])]
     private ?string $month = null;
+
+    #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'payments')]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['read_payment'])]
+    private ?Invoice $invoice = null;
+
+
+    #[ORM\Column(type: 'text', length: 255, nullable: true)]
+    #[Groups(['read_payment','read_invoice'])]
+    private ?string $comment= null;
 
     public function getId(): ?int
     {
@@ -83,12 +97,12 @@ class Payment
         return $this;
     }
 
-    public function getAmountPaid(): ?float
+    public function getAmountPaid(): ?string
     {
         return $this->amountPaid;
     }
 
-    public function setAmountPaid(float $amountPaid): self
+    public function setAmountPaid(string $amountPaid): self
     {
         $this->amountPaid = $amountPaid;
         return $this;
@@ -115,4 +129,48 @@ class Payment
         $this->paymentType = $paymentType;
         return $this;
     }
+
+    public function getMonth(): ?string
+    {
+        return $this->month;
+    }
+
+    public function setMonth(string $month): self
+    {
+        $this->month = $month;
+        return $this;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
+    }
+
+    public function getServiceType(): ?string
+    {
+        return $this->serviceType;
+    }
+
+    public function setServiceType(string $serviceType): self
+    {
+        $this->serviceType = $serviceType;
+        return $this;
+    }
+    public function getInvoice(): ?Invoice
+    {
+        return $this->invoice;
+    }
+
+    public function setInvoice(?Invoice $invoice): self
+    {
+        $this->invoice = $invoice;
+        return $this;
+    }
+
 }
