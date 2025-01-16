@@ -51,10 +51,10 @@
         </thead>
         <tbody>
         <tr v-for="invoice in filteredInvoices" :key="invoice.id">
-          <td>{{ formatDate(invoice.invoiceDate) }}</td>
-          <td>{{ formatCurrency(invoice.totalAmount) }}</td>
-          <td>{{ formatCurrency(invoice.discount) }}</td>
-          <td>{{ invoice.parent.fullNameParent || "Non renseigné" }}</td>
+          <td role="button" @click="goToInvoice(invoice)" >{{ formatDate(invoice.invoiceDate) }}</td>
+          <td role="button" @click="goToInvoice(invoice)">{{ formatCurrency(invoice.totalAmount) }}</td>
+          <td role="button" @click="goToInvoice(invoice)" >{{ formatCurrency(invoice.discount) }}</td>
+          <td role="button" @click="goToInvoice(invoice)">{{ invoice.parent.fullNameParent || "Non renseigné" }}</td>
           <td>{{ invoice.comment || "N/A" }}</td>
           <td>
             <ul>
@@ -124,6 +124,9 @@ export default {
           .catch((error) => {
             console.error("Erreur lors de la récupération des factures :", error);
           });
+    },
+    goToInvoice(invoice) {
+      window.location.href = this.$routing.generate('app_invoice_show', { id: invoice.id });
     },
     formatDate(date) {
       if (!date) return "";
