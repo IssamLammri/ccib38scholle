@@ -2,15 +2,20 @@
 
 namespace App\Controller;
 
+use App\Entity\Room;
 use App\Entity\Session;
 use App\Entity\SessionStudyClassPresence;
 use App\Entity\StudentClassRegistered;
+use App\Entity\StudyClass;
 use App\Entity\Teacher;
 use App\Form\SessionType;
 use App\Model\ApiResponseTrait;
+use App\Repository\RoomRepository;
 use App\Repository\SessionRepository;
 use App\Repository\SessionStudyClassPresenceRepository;
 use App\Repository\StudentClassRegisteredRepository;
+use App\Repository\StudyClassRepository;
+use App\Repository\TeacherRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,7 +39,7 @@ class SessionController extends AbstractController
         private SessionRepository $sessionRepository
     ) {
     }
-    #[Route('/', name: 'app_session_index', methods: ['GET'])]
+    #[Route('/', name: 'app_session_index', options: ['expose' => true], methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
         $page = $request->query->getInt('page', 1); // Current page, default is 1
@@ -56,7 +61,7 @@ class SessionController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_session_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'app_session_new',options: ['expose' => true], methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, Security $security): Response
     {
         $session = new Session();
@@ -96,6 +101,102 @@ class SessionController extends AbstractController
         ]);
     }
 
+    #[Route('/session/api/data', name: 'app_session_create_data',options: ['expose' => true], methods: ['GET'])]
+    public function getCreateData(
+        RoomRepository $roomRepository,
+        StudyClassRepository $classRepository,
+        TeacherRepository $teacherRepository
+    ): Response
+    {
+        $rooms = $roomRepository->findAll();
+        $classes = $classRepository->findAll();
+        $teachers = $teacherRepository->findAll();
+
+        $roomsArray = array_map(fn(Room $r) => [
+            'id' => $r->getId(),
+            'name' => $r->getName()
+        ], $rooms);
+
+        $classesArray = array_map(fn(StudyClass $c) => [
+            'id' => $c->getId(),
+            'name' => $c->getName()
+        ], $classes);
+
+        $teachersArray = array_map(fn(Teacher $t) => [
+            'id' => $t->getId(),
+            'fullName' => $t->getFirstName() . ' ' . $t->getLastName()
+        ], $teachers);
+
+        return $this->json([
+            'rooms'     => $roomsArray,
+            'classes'   => $classesArray,
+            'teachers'  => $teachersArray,
+            'isManager' => $this->isGranted('ROLE_MANAGER'),
+        ]);
+    }
+
+    #[Route('/session/api/create', name: 'app_session_create_api',options: ['expose' => true], methods: ['POST'])]
+    public function createSession(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        StudentClassRegisteredRepository $studentClassRegisteredRepository,
+        RoomRepository $roomRepository,
+        StudyClassRepository $classRepository,
+        TeacherRepository $teacherRepository
+    ): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $session = new Session();
+
+        // Convertir les strings en \DateTime
+        $startTime = !empty($data['startTime']) ? new \DateTimeImmutable($data['startTime']) : new \DateTimeImmutable();
+        $endTime   = !empty($data['endTime']) ? new \DateTimeImmutable($data['endTime']) : new \DateTimeImmutable();
+
+        $session->setStartTime($startTime);
+        $session->setEndTime($endTime);
+
+        // Récupération de la room
+        if (!empty($data['roomId'])) {
+            $room = $roomRepository->find($data['roomId']);
+            $session->setRoom($room);
+        }
+
+        // Récupération de la classe
+        if (!empty($data['studyClassId'])) {
+            $studyClass = $classRepository->find($data['studyClassId']);
+            $session->setStudyClass($studyClass);
+        }
+
+        // Gestion Teacher en fonction du rôle
+        $isManager = $this->isGranted('ROLE_MANAGER');
+        if ($isManager && !empty($data['teacherId'])) {
+            $teacher = $teacherRepository->find($data['teacherId']);
+            $session->setTeacher($teacher);
+        } else {
+            // Si pas manager, on associe le professeur lié au user courant
+            $teacher = $teacherRepository->findOneBy(['user' => $this->getUser()]);
+            $session->setTeacher($teacher);
+        }
+
+        $entityManager->persist($session);
+
+        // Si la studyClass est définie, on crée les SessionStudyClassPresence
+        if ($session->getStudyClass()) {
+            $allStudents = $studentClassRegisteredRepository->findStudentsInStudyClass($session->getStudyClass());
+            foreach ($allStudents as $studentRegister) {
+                $presence = new SessionStudyClassPresence($studentRegister->getStudent(), $session);
+                $entityManager->persist($presence);
+            }
+        }
+
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'id' => $session->getId(),
+        ]);
+    }
 
     #[Route('/delete-student-from-session/{id}', name: 'delete_student_from_session', options: ['expose' => true], methods: ['POST'])]
     public function deleteStudentFromClass(Request $request, SessionStudyClassPresence $sessionStudyClassPresence): Response
@@ -123,7 +224,7 @@ class SessionController extends AbstractController
         return $this->json(['message' => "L'étudiant a été marqué comme présent."], Response::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'app_session_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_session_show', options: ['expose' => true],methods: ['GET'])]
     public function show(Session $session): Response
     {
         $allStudentsSessionSession = $this->sessionStudyClassPresenceRepository->findBy(['session' => $session]);

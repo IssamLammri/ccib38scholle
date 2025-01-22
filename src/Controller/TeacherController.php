@@ -63,7 +63,7 @@ class TeacherController extends AbstractController
                 ->setLastName($teacher->getLastName())
                 ->setRoles(['ROLE_TEACHER'])
                 ->setPassword('password');
-
+            $teacher->setUser($userTeacher);
             $entityManager->persist($teacher);
             $entityManager->persist($userTeacher);
             $entityManager->flush();

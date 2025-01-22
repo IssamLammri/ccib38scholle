@@ -3,68 +3,8 @@
 {% block title %}Créer une Nouvelle Session{% endblock %}
 
 {% block body %}
-    <div class="container mt-5">
-        <!-- Bouton retour -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="{{ path('app_session_index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Retour à la liste
-            </a>
-            <h1 class="text-primary mb-0">Créer une Nouvelle Session</h1>
-        </div>
-
-        <!-- Formulaire -->
-        <div class="card shadow-sm p-4">
-            {{ form_start(form) }}
-
-            <!-- Horaires -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.startTime, 'Heure de Début', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.startTime, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.endTime, 'Heure de Fin', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.endTime, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Salle, Classe, Enseignant -->
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.room, 'Salle', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.room, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.studyClass, 'Classe', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.studyClass, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                </div>
-                {% if is_manager %}
-                    <div class="col-md-4">
-                        <div class="form-group mb-3">
-                            {{ form_label(form.teacher, 'Enseignant', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.teacher, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-
-            <!-- Boutons -->
-            <div class="d-flex justify-content-between mt-4">
-                <a href="{{ path('app_session_index') }}" class="btn btn-outline-secondary">Annuler</a>
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save"></i> {{ button_label|default('Créer') }}
-                </button>
-            </div>
-
-            {{ form_end(form) }}
-        </div>
+    <div id="app">
+        <!-- Votre composant Vue compilé par Webpack -->
+        <new-session></new-session>
     </div>
 {% endblock %}

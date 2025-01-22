@@ -16,10 +16,15 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/stimulus-webpack-helpers": "^1.0.1",
+    "@primevue/themes": "^4.2.5",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
+    "flatpickr": "^4.6.13",
     "html2pdf.js": "^0.10.2",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.2.5",
     "vue-axios": "^3.5.2",
+    "vue-flatpickr-component": "^11.0.5",
     "vue-next-select": "^2.10.5",
     "vue-spinner": "^1.0.4",
     "vuetify": "^3.7.0-beta.1"
