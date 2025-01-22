@@ -222,8 +222,8 @@ export default {
 
     submitForm() {
       const payload = {
-        startTime: this.formatDateISO(this.startTime),
-        endTime: this.formatDateISO(this.endTime),
+        startTime: this.startTime,
+        endTime: this.endTime,
         roomId: this.roomId,
         studyClassId: this.studyClassId,
         teacherId: this.teacherId,

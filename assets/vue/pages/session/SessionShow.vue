@@ -128,8 +128,10 @@ export default {
       return new Date(dateString).toLocaleDateString('fr-FR', options);
     },
     formatTime(timeString) {
-      const options = { hour: '2-digit', minute: '2-digit' };
-      return new Date(timeString).toLocaleTimeString('fr-FR', options);
+      const date = new Date(timeString);
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
     },
     confirmDelete(studentClass) {
       this.studentToDelete = studentClass;

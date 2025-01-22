@@ -172,13 +172,11 @@ class SessionController extends AbstractController
         $isManager = $this->isGranted('ROLE_MANAGER');
         if ($isManager && !empty($data['teacherId'])) {
             $teacher = $teacherRepository->find($data['teacherId']);
-            $session->setTeacher($teacher);
         } else {
             // Si pas manager, on associe le professeur lié au user courant
             $teacher = $teacherRepository->findOneBy(['user' => $this->getUser()]);
-            $session->setTeacher($teacher);
         }
-
+        $session->setTeacher($teacher);
         $entityManager->persist($session);
 
         // Si la studyClass est définie, on crée les SessionStudyClassPresence
