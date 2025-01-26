@@ -119,7 +119,9 @@ class SessionController extends AbstractController
 
         $classesArray = array_map(fn(StudyClass $c) => [
             'id' => $c->getId(),
-            'name' => $c->getName()
+            'name' => $c->getName(),
+            'level' => $c->getLevel(),
+            'speciality' => $c->getSpeciality()
         ], $classes);
 
         $teachersArray = array_map(fn(Teacher $t) => [

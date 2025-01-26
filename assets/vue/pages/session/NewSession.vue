@@ -85,7 +85,7 @@
                   :value="classe.id"
                   :key="classe.id"
               >
-                {{ classe.name }}
+                {{ classe.name }} ({{ classe.speciality }})
               </option>
             </select>
           </div>
