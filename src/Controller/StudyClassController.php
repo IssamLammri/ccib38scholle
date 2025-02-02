@@ -144,6 +144,14 @@ class StudyClassController extends AbstractController
         return $this->apiResponse('Inscription request');
     }
 
+    #[Route('/deactivate-student-from-class/{id}', name: 'deactivate_student_from_class', options: ['expose' => true], methods: ['POST'])]
+    public function deactivateStudentFromClass(Request $request, StudentClassRegistered $studentClassRegistered): Response
+    {
+        $studentClassRegistered->setActive(false);
+        $this->entityManager->flush();
+        return $this->apiResponse('Inscription request');
+    }
+
     #[Route('/{id}/edit', name: 'app_study_class_edit', options: ['expose' => true], methods: ['GET','POST'])]
     public function edit(Request $request, StudyClass $studyClass, EntityManagerInterface $entityManager): Response
     {

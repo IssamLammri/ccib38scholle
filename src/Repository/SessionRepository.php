@@ -54,4 +54,32 @@ class SessionRepository extends ServiceEntityRepository
 
         return new Paginator($queryBuilder);
     }
+
+    public function findSessionsBetweenDates(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        $queryBuilder = $this->createQueryBuilder('s')
+            ->where('s.startTime >= :startDate')
+            ->andWhere('s.endTime <= :endDate')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function findSessionsStatsByMonth(?User $user = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('s')
+            ->select('s.startTime AS sessionDate, s.endTime AS endTime')
+            ->orderBy('s.startTime', 'ASC');
+
+        if ($user !== null) {
+            $queryBuilder
+                ->join('s.teacher', 't')
+                ->andWhere('t.user = :user')
+                ->setParameter('user', $user);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
 }

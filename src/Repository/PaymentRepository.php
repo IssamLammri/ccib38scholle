@@ -23,4 +23,14 @@ class PaymentRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findPaymentsBetweenDates(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.paymentDate BETWEEN :startDate AND :endDate')
+            ->setParameter('startDate', $startDate->format('Y-m-d'))
+            ->setParameter('endDate', $endDate->format('Y-m-d'))
+            ->getQuery()
+            ->getResult();
+    }
+
 }

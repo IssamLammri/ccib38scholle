@@ -223,10 +223,23 @@ class ParentEntity
         return  $father . ' - ' . $mother;
     }
 
-    #[Groups(['read_payment','read_invoice'])]
-    public function  getFullNameParent(): string
+    #[Groups(['read_payment', 'read_invoice'])]
+    public function getFullNameParent(): string
     {
-        return $this->fatherLastName . ' ' . $this->fatherFirstName . ' - ' . $this->motherLastName . ' ' . $this->motherFirstName;
+        $father = trim($this->fatherLastName . ' ' . $this->fatherFirstName);
+        $mother = trim($this->motherLastName . ' ' . $this->motherFirstName);
+
+        // Suppression de "Vide Vide"
+        if ($father === 'Vide Vide') {
+            $father = '';
+        }
+        if ($mother === 'Vide Vide') {
+            $mother = '';
+        }
+
+        $parts = array_filter([$father, $mother]); // Filtre les valeurs vides
+
+        return !empty($parts) ? implode(' - ', $parts) : '';
     }
 
     #[Groups(['read_payment','read_invoice'])]

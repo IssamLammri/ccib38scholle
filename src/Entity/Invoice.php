@@ -12,7 +12,7 @@ class Invoice
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_invoice'])]
+    #[Groups(['read_invoice','statistic_dashboard'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: ParentEntity::class, inversedBy: 'invoices')]
@@ -25,11 +25,11 @@ class Invoice
     private iterable $payments;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['read_invoice'])]
+    #[Groups(['read_invoice','statistic_dashboard'])]
     private ?\DateTimeInterface $invoiceDate = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Groups(['read_invoice'])]
+    #[Groups(['read_invoice','statistic_dashboard'])]
     private ?string $totalAmount = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
@@ -37,7 +37,7 @@ class Invoice
     private ?string $comment = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    #[Groups(['read_invoice'])]
+    #[Groups(['read_invoice','statistic_dashboard'])]
     private ?string $discount = null;
 
     public function __construct()
