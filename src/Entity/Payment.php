@@ -30,28 +30,32 @@ class Payment
     private ?StudyClass $studyClass = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
     private ?string $amountPaid = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
     private ?string $serviceType = null;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','statistic_dashboard'])]
     private ?\DateTimeInterface $paymentDate = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
     private ?string $paymentType = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
     private ?string $month = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
+    private ?int $year = null;
 
     #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','statistic_dashboard'])]
     private ?Invoice $invoice = null;
 
 
@@ -173,4 +177,14 @@ class Payment
         return $this;
     }
 
+    public function getYear(): ?int
+    {
+        return $this->year;
+    }
+
+    public function setYear(int $year): self
+    {
+        $this->year = $year;
+        return $this;
+    }
 }

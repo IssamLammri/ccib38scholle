@@ -28,6 +28,10 @@ class StudentClassRegistered
     #[Groups(['read_payment'])]
     private ?StudyClass $studyClass = null; // Relation Many-to-One avec StudyClass
 
+    #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => null])]
+    #[Groups(['read_student_class_registered','read_payment'])]
+    private ?bool $active = null;
+
     public function __construct(StudyClass $studyClass, Student $student)
     {
         $this->studyClass = $studyClass;
@@ -74,6 +78,18 @@ class StudentClassRegistered
     public function setStudyClass(?StudyClass $studyClass): self
     {
         $this->studyClass = $studyClass;
+
+        return $this;
+    }
+
+    public function isActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(?bool $active): self
+    {
+        $this->active = $active;
 
         return $this;
     }

@@ -13,4 +13,14 @@ class InvoiceRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Invoice::class);
     }
+
+    public function findInvoicesBetweenDates(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        return $this->createQueryBuilder('i')
+            ->where('i.invoiceDate BETWEEN :startDate AND :endDate')
+            ->setParameter('startDate', $startDate->format('Y-m-d'))
+            ->setParameter('endDate', $endDate->format('Y-m-d'))
+            ->getQuery()
+            ->getResult();
+    }
 }

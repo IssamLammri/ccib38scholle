@@ -35,4 +35,13 @@ class StudentClassRegisteredRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findRegisteredForUnpaidParents(\DateTimeImmutable $startDate)
+    {
+        return $this->createQueryBuilder('scr')
+            ->where('scr.createdAt < :startDate')
+            ->andWhere('scr.active IS NULL OR scr.active = true') // Gère les NULL et true
+            ->setParameter('startDate', $startDate)
+            ->getQuery()
+            ->getResult();
+    }
 }

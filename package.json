@@ -19,6 +19,7 @@
     "@primevue/themes": "^4.2.5",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
+    "chart.js": "^4.4.7",
     "flatpickr": "^4.6.13",
     "html2pdf.js": "^0.10.2",
     "primeicons": "^7.0.0",

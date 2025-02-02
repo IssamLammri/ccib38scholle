@@ -12,6 +12,35 @@
             </a>
         </div>
 
+        <div class="card shadow-sm p-4 mb-4">
+            <h5 class="mb-3">📊 Statistiques des Sessions par Mois</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark text-white">
+                    <tr>
+                        <th>Mois</th>
+                        <th>Total Sessions</th>
+                        <th>Heures Cumulées</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for month, stat in sessionStats %}
+                        <tr>
+                            <td><strong>{{ month }}</strong></td>
+                            <td>{{ stat.totalSessions }}</td>
+                            <td>{{ stat.totalHours|number_format(2) }} heures</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Aucune donnée disponible</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
         <!-- Formulaire de recherche -->
         <form method="get" action="{{ path('app_session_index') }}" class="mb-4">
             <div class="row g-2">

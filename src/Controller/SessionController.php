@@ -42,22 +42,40 @@ class SessionController extends AbstractController
     #[Route('/', name: 'app_session_index', options: ['expose' => true], methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $page = $request->query->getInt('page', 1); // Current page, default is 1
-        $limit = 10; // Limit results per page
-        $search = $request->query->get('search', ''); // Search filter
+        $page = $request->query->getInt('page', 1);
+        $limit = 10;
+        $search = $request->query->get('search', '');
+        $user = $this->getUser();
 
         if ($this->isGranted('ROLE_MANAGER')) {
             $paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search);
+            $sessionStats = $this->sessionRepository->findSessionsStatsByMonth(); // 🔹 Récupère toutes les stats
         } else {
-            $paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search,$this->getUser());
+            $paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search, $user);
+            $sessionStats = $this->sessionRepository->findSessionsStatsByMonth($user); // 🔹 Filtre selon l'utilisateur
         }
-        //$paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search,$this->getUser());
+
+        // 🔹 Regroupement des statistiques en PHP
+        $statsByMonth = [];
+        foreach ($sessionStats as $session) {
+            $month = $session['sessionDate']->format('Y-m'); // Ex: "2024-02"
+            if (!isset($statsByMonth[$month])) {
+                $statsByMonth[$month] = ['totalSessions' => 0, 'totalHours' => 0];
+            }
+
+            $statsByMonth[$month]['totalSessions']++;
+
+            // Calcul des heures cumulées
+            $duration = ($session['endTime']->getTimestamp() - $session['sessionDate']->getTimestamp()) / 3600;
+            $statsByMonth[$month]['totalHours'] += $duration;
+        }
 
         return $this->render('session/index.html.twig', [
             'sessions' => $paginator,
             'current_page' => $page,
             'total_pages' => ceil(count($paginator) / $limit),
-            'search' => $search
+            'search' => $search,
+            'sessionStats' => $statsByMonth
         ]);
     }
 
