@@ -36,7 +36,7 @@ class MailService
      * @throws SyntaxError Si le template contient une erreur de syntaxe.
      * @throws \Exception
      */
-    public function sendEmail(string $to, string $subject, string $template, array $context = [], string $attachmentPath = null): void
+    public function sendEmail(string $to, string $subject, string $template, array $context = [], string $attachmentPath = null, string $sender = null): void
     {
         try {
             // Rendu du contenu HTML à partir du template
@@ -48,9 +48,10 @@ class MailService
         } catch (SyntaxError $e) {
             throw new \Exception('Erreur de syntaxe dans le template Twig : ' . $e->getMessage(), 0, $e);
         }
+        $senderMail = $sender ?? 'ecole@ccib38.com';
 
         $email = (new Email())
-            ->from(new Address('ecole@ccib38.com', 'CCIB 38'))
+            ->from(new Address($senderMail, 'CCIB38'))
             ->to($to)
             ->subject($subject)
             ->html($htmlContent);
