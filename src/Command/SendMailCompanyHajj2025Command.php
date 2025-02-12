@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class SendMailCommand extends Command
+class SendMailCompanyHajj2025Command extends Command
 {
     protected static $defaultName = 'app:send-email-company-haj';
 
