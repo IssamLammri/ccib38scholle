@@ -13,19 +13,19 @@ class Student
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_study_class','read_student_class_registered','read_payment'])]
+    #[Groups(['read_student','read_study_class','read_student_class_registered','read_payment'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_student_class_registered','student_session_read'])]
+    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_student_class_registered','student_session_read'])]
+    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['read_student_class_registered'])]
+    #[Groups(['read_student','read_student_class_registered'])]
     private ?\DateTimeInterface $birthDate = null;
 
     #[ORM\Column(type: 'array')]
@@ -44,7 +44,7 @@ class Student
     private ?string $city = null;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_student_class_registered'])]
+    #[Groups(['read_student','read_student_class_registered'])]
     private ?int $level = null;
 
     #[ORM\ManyToOne(inversedBy: 'students')]

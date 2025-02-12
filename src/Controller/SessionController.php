@@ -14,6 +14,7 @@ use App\Repository\RoomRepository;
 use App\Repository\SessionRepository;
 use App\Repository\SessionStudyClassPresenceRepository;
 use App\Repository\StudentClassRegisteredRepository;
+use App\Repository\StudentRepository;
 use App\Repository\StudyClassRepository;
 use App\Repository\TeacherRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,7 +37,8 @@ class SessionController extends AbstractController
         private EntityManagerInterface $entityManager,
         public StudentClassRegisteredRepository $studentClassRegisteredRepository,
         private SessionStudyClassPresenceRepository $sessionStudyClassPresenceRepository,
-        private SessionRepository $sessionRepository
+        private SessionRepository $sessionRepository,
+        private StudentRepository $studentRepository
     ) {
     }
     #[Route('/', name: 'app_session_index', options: ['expose' => true], methods: ['GET'])]
@@ -292,5 +294,22 @@ class SessionController extends AbstractController
         }
 
         return $this->redirectToRoute('app_session_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/new-student-to-session/{id}', name: 'new_student_to_session', options: ['expose' => true], methods: ['POST'])]
+    public function newStudentToClass(Request $request, Session $session): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        if (array_key_exists('studentIds', $data)) {
+            foreach ($data['studentIds'] as $studentId) {
+                $student = $this->studentRepository->find($studentId);
+                if ($student) {
+                    $sessionStudentPresence = new SessionStudyClassPresence($student, $session);
+                    $this->entityManager->persist($sessionStudentPresence);
+                }
+            }
+        }
+        $this->entityManager->flush();
+        return $this->apiResponse('Inscription request');
     }
 }

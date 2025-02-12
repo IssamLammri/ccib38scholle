@@ -17,7 +17,9 @@ class StudentClassRegisteredRepository extends ServiceEntityRepository
     public function findStudentsInStudyClass($studyClass){
         return $this->createQueryBuilder('scr')
             ->where('scr.studyClass = :studyClass')
+            ->andWhere('scr.active = :active')
             ->setParameter('studyClass', $studyClass)
+            ->setParameter('active', true)
             ->getQuery()
             ->getResult();
     }

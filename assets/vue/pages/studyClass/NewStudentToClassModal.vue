@@ -64,7 +64,7 @@
 import axios from "axios";
 
 export default {
-  name: 'NewPaymentModal',
+  name: 'NewStudentToClassModal',
   props: {
     students: {
       type: Object,
