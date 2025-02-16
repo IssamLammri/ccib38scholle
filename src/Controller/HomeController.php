@@ -254,7 +254,7 @@ class HomeController extends AbstractController
 
             // Envoi de l'email
             try {
-                $this->mailService->sendEmail(
+               /* $this->mailService->sendEmail(
                     $parent['email'],
                     'Notification de paiement impayé - Centre CCIB',
                     'email/unpaid_notification.html.twig',
@@ -262,7 +262,7 @@ class HomeController extends AbstractController
                         'parentName' => $parent['parentName'],
                         'phone'      => $parent['phone']
                     ]
-                );
+                );*/
             } catch (\Exception $e) {
                 $errors[] = "Erreur lors de l'envoi de l'email à " . $parent['email'] . " : " . $e->getMessage();
             }

@@ -9,11 +9,13 @@ class SmsService
     private HttpClientInterface $httpClient;
     private const API_URL = 'https://api.brevo.com/v3/transactionalSMS/sms';
     // Remplacez cette valeur par votre vraie clé API Brevo pour l'envoi de SMS
-    protected string $brevoSmsApiKey = '';
+    //protected string $brevoSmsApiKey = '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';
+    protected string $brevoSmsApiKey;
 
     public function __construct(HttpClientInterface $httpClient)
     {
         $this->httpClient = $httpClient;
+        $this->brevoSmsApiKey = $_ENV['BREVO_SMS_API_KEY'] ?? '';
     }
 
     /**
