@@ -4,11 +4,14 @@ namespace App\Controller;
 
 use App\Entity\Student;
 use App\Entity\StudyClass;
+use App\Model\ApiResponseTrait;
 use App\Repository\InvoiceRepository;
 use App\Repository\PaymentRepository;
 use App\Repository\SessionRepository;
 use App\Repository\StudentClassRegisteredRepository;
 use App\Repository\TeacherRepository;
+use App\Service\MailService;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,8 +25,14 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[IsGranted('ROLE_USER')]
 class HomeController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $entityManager, private UserPasswordHasherInterface $hasher)
-    {
+    use ApiResponseTrait;
+
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private UserPasswordHasherInterface $hasher,
+        private MailService $mailService,
+        private SmsService $smsService,
+    ){
     }
     #[Route('/', name: 'app_home')]
     public function index(): Response
@@ -109,16 +118,12 @@ class HomeController extends AbstractController
         $filterSelectedYear = $request->query->get('selectedYear');
         $filterSelectedMonth = $request->query->get('selectedMonth');
 
-// Mapping des mois en français vers des chiffres
         $monthsMapping = [
             "Janvier" => "01", "Février" => "02", "Mars" => "03", "Avril" => "04",
             "Mai" => "05", "Juin" => "06", "Juillet" => "07", "Août" => "08",
             "Septembre" => "09", "Octobre" => "10", "Novembre" => "11", "Décembre" => "12"
         ];
 
-// Initialisation des variables
-        $paymentsForUnpaidParents = [];
-        $registrations = [];
 
         if ($filterSelectedMonth === 'all' && $filterSelectedYear === 'all') {
             // 🔹 Cas : Aucun filtre → Prend tous les paiements et inscriptions
@@ -188,6 +193,8 @@ class HomeController extends AbstractController
                         'studentId' => $student->getId(),
                         'studentName' => $student->getFirstName() . ' ' . $student->getLastName(),
                         'ParentName' => $student->getParent()->getFullNameParent(),
+                        'ParentEmailContact' => $student->getParent()->getEmailContact(),
+                        'ParentPhoneContact' => $student->getParent()->getPhoneContact(),
                         'studyClassName' => $studyClass->getName() . ' ( ' . $studyClass->getSpeciality(). ' )',
                     ];
                 }
@@ -223,5 +230,65 @@ class HomeController extends AbstractController
             'controller_path' => __FILE__,
             'template_path' => __DIR__ . '/../../templates/new_page.html.twig',
         ]);
+    }
+
+    #[Route('/send-email/unpaid', name: 'app_send_mail_to_unpaid_parent', options: ['expose' => true], methods: ['POST'])]
+    public function sendEmailToUnpaidParent(Request $request): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        // Vérification du payload
+        if (!isset($data['parents']) || !is_array($data['parents'])) {
+            return $this->apiResponse('Payload invalide.', 400);
+        }
+
+        $errors = [];
+
+        // Parcours de la liste des parents envoyés
+        foreach ($data['parents'] as $parent) {
+            // Vérification de l'email
+            if (!isset($parent['email']) || !filter_var($parent['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Email invalide pour le parent : " . ($parent['parentName'] ?? 'Inconnu');
+                continue;
+            }
+
+            // Envoi de l'email
+            try {
+                $this->mailService->sendEmail(
+                    $parent['email'],
+                    'Notification de paiement impayé - Centre CCIB',
+                    'email/unpaid_notification.html.twig',
+                    [
+                        'parentName' => $parent['parentName'],
+                        'phone'      => $parent['phone']
+                    ]
+                );
+            } catch (\Exception $e) {
+                $errors[] = "Erreur lors de l'envoi de l'email à " . $parent['email'] . " : " . $e->getMessage();
+            }
+
+            // Envoi du SMS (si le numéro de téléphone est présent)
+            /*if (!empty($parent['phone'])) {
+                try {
+                    $smsResponse = $this->smsService->sendSms([
+                        'sender'    => 'CCIB38', // Doit respecter la limite (alphanumérique max 11 caractères)
+                        'recipient' => $parent['phone'],
+                        'content'   => 'Vous avez un impayé concernant les frais de soutien scolaire. Veuillez vous rapprocher de notre centre pour régulariser votre situation.',
+                        'tag'       => 'UnpaidNotification'
+                    ]);
+                    if (isset($smsResponse['error'])) {
+                        $errors[] = "Erreur lors de l'envoi du SMS à " . $parent['phone'] . " : " . $smsResponse['error'];
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = "Erreur lors de l'envoi du SMS à " . $parent['phone'] . " : " . $e->getMessage();
+                }
+            }*/
+        }
+
+        if (count($errors) > 0) {
+            return $this->apiResponse('Certains messages n\'ont pas pu être envoyés.', 500, $errors);
+        }
+
+        return $this->apiResponse('Emails et SMS envoyés avec succès.');
     }
 }

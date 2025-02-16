@@ -92,7 +92,7 @@
         <h5 class="mb-3">📌 Filtrer les impayés</h5>
         <div class="row">
           <!-- Sélection du Mois -->
-          <div class="col-md-5 mb-3">
+          <div class="col-md-4 mb-3">
             <label class="form-label">Mois</label>
             <select v-model="selectedMonth" class="form-control">
               <option value="all">Tous les Mois</option>
@@ -103,7 +103,7 @@
           </div>
 
           <!-- Sélection de l'Année -->
-          <div class="col-md-5 mb-3">
+          <div class="col-md-4 mb-3">
             <label class="form-label">Année</label>
             <select v-model="selectedYear" class="form-control">
               <option value="all">Toutes les Années</option>
@@ -114,14 +114,25 @@
           </div>
 
           <!-- Bouton de Filtrage -->
-          <div class="col-md-2 d-flex align-items-end">
+          <div class="col-md-2 d-flex align-items-end mb-3">
             <button @click="fetchStatistics" class="btn btn-primary w-100">
               <i class="fas fa-filter"></i> Filtrer
             </button>
           </div>
+
+          <!-- Bouton Envoyer Mail -->
+          <div class="col-md-2 d-flex align-items-end mb-3">
+            <button @click="openMailModal" class="btn btn-secondary w-100">
+              <i class="fas fa-envelope"></i> Envoyer un mail
+            </button>
+          </div>
         </div>
       </div>
-
+      <alert
+          v-if="messageAlert"
+          :text="messageAlert"
+          :type="typeAlert"
+      />
       <!-- Liste des Impayés -->
       <div v-if="groupedUnpaidParents.length > 0" class="card shadow-sm p-4">
         <h5 class="mb-3 text-danger">⚠️ Liste des Impayés</h5>
@@ -142,7 +153,52 @@
         🎉 Aucune impayé trouvé !
       </div>
     </div>
+  </div>
 
+  <!-- Modal pour envoyer un mail aux parents -->
+  <div v-if="showMailModal" class="modal-backdrop">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Envoyer un mail aux parents</h5>
+          <button type="button" class="close" @click="closeMailModal">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Champ de recherche -->
+          <div class="mb-3">
+            <input type="text" class="form-control" placeholder="Rechercher par nom ou email" v-model="mailSearch">
+          </div>
+          <!-- Liste des parents filtrés -->
+          <div v-if="filteredParents.length">
+            <div v-for="(parent, index) in filteredParents" :key="parent.ParentEmailContact" class="form-check mb-2">
+              <input
+                  class="form-check-input"
+                  type="checkbox"
+                  :id="'parent-' + index"
+                  :value="parent"
+                  v-model="selectedParents"
+              />
+              <label class="form-check-label parent-label" :for="'parent-' + index">
+                <span>{{ parent.parentName }}</span>
+                <span>{{ parent.ParentEmailContact }}</span>
+                <span>{{ parent.ParentPhoneContact }}</span>
+              </label>
+            </div>
+          </div>
+          <div v-else>
+            <p>Aucun parent trouvé.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="closeMailModal">Annuler</button>
+          <button type="button" class="btn btn-primary" :disabled="selectedParents.length === 0" @click="sendMail">
+            Envoyer
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -150,11 +206,12 @@
 import Flatpickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 import { Chart, registerables } from 'chart.js';
+import Alert from "../../ui/Alert.vue";
 
 Chart.register(...registerables);
 
 export default {
-  components: { Flatpickr },
+  components: {Alert, Flatpickr },
   data() {
     return {
       filterStartDate: "",
@@ -162,10 +219,12 @@ export default {
       totalSessions: 0,
       totalHours: 0,
       totalInvoices: 0,
+      totalPaymentAmount: 0,
       allData: null,
       chartSessions: null,  // Référence au graphique des sessions
+      messageAlert: null,
+      typeAlert: null,
       chartPayments: null,  // Référence au graphique des paiements
-      totalPaymentAmount: 0,
       unpaidParents: [],
       teachersStats: [],
       showTeacherStats: false,
@@ -186,9 +245,11 @@ export default {
         { label: "Novembre", value: "Novembre" },
         { label: "Décembre", value: "Décembre" }
       ],
-      availableYears: [
-        2024, 2025
-      ], // Liste dynamique des années disponibles
+      availableYears: [2024, 2025],
+      // Pour le modal d'envoi de mail
+      showMailModal: false,
+      mailSearch: "",
+      selectedParents: []
     };
   },
   computed: {
@@ -214,6 +275,25 @@ export default {
         parentName: parent.parentName,
         students: Object.values(parent.students)
       }));
+    },
+    uniqueUnpaidParents() {
+      const unique = {};
+      this.unpaidParents.forEach(entry => {
+        if (!unique[entry.ParentEmailContact]) {
+          unique[entry.ParentEmailContact] = {
+            parentName: entry.ParentName,
+            ParentEmailContact: entry.ParentEmailContact,
+            ParentPhoneContact: entry.ParentPhoneContact
+          };
+        }
+      });
+      return Object.values(unique);
+    },
+    filteredParents() {
+      return this.uniqueUnpaidParents.filter(parent =>
+          parent.parentName.toLowerCase().includes(this.mailSearch.toLowerCase()) ||
+          parent.ParentEmailContact.toLowerCase().includes(this.mailSearch.toLowerCase())
+      );
     }
   },
   mounted() {
@@ -227,8 +307,8 @@ export default {
       if (this.selectedYear) params.selectedYear = this.selectedYear;
       if (this.selectedMonth) params.selectedMonth = this.selectedMonth;
 
-
-      this.axios.get(this.$routing.generate("app_dashboard_stats"), { params })
+      this.axios
+          .get(this.$routing.generate("app_dashboard_stats"), { params })
           .then(response => {
             this.totalSessions = Math.round(response.data.totalSessions);
             this.totalHours = Math.round(response.data.totalHours);
@@ -248,19 +328,19 @@ export default {
       const invoices = JSON.parse(this.allData.invoices);
       const payments = JSON.parse(this.allData.payments);
 
-      // ✅ Maintenant triés dans le bon ordre chronologique
+      // Agrégation des données par mois
       const invoiceData = this.aggregateByMonth(invoices, 'invoiceDate', 'totalAmount');
       const paymentData = this.aggregateByMonth(payments, 'paymentDate', 'amountPaid');
 
       if (this.chartSessions) this.chartSessions.destroy();
       if (this.chartPayments) this.chartPayments.destroy();
 
-      // 📊 Graphique des factures
+      // Graphique des factures
       const ctx1 = this.$refs.sessionsChart.getContext('2d');
       this.chartSessions = new Chart(ctx1, {
         type: 'line',
         data: {
-          labels: Object.keys(invoiceData),  // 🔄 ✅ Maintenant trié correctement
+          labels: Object.keys(invoiceData),
           datasets: [
             {
               label: 'Montant Facturé (€)',
@@ -273,12 +353,12 @@ export default {
         options: { responsive: true }
       });
 
-      // 📊 Graphique des paiements
+      // Graphique des paiements
       const ctx2 = this.$refs.paymentsChart.getContext('2d');
       this.chartPayments = new Chart(ctx2, {
         type: 'line',
         data: {
-          labels: Object.keys(paymentData),  // 🔄 ✅ Maintenant trié correctement
+          labels: Object.keys(paymentData),
           datasets: [
             {
               label: 'Montant Payé (€)',
@@ -291,33 +371,59 @@ export default {
         options: { responsive: true }
       });
     },
-
     /**
-     * 🏷️ Fonction utilitaire pour regrouper les données par mois
-     * @param {Array} data - Tableau des objets (factures ou paiements)
+     * Regroupement des données par mois
+     * @param {Array} data - Tableau d'objets (factures ou paiements)
      * @param {String} dateKey - Clé contenant la date
      * @param {String} amountKey - Clé contenant le montant
-     * @returns {Object} - Objet avec mois comme clé et montant total comme valeur
+     * @returns {Object} - Données agrégées par mois (clé: YYYY-MM)
      */
     aggregateByMonth(data, dateKey, amountKey) {
       const result = {};
 
       data.forEach(item => {
         const date = new Date(item[dateKey]);
-        const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`; // Format YYYY-MM
+        const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
         result[monthYear] = (result[monthYear] || 0) + parseFloat(item[amountKey]);
       });
 
-      // ✅ Trie les clés dans l'ordre chronologique
       const sortedKeys = Object.keys(result).sort((a, b) => new Date(a) - new Date(b));
-
-      // ✅ Retourne un objet trié avec les données dans le bon ordre
       const sortedResult = {};
       sortedKeys.forEach(key => {
         sortedResult[key] = result[key];
       });
 
       return sortedResult;
+    },
+    // Ouvre le modal pour envoyer un mail
+    openMailModal() {
+      this.mailSearch = "";
+      this.selectedParents = [];
+      this.showMailModal = true;
+    },
+    closeMailModal() {
+      this.showMailModal = false;
+    },
+    // Envoie le mail aux parents sélectionnés
+    sendMail() {
+      const payload = {
+        parents: this.selectedParents.map(parent => ({
+          parentName: parent.parentName,
+          email: parent.ParentEmailContact,
+          phone: parent.ParentPhoneContact
+        }))
+      };
+      this.axios
+          .post(this.$routing.generate("app_send_mail_to_unpaid_parent"), payload)
+          .then(response => {
+            this.messageAlert = "Le mail a été envoyé avec succès.";
+            this.typeAlert = "success";
+            this.closeMailModal();
+          })
+          .catch(error => {
+            console.error("Erreur lors de l'envoi du mail:", error);
+            alert("Une erreur est survenue lors de l'envoi du mail.");
+          });
     }
   }
 };
@@ -326,5 +432,60 @@ export default {
 <style scoped>
 .card {
   border-radius: 10px;
+}
+/* Styles pour le modal personnalisé */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+/* Utiliser 90% de la largeur de la fenêtre */
+.modal-dialog {
+  max-width: 90vw;
+  width: auto;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 5px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.modal-header,
+.modal-footer {
+  padding: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Ajout d'un scroll vertical si le contenu dépasse 600px de hauteur */
+.modal-body {
+  padding: 1rem;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Mise en forme avec CSS Grid pour afficher toutes les infos sur une seule ligne */
+.parent-label {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  font-size: 0.9rem;
 }
 </style>

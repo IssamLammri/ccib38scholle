@@ -247,6 +247,13 @@ class ParentEntity
     {
         return $this->motherEmail ?? $this->fatherEmail ?? 'ecole@ccib38.com';
     }
+
+    #[Groups(['read_payment','read_invoice'])]
+    public function getPhoneContact(): string
+    {
+        return $this->motherPhone ?? $this->fatherPhone ?? '04 76 09 33 33';
+    }
+
     public function getInvoices(): Collection
     {
         return $this->invoices;
