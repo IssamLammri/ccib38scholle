@@ -111,6 +111,7 @@ class PaymentController extends AbstractController
                     $payment->setPaymentType($data['paymentMethod']);
                     $payment->setServiceType($serviceType);
                     $payment->setMonth($data['selectedMonth']);
+                    $payment->setYear($data['selectedYear']); // AJOUT DE L'ANNÉE
                     $payment->setComment($data['comment']);
                     $payment->setInvoice($invoice);
 

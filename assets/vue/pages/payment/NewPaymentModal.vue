@@ -175,6 +175,15 @@
               </select>
             </div>
 
+            <!-- Cas Soutien scolaire : année -->
+            <div v-if="paymentType === 'soutien'" class="mb-3">
+              <label for="yearSelect" class="form-label">Année de soutien scolaire</label>
+              <select v-model="selectedYear" class="form-select" id="yearSelect">
+                <option disabled value="">Sélectionner une année</option>
+                <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+              </select>
+            </div>
+
             <!-- Commentaire -->
             <div class="mb-4">
               <label for="comment" class="form-label fw-bold">Commentaire</label>
@@ -229,6 +238,8 @@ export default {
       selectedMonth: '',
       comment: '',
       parentSearchQuery: '',
+      selectedYear: 2025,
+      availableYears: [2023, 2024, 2025, 2026],
       months: [
         'Janvier',
         'Février',
@@ -335,6 +346,7 @@ export default {
           paymentMethod: this.paymentMethod,
           paymentType: this.paymentType,
           selectedMonth: this.selectedMonth,
+          selectedYear: this.selectedYear, // Ajout de l'année
           comment: this.comment,
           selectedChildren: this.selectedChildren.map((id) => ({
             id,
