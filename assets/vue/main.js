@@ -11,6 +11,7 @@ import NewSession from './pages/session/NewSession.vue';
 import ShowInvoice from './pages/invoice/ShowInvoice.vue';
 import StudyClass from './pages/studyClass/StudyClass.vue';
 import SessionShow from './pages/session/SessionShow.vue';
+import SessionList from './pages/session/SessionList.vue';
 import RegistrationPageAcademicSupport from './pages/RegistrationPageAcademicSupport.vue';
 import FooterComponent from "./components/FooterComponent.vue";
 import * as bootstrap from 'bootstrap'
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('ShowInvoice', ShowInvoice);
     app.component('StudyClass', StudyClass);
     app.component('SessionShow', SessionShow);
+    app.component('SessionList', SessionList);
     app.component('RegistrationPageAcademicSupport', RegistrationPageAcademicSupport);
     app.component('FooterComponent', FooterComponent);
 

@@ -42,43 +42,101 @@ class SessionController extends AbstractController
     ) {
     }
     #[Route('/', name: 'app_session_index', options: ['expose' => true], methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager, Request $request): Response
+    public function index(): Response
     {
-        $page = $request->query->getInt('page', 1);
-        $limit = 10;
+        return $this->render('session/index.html.twig');
+    }
+
+    /**
+     * Retourne toutes les sessions filtrées (sans pagination) et les statistiques par mois.
+     *
+     * Exemple d'URL : /session/api/sessions?search=xxx&month=3&classId=2&speciality=math&teacherId=5
+     */
+    // Dans ApiSessionController.php, modifiez getSessions() :
+    #[Route('/sessions', name: 'api_sessions', options: ['expose' => true], methods: ['GET'])]
+    public function getSessions(Request $request, StudyClassRepository $studyClassRepository, TeacherRepository $teacherRepository): Response
+    {
         $search = $request->query->get('search', '');
+        $month = $request->query->getInt('month', 0) ?: null;
+        $classId = $request->query->getInt('classId', 0) ?: null;
+        $speciality = $request->query->get('speciality', '') ?: null;
+        $teacherId = $request->query->getInt('teacherId', 0) ?: null;
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_MANAGER')) {
-            $paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search);
-            $sessionStats = $this->sessionRepository->findSessionsStatsByMonth(); // 🔹 Récupère toutes les stats
+            $sessions = $this->sessionRepository->findSessionsWithSearch($search, $month, $classId, $speciality, $teacherId);
         } else {
-            $paginator = $this->sessionRepository->findSessionsWithPaginationAndSearch($page, $limit, $search, $user);
-            $sessionStats = $this->sessionRepository->findSessionsStatsByMonth($user); // 🔹 Filtre selon l'utilisateur
+            $sessions = $this->sessionRepository->findSessionsWithSearch($search, $month, $classId, $speciality, $teacherId, $user);
         }
 
-        // 🔹 Regroupement des statistiques en PHP
-        $statsByMonth = [];
-        foreach ($sessionStats as $session) {
-            $month = $session['sessionDate']->format('Y-m'); // Ex: "2024-02"
-            if (!isset($statsByMonth[$month])) {
-                $statsByMonth[$month] = ['totalSessions' => 0, 'totalHours' => 0];
-            }
-
-            $statsByMonth[$month]['totalSessions']++;
-
-            // Calcul des heures cumulées
-            $duration = ($session['endTime']->getTimestamp() - $session['sessionDate']->getTimestamp()) / 3600;
-            $statsByMonth[$month]['totalHours'] += $duration;
+        // Sérialisation simplifiée des sessions
+        $sessionsArray = [];
+        foreach ($sessions as $session) {
+            $sessionsArray[] = [
+                'id' => $session->getId(),
+                'startTime' => $session->getStartTime() ? $session->getStartTime()->format('c') : null,
+                'endTime' => $session->getEndTime() ? $session->getEndTime()->format('c') : null,
+                'room' => [
+                    'id' => $session->getRoom()->getId(),
+                    'name' => $session->getRoom()->getName(),
+                ],
+                'teacher' => [
+                    'id' => $session->getTeacher()->getId(),
+                    'firstName' => $session->getTeacher()->getFirstName(),
+                    'lastName' => $session->getTeacher()->getLastName(),
+                ],
+                'studyClass' => [
+                    'id' => $session->getStudyClass()->getId(),
+                    'name' => $session->getStudyClass()->getName(),
+                    'speciality' => $session->getStudyClass()->getSpeciality(),
+                ],
+            ];
         }
 
-        return $this->render('session/index.html.twig', [
-            'sessions' => $paginator,
-            'current_page' => $page,
-            'total_pages' => ceil(count($paginator) / $limit),
-            'search' => $search,
-            'sessionStats' => $statsByMonth
+        // Récupération dynamique des classes et enseignants
+        $classesArray = [];
+        foreach ($studyClassRepository->findAll() as $studyClass) {
+            $classesArray[] = [
+                'id' => $studyClass->getId(),
+                'name' => $studyClass->getName()
+            ];
+        }
+        $teachersArray = [];
+        foreach ($teacherRepository->findAll() as $teacher) {
+            $teachersArray[] = [
+                'id' => $teacher->getId(),
+                'firstName' => $teacher->getFirstName(),
+                'lastName' => $teacher->getLastName()
+            ];
+        }
+
+        return $this->json([
+            'sessions' => $sessionsArray,
+            'classes' => $classesArray,
+            'teachers' => $teachersArray,
+            'isAdmin' => $this->isGranted('ROLE_ADMIN'),
         ]);
+    }
+
+
+    /**
+     * Supprime une session ainsi que ses présences associées.
+     *
+     * Exemple d'URL : DELETE /session/api/delete/{id}
+     */
+    #[Route('/delete/{id}', name: 'api_session_delete', options: ['expose' => true], methods: ['DELETE'])]
+    public function deleteSession(Session $session): Response
+    {
+        // Suppression des présences associées
+        $presences = $this->sessionStudyClassPresenceRepository->findBy(['session' => $session]);
+        foreach ($presences as $presence) {
+            $this->entityManager->remove($presence);
+        }
+        // Suppression de la session
+        $this->entityManager->remove($session);
+        $this->entityManager->flush();
+
+        return $this->json(['success' => true]);
     }
 
     #[Route('/new', name: 'app_session_new',options: ['expose' => true], methods: ['GET', 'POST'])]
@@ -103,7 +161,7 @@ class SessionController extends AbstractController
             }
 
             $entityManager->persist($session);
-            $allStudentsToAddASession = $this->studentClassRegisteredRepository->findStudentsInStudyClass($session->getStudyClass());
+            $allStudentsToAddASession = $this->studentClassRegisteredRepository->findStudentsActiveInStudyClass($session->getStudyClass());
             /** @var StudentClassRegistered $student */
             foreach ($allStudentsToAddASession as $student) {
                 $sessionStudyClassPresence = new SessionStudyClassPresence($student->getStudent(), $session);
@@ -203,7 +261,7 @@ class SessionController extends AbstractController
 
         // Si la studyClass est définie, on crée les SessionStudyClassPresence
         if ($session->getStudyClass()) {
-            $allStudents = $studentClassRegisteredRepository->findStudentsInStudyClass($session->getStudyClass());
+            $allStudents = $studentClassRegisteredRepository->findStudentsActiveInStudyClass($session->getStudyClass());
             foreach ($allStudents as $studentRegister) {
                 $presence = new SessionStudyClassPresence($studentRegister->getStudent(), $session);
                 $entityManager->persist($presence);
@@ -244,7 +302,7 @@ class SessionController extends AbstractController
         return $this->json(['message' => "L'étudiant a été marqué comme présent."], Response::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'app_session_show', options: ['expose' => true],methods: ['GET'])]
+    #[Route('/{id}', name: 'app_session_show', options: ['expose' => true], methods: ['GET'])]
     public function show(Session $session): Response
     {
         $allStudentsSessionSession = $this->sessionStudyClassPresenceRepository->findBy(['session' => $session]);
@@ -254,7 +312,7 @@ class SessionController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_session_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'app_session_edit', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function edit(Request $request, Session $session, EntityManagerInterface $entityManager, Security $security): Response
     {
         $user = $this->getUser();

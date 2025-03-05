@@ -36,6 +36,7 @@ class StudentClassRegistered
     {
         $this->studyClass = $studyClass;
         $this->student = $student;
+        $this->active = true;
         $this->createdAt = new \DateTimeImmutable();
     }
 

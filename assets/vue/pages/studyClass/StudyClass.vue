@@ -22,12 +22,22 @@
       <p><strong>Niveau :</strong> {{ studyClass.levelClass }}</p>
     </div>
 
-    <!-- Bouton Ajouter un étudiant -->
+    <!-- Bouton Ajouter un étudiant et switch pour filtrer -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h3 class="mb-0">Liste des Étudiants</h3>
       <button class="btn btn-primary btn-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#newStudentModal">
         <i class="fas fa-user-plus me-2"></i> Ajouter un étudiant
       </button>
+    </div>
+
+    <!-- Switch pour filtrer les étudiants actifs/inactifs -->
+    <div class="d-flex align-items-center mb-3">
+      <label class="me-2">Afficher:</label>
+      <label class="switch">
+        <input type="checkbox" v-model="filterActive">
+        <span class="slider round"></span>
+      </label>
+      <span class="ms-2">{{ filterActive ? 'Actifs' : 'Inactifs' }}</span>
     </div>
 
     <!-- Tableau des étudiants -->
@@ -45,7 +55,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="studentClassRegistered in localStudentsInStudyClass" :key="studentClassRegistered.id">
+        <tr v-for="studentClassRegistered in filteredStudents" :key="studentClassRegistered.id">
           <td>{{ studentClassRegistered.student.id }}</td>
           <td>{{ studentClassRegistered.student.lastName }}</td>
           <td>{{ studentClassRegistered.student.firstName }}</td>
@@ -67,7 +77,7 @@
             </button>
           </td>
         </tr>
-        <tr v-if="!localStudentsInStudyClass.length">
+        <tr v-if="!filteredStudents.length">
           <td colspan="7" class="text-center text-muted">Aucun étudiant dans cette classe</td>
         </tr>
         </tbody>
@@ -96,6 +106,8 @@
         </div>
       </div>
     </div>
+
+    <new-student-to-class-modal :students="studentsNotInStudyClass" :studyClass="studyClass" />
 
     <!-- Modal de confirmation pour suppression -->
     <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
@@ -148,8 +160,14 @@ export default {
       typeAlert: null,
       studentToDelete: null,
       studentToDeactivate: null,
+      filterActive: true,
       localStudentsInStudyClass: [...this.studentsInStudyClass],
     };
+  },
+  computed: {
+    filteredStudents() {
+      return this.localStudentsInStudyClass.filter(student => student.active === this.filterActive);
+    }
   },
   methods: {
     confirmDeactivation(student) {
@@ -241,7 +259,7 @@ h1, h2, h3 {
   border-color: #dc3545;
 }
 
-/* Style pour le switch d'activation/désactivation */
+/* Style pour le switch d'activation/désactivation et le switch de filtrage */
 .switch {
   position: relative;
   display: inline-block;
@@ -286,5 +304,4 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(14px);
 }
-
 </style>

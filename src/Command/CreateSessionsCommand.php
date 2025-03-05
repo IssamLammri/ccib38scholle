@@ -82,7 +82,7 @@ class CreateSessionsCommand extends Command
 
             $this->entityManager->persist($session);
 
-            $allStudentsToAddASession = $this->studentClassRegisteredRepository->findStudentsInStudyClass($studyClass);
+            $allStudentsToAddASession = $this->studentClassRegisteredRepository->findStudentsActiveInStudyClass($studyClass);
             foreach ($allStudentsToAddASession as $student) {
                 $sessionStudyClassPresence = new SessionStudyClassPresence($student->getStudent(), $session);
                 $this->entityManager->persist($sessionStudyClassPresence);

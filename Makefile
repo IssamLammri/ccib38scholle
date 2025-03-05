@@ -63,3 +63,11 @@ make-migration:
 # Default target
 .PHONY: all
 all: build install-composer migrate install-node-modules dev
+
+.PHONY: start
+start:
+	$(COMPOSE) up -d
+
+.PHONY: stop
+stop:
+	$(COMPOSE) down

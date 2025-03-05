@@ -27,59 +27,82 @@ class SessionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findSessionsWithPaginationAndSearch(int $page, int $limit, string $search = '', ?User $user = null): Paginator
-    {
-        $queryBuilder = $this->createQueryBuilder('s')
-            ->join('s.room', 'r')
-            ->join('s.teacher', 't')
-            ->join('s.studyClass', 'sc');
-
-        // Filtrage par recherche
-        if (!empty($search)) {
-            $queryBuilder
-                ->andWhere('r.name LIKE :search OR t.lastName LIKE :search OR sc.name LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
-        }
-
-        if ($user !== null) {
-            $queryBuilder
-                ->andWhere('t.user = :user') // Vérifie si le User associé au Teacher correspond
-                ->setParameter('user', $user);
-        }
-
-        // Pagination
-        $queryBuilder
-            ->setFirstResult(($page - 1) * $limit)
-            ->setMaxResults($limit);
-
-        return new Paginator($queryBuilder);
-    }
-
     public function findSessionsBetweenDates(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
     {
-        $queryBuilder = $this->createQueryBuilder('s')
+        $qb = $this->createQueryBuilder('s')
             ->where('s.startTime >= :startDate')
             ->andWhere('s.endTime <= :endDate')
             ->setParameter('startDate', $startDate)
             ->setParameter('endDate', $endDate);
 
-        return $queryBuilder->getQuery()->getResult();
+        return $qb->getQuery()->getResult();
     }
 
-    public function findSessionsStatsByMonth(?User $user = null): array
-    {
-        $queryBuilder = $this->createQueryBuilder('s')
-            ->select('s.startTime AS sessionDate, s.endTime AS endTime')
-            ->orderBy('s.startTime', 'ASC');
+    /**
+     * Retourne toutes les sessions correspondant aux filtres.
+     *
+     * @param string $search
+     * @param int|null $month Un mois (1-12) à filtrer selon la date de début
+     * @param int|null $classId L'ID de la classe à filtrer
+     * @param string|null $speciality La spécialité à filtrer (partie ou totalité)
+     * @param int|null $teacherId L'ID de l'enseignant à filtrer
+     * @param User|null $user Si défini, limite aux sessions du teacher lié à l'utilisateur
+     *
+     * @return Session[]
+     */
+    public function findSessionsWithSearch(
+        string $search = '',
+        ?int $month = null,
+        ?int $classId = null,
+        ?string $speciality = null,
+        ?int $teacherId = null,
+        ?User $user = null
+    ): array {
+        $qb = $this->createQueryBuilder('s')
+            ->join('s.room', 'r')
+            ->join('s.teacher', 't')
+            ->join('s.studyClass', 'sc');
 
+        // Recherche textuelle sur salle, enseignant, classe ou spécialité
+        if (!empty($search)) {
+            $qb->andWhere('r.name LIKE :search OR t.lastName LIKE :search OR sc.name LIKE :search OR sc.speciality LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Filtrer par mois (sur startTime)
+        if ($month) {
+            // Utilisation de MONTH() si la fonction est enregistrée
+            $qb->andWhere('MONTH(s.startTime) = :month')
+                ->setParameter('month', $month);
+        }
+
+        // Filtrer par classe (par ID)
+        if ($classId) {
+            $qb->andWhere('sc.id = :classId')
+                ->setParameter('classId', $classId);
+        }
+
+        // Filtrer par spécialité
+        if ($speciality) {
+            $qb->andWhere('sc.speciality LIKE :speciality')
+                ->setParameter('speciality', '%' . $speciality . '%');
+        }
+
+        // Filtrer par enseignant (par ID)
+        if ($teacherId) {
+            $qb->andWhere('t.id = :teacherId')
+                ->setParameter('teacherId', $teacherId);
+        }
+
+        // Si un utilisateur est fourni, on limite aux sessions dont le teacher correspond
         if ($user !== null) {
-            $queryBuilder
-                ->join('s.teacher', 't')
-                ->andWhere('t.user = :user')
+            $qb->andWhere('t.user = :user')
                 ->setParameter('user', $user);
         }
 
-        return $queryBuilder->getQuery()->getResult();
-    }
+        // Tri par date de début décroissante
+        $qb->orderBy('s.startTime', 'DESC');
 
+        return $qb->getQuery()->getResult();
+    }
 }

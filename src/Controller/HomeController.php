@@ -254,7 +254,7 @@ class HomeController extends AbstractController
 
             // Envoi de l'email
             try {
-               /* $this->mailService->sendEmail(
+                $this->mailService->sendEmail(
                     $parent['email'],
                     'Notification de paiement impayé - Centre CCIB',
                     'email/unpaid_notification.html.twig',
@@ -262,18 +262,18 @@ class HomeController extends AbstractController
                         'parentName' => $parent['parentName'],
                         'phone'      => $parent['phone']
                     ]
-                );*/
+                );
             } catch (\Exception $e) {
                 $errors[] = "Erreur lors de l'envoi de l'email à " . $parent['email'] . " : " . $e->getMessage();
             }
 
             // Envoi du SMS (si le numéro de téléphone est présent)
-            /*if (!empty($parent['phone'])) {
+            if (!empty($parent['phone'])) {
                 try {
                     $smsResponse = $this->smsService->sendSms([
                         'sender'    => 'CCIB38', // Doit respecter la limite (alphanumérique max 11 caractères)
                         'recipient' => $parent['phone'],
-                        'content'   => 'Vous avez un impayé concernant les frais de soutien scolaire. Veuillez vous rapprocher de notre centre pour régulariser votre situation.',
+                        'content'   => "Bonjour,\n Vous avez un impayé concernant les frais de soutien scolaire. Veuillez vous rapprocher de notre centre pour régulariser votre situation.",
                         'tag'       => 'UnpaidNotification'
                     ]);
                     if (isset($smsResponse['error'])) {
@@ -282,7 +282,7 @@ class HomeController extends AbstractController
                 } catch (\Exception $e) {
                     $errors[] = "Erreur lors de l'envoi du SMS à " . $parent['phone'] . " : " . $e->getMessage();
                 }
-            }*/
+            }
         }
 
         if (count($errors) > 0) {
