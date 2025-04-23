@@ -37,19 +37,19 @@
             <div class="row">
                 <div class="col-md-6">
                     <h4>Informations du Père</h4>
-                    <p><strong>Nom :</strong> {{ student.parent.fatherLastName ~ ' ' ~ student.parent.fatherFirstName ?? 'Non disponible' }}</p>
-                    <p><strong>Email :</strong> {{ student.parent.fatherEmail ?? 'Non disponible' }}</p>
-                    <p><strong>Téléphone :</strong> {{ student.parent.fatherPhone ?? 'Non disponible' }}</p>
+                    <p><strong>Nom :</strong> {{ (student.parent.fatherLastName ~ ' ' ~ student.parent.fatherFirstName) ?? 'Non disponible' }}</p>
+                    <p><strong>Email :</strong> {{ (student.parent.fatherEmail) ?? 'Non disponible' }}</p>
+                    <p><strong>Téléphone :</strong> {{ (student.parent.fatherPhone) ?? 'Non disponible' }}</p>
                 </div>
                 <div class="col-md-6">
                     <h4>Informations de la Mère</h4>
-                    <p><strong>Nom :</strong> {{ student.parent.motherLastName ~ ' ' ~ student.parent.motherFirstName ?? 'Non disponible' }}</p>
-                    <p><strong>Email :</strong> {{ student.parent.motherEmail ?? 'Non disponible' }}</p>
-                    <p><strong>Téléphone :</strong> {{ student.parent.motherPhone ?? 'Non disponible' }}</p>
+                    <p><strong>Nom :</strong> {{ (student.parent.motherLastName ~ ' ' ~ student.parent.motherFirstName) ?? 'Non disponible' }}</p>
+                    <p><strong>Email :</strong> {{ (student.parent.motherEmail) ?? 'Non disponible' }}</p>
+                    <p><strong>Téléphone :</strong> {{ (student.parent.motherPhone) ?? 'Non disponible' }}</p>
                 </div>
             </div>
             <div class="mt-4">
-                <p><strong>Statut familial :</strong> {{ student.parent.familyStatus ?? 'Non disponible' }}</p>
+                <p><strong>Statut familial :</strong> {{ (student.parent.familyStatus) ?? 'Non disponible' }}</p>
             </div>
 
             <!-- Boutons Modifier et Supprimer -->
