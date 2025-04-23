@@ -13,6 +13,11 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Command\:
+        resource: '../src/Command'
+        tags: [ 'console.command' ]
+        autowire: true
+        autoconfigure: true
 
     # Configuration du listener pour Doctrine
     App\EventListener\UserCreationListener:
