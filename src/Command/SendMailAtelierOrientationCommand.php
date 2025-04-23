@@ -6,6 +6,7 @@ use App\Entity\ParentEntity;
 use App\Repository\ParentsRepository;
 use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,14 +14,19 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class SendMailAtelierOrientationCommand extends Command
 {
-    protected static $defaultName = 'app:send-email-atelier-orientation';
+    // optionnel : définir le nom par défaut ici
+    protected static $defaultName = 'app:send-mail-atelier-orientation';
+
+    private MailService      $mailService;
+    private LoggerInterface  $logger;
     public function __construct(
-        private  EntityManagerInterface $entityManager,
-        private  MailService $mailService,
-        private ParentsRepository $parentsRepository
-    )
-    {
-        parent::__construct();
+        MailService     $mailService,
+        LoggerInterface $logger,
+        ?string         $name = null              // ← ajouter ce 3ᵉ paramètre
+    ) {
+        parent::__construct($name);               // ← appeler le constructeur parent
+        $this->mailService = $mailService;
+        $this->logger      = $logger;
     }
 
     protected function configure(): void
