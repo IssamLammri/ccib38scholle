@@ -36,7 +36,7 @@ class MailService
      * @throws SyntaxError Si le template contient une erreur de syntaxe.
      * @throws \Exception
      */
-    public function sendEmail(string $to, string $subject, string $template, array $context = [], string $attachmentPath = null, string $sender = null): void
+    public function sendEmail(string $to, string $subject, string $template, array $context = [], ?string $attachmentPath = null, ?string $sender = null): void
     {
         try {
             // Rendu du contenu HTML à partir du template

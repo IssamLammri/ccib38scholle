@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Entity\ParentEntity;
+use App\Repository\ParentsRepository;
 use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -12,19 +14,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class SendMailAtelierOrientationCommand extends Command
 {
     protected static $defaultName = 'app:send-email-atelier-orientation';
-
-    private EntityManagerInterface $entityManager;
-    private MailService $mailService;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        MailService $mailService
-
+        private  EntityManagerInterface $entityManager,
+        private  MailService $mailService,
+        private ParentsRepository $parentsRepository
     )
     {
         parent::__construct();
-        $this->entityManager = $entityManager;
-        $this->mailService = $mailService;
     }
 
     protected function configure(): void
@@ -42,15 +38,15 @@ class SendMailAtelierOrientationCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $contacts = [
-           // ['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'issamlamri34000@gmail.com'],
+        $contacts1 = [
+            //['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'issamlamri34000@gmail.com'],
             //['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'issamlammri5@gmail.com'],
-            ['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'soutien.scolaire.ccib38@gmail.com'],
-//            ['id'=> 0,'fullName'=> 'Khaoula CHEBIR', 'email'=> 'chebirkhaoula@yahoo.com'],
-           // ['id'=> 0,'fullName'=> 'Souleymen sahnoun', 'email'=> 'souleymen.sahnoun@gmail.com'],
+           // ['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'soutien.scolaire.ccib38@gmail.com'],
+           ['id'=> 0,'fullName'=> 'Khaoula CHEBIR', 'email'=> 'chebirkhaoula@yahoo.com'],
+            ['id'=> 3,'fullName'=> 'Souleymen sahnoun', 'email'=> 'souleymen.sahnoun@gmail.com'],
         ];
 
-        $contacts1 = [
+        $contacts = [
                  [ 'id'=> 1, 'fullName'=> 'ABADA MOKTAR', 'email'=> 'rhiou030577@gmail.com'],
                  [ 'id'=> 2, 'fullName'=> 'Addad tayeb', 'email'=> 'tayebaddad@live.fr'],
                  [ 'id'=> 3, 'fullName'=> 'AFYF Saïd', 'email'=> 'daraouiloubna@gmail.com'],
@@ -245,7 +241,7 @@ class SendMailAtelierOrientationCommand extends Command
                  [ 'id'=> 197, 'fullName'=> 'Rettab Mohamed', 'email'=> 'mohamedrettab@hotlook.fr'],
                  [ 'id'=> 198, 'fullName'=> 'Rettab Mohamed', 'email'=> 'mohamedrettab@outlook.fr'],
                  [ 'id'=> 199, 'fullName'=> 'Robaia Oueheb', 'email'=> 'Marley.cat@live.fr'],
-                 [ 'id'=> 200, 'fullName'=> 'Safra Amor', 'email'=> 'amorsafra@hotmail.fr'],
+                 [ 'id'=> 200, 'fullName'=> 'Safra Amor', 'email'=> 'amorsafra@hotmail.fr'],/*
                  [ 'id'=> 201, 'fullName'=> 'Sahi Nacer', 'email'=> 'Nacer.sahi@gmail.com'],
                  [ 'id'=> 202, 'fullName'=> 'saidoune redouane', 'email'=> 'r.saidoune38@gmail.com'],
                  [ 'id'=> 203, 'fullName'=> 'Salikhov saidsaliakh', 'email'=> 'said.salah1988@gmail.com'],
@@ -611,20 +607,34 @@ class SendMailAtelierOrientationCommand extends Command
             [ 'id'=> 562, 'fullName'=> 'Dridi Nada', 'email'=> 'nada-dridi@hotmail.fr'],
             [ 'id'=> 563, 'fullName'=> 'Senani sahra', 'email'=> 'Skendersahara@gmail.com'],
             [ 'id'=> 564, 'fullName'=> 'Mhamdi hala', 'email'=> 'halamhamdu@gmail.com'],
-            [ 'id'=> 565, 'fullName'=> 'NASRI Amel ', 'email'=> 'benelhadj_amel@hotmail.fr'],
+            [ 'id'=> 565, 'fullName'=> 'NASRI Amel ', 'email'=> 'benelhadj_amel@hotmail.fr'],*/
         ];
-        foreach ($contacts1 as $contact) {
+
+        $parents = [];
+        //$parents = $this->parentsRepository->findAll();
+
+        foreach ($parents as $parent){
+            /**
+             * @var ParentEntity $parent
+             */
+            $contacts[] = [
+                'id' => $parent->getId(),
+                'fullName' => $parent->getFullNameParent(),
+                'email' => $parent->getEmailContact(),
+            ];
+        }
+        foreach ($contacts as $contact) {
             dump($contact['email']);
             $email = $contact['email'];
-           /* $this->mailService->sendEmail(
+            $this->mailService->sendEmail(
                 to: $email,
-                subject: "Atelier d'orientation « Choisir ton avenir avec clarté et confiance » – 08 mars de 10h00 à 12h00",
+                subject: "Atelier d'orientation pour collégiens 3e et 4e – Choisir ton avenir avec clarté et confiance – 13 avril 2025, 14h00 - 16h00",
                 template: 'email/company/atelier-orientation.html.twig',
                 context: [
                     'fullName' => $contact['fullName'],
                 ],
                 sender: "contact@ccib38.com"
-            );*/
+            );
         }
 
         $this->entityManager->flush();
