@@ -27,6 +27,7 @@ services:
       - "8081:80"
     volumes:
       - .:/var/www/html
+      - ./docker/web/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - schollccib_network
     depends_on:

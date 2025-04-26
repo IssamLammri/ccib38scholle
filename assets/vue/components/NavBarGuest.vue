@@ -26,16 +26,17 @@
 
         <div class="d-flex align-items-center">
             <span data-mdb-ripple-init class="px-3 me-2">
-              + 33 7 51 93 84 04
+              + 33 7 65 75 34 21
             </span>
           <span data-mdb-ripple-init class="px-3 me-2">
-               soutien.scolaire.ccib38@gmail.com
+               ccib38.contact@gmail.com
             </span>
           <a
               data-mdb-ripple-init
               class="px-3"
               href="https://maps.app.goo.gl/bMoK4PY1YuLfqciy6"
               role="button"
+              target="_blank"
           >
             <img
                 src="/static/icons/location.webp"

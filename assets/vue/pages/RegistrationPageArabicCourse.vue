@@ -2,18 +2,18 @@
 <template>
   <div class="w-100">
     <nav-bar-guest></nav-bar-guest>
-    <form-registration-academic-support></form-registration-academic-support>
+    <form-registration-arabic-course></form-registration-arabic-course>
   </div>
 
 </template>
 <script>
 import NewComponent from '../components/NewComponent.vue';
 import NavBarGuest from "../components/NavBarGuest.vue";
-import FormRegistrationAcademicSupport from "./registrationPageAcademicSupport/FormRegistrationAcademicSupport.vue";
+import FormRegistrationArabicCourse from "./registrationPageArabicCourse/FormRegistrationArabicCourse.vue";
 export default {
-  name: 'RegistrationPageAcademicSupport',
+  name: 'RegistrationPageArabicCourse',
   components: {
-    FormRegistrationAcademicSupport,
+    FormRegistrationArabicCourse,
     NavBarGuest,
     NewComponent
   },
@@ -25,7 +25,6 @@ export default {
   props: {
   },
   mounted () {
-    console.log('Hello from Hello.vue')
   },
   methods: {
   }

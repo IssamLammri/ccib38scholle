@@ -1,0 +1,17 @@
+{# templates/registration/new.html.twig #}
+{% extends 'base.guest.html.twig' %}
+
+{% block title %}Inscription Cours d’Arabe 2025/2026{% endblock %}
+
+{% block body %}
+    <div id="app">
+        <registration-page-arabic-course-show
+                :registration="{{ registration|serialize('json', {'groups':'read_registration'}) }}"
+        ></registration-page-arabic-course-show>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}

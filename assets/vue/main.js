@@ -13,6 +13,8 @@ import StudyClass from './pages/studyClass/StudyClass.vue';
 import SessionShow from './pages/session/SessionShow.vue';
 import SessionList from './pages/session/SessionList.vue';
 import RegistrationPageAcademicSupport from './pages/RegistrationPageAcademicSupport.vue';
+import RegistrationPageArabicCourse from './pages/RegistrationPageArabicCourse.vue';
+import RegistrationPageArabicCourseShow from './pages/RegistrationPageArabicCourseShow.vue';
 import FooterComponent from "./components/FooterComponent.vue";
 import * as bootstrap from 'bootstrap'
 
@@ -46,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('SessionShow', SessionShow);
     app.component('SessionList', SessionList);
     app.component('RegistrationPageAcademicSupport', RegistrationPageAcademicSupport);
+    app.component('RegistrationPageArabicCourse', RegistrationPageArabicCourse);
+    app.component('RegistrationPageArabicCourseShow', RegistrationPageArabicCourseShow);
     app.component('FooterComponent', FooterComponent);
 
     if (document.querySelector('#app')) {

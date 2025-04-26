@@ -1,0 +1,43 @@
+{# templates/email/registration_confirmation.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmation de votre demande d’inscription – CCIB 38</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
+<div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    <h2 style="text-align: center; color: #0056b3;">Confirmation de votre demande</h2>
+
+    <p>Bonjour {{ firstName }} {{ lastName }},</p>
+
+    <p>
+        Nous avons bien enregistré votre demande d’inscription au Cours d’Arabe 2025/2026 .
+        Vous pouvez suivre l’avancement de votre dossier en cliquant sur le bouton ci-dessous :
+    </p>
+
+    <div style="text-align: center; margin: 20px 0;">
+        <a href="{{ url('app_registration_arabic_course_view', { token: token }) }}"
+           style="background-color: #0056b3; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; display: inline-block; font-size: 16px;">
+            Suivre l’avancement de mon inscription
+        </a>
+    </div>
+
+    <p>
+        Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :
+    </p>
+    <p style="background-color: #f9f9f9; padding: 10px; border-left: 4px solid #0056b3;">
+        {{ url('app_registration_arabic_course_view', { token: token }) }}
+    </p>
+
+    <p style="margin-top: 20px;">
+        Merci de votre confiance !<br>
+        L’équipe du Centre Culturel Ibn Badis de Grenoble
+    </p>
+
+    <p style="text-align: center; color: #777; margin-top: 30px;">
+        Si vous n’avez pas effectué cette demande, ignorez simplement cet e-mail.
+    </p>
+</div>
+</body>
+</html>
