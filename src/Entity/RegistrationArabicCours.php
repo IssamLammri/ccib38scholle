@@ -124,6 +124,18 @@ class RegistrationArabicCours
     #[Groups(['read_registration'])]
     private ?string $childPhotoFilename = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['read_registration'])]
+    private ?string $wasEnrolled2024 = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['read_registration'])]
+    private ?string $previousLevel = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['read_registration'])]
+    private ?string $siblingEnrolled = null;
+
     #[ORM\Column(type:"datetime_immutable")]
     #[Groups(['read_registration'])]
     private \DateTimeImmutable $createdAt;
@@ -451,4 +463,38 @@ class RegistrationArabicCours
         $this->childPhotoFilename = $filename;
         return $this;
     }
+
+    public function getWasEnrolled2024(): ?string
+    {
+        return $this->wasEnrolled2024;
+    }
+
+    public function setWasEnrolled2024(?string $wasEnrolled2024): RegistrationArabicCours
+    {
+        $this->wasEnrolled2024 = $wasEnrolled2024;
+        return $this;
+    }
+
+    public function getPreviousLevel(): ?string
+    {
+        return $this->previousLevel;
+    }
+
+    public function setPreviousLevel(?string $previousLevel): RegistrationArabicCours
+    {
+        $this->previousLevel = $previousLevel;
+        return $this;
+    }
+
+    public function getSiblingEnrolled(): ?string
+    {
+        return $this->siblingEnrolled;
+    }
+
+    public function setSiblingEnrolled(?string $siblingEnrolled): RegistrationArabicCours
+    {
+        $this->siblingEnrolled = $siblingEnrolled;
+        return $this;
+    }
+
 }

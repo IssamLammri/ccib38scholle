@@ -2,24 +2,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Confirmation de votre demande d’inscription – CCIB 38</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; padding: 20px;">
 <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
     <h2 style="text-align: center; color: #0056b3;">Confirmation de votre demande</h2>
 
-    <p>Bonjour {{ firstName }} {{ lastName }},</p>
+    <p>Bonjour chers parents,</p>
 
     <p>
-        Nous avons bien enregistré votre demande d’inscription au Cours d’Arabe 2025/2026 .
-        Vous pouvez suivre l’avancement de votre dossier en cliquant sur le bouton ci-dessous :
+        Nous avons bien reçu la demande d’inscription pour l’année 2025/2026 :
     </p>
+    <ul>
+        <li><strong>Nom de l’enfant :</strong> {{ firstName }} {{ lastName }}</li>
+        <li><strong>Date de naissance :</strong> {{ childDob|date('d/m/Y') }}</li>
+    </ul>
+
+    {% if wasEnrolled2024 == 'oui' %}
+        <p>
+            Votre prochaine étape consiste à effectuer le paiement au sein du Centre
+            Culturel Ibn Badis de Grenoble, afin de valider définitivement l’inscription de votre enfant.
+        </p>
+    {% else %}
+        <p>
+            Vous êtes actuellement sur liste d’attente ; Nous vous remercions de votre patience et nous vous contacterons très prochainement pour vous informer de l’évolution de votre dossier.
+        </p>
+    {% endif %}
 
     <div style="text-align: center; margin: 20px 0;">
         <a href="{{ url('app_registration_arabic_course_view', { token: token }) }}"
            style="background-color: #0056b3; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; display: inline-block; font-size: 16px;">
-            Suivre l’avancement de mon inscription
+            Suivre ma demande
         </a>
     </div>
 
@@ -30,12 +44,16 @@
         {{ url('app_registration_arabic_course_view', { token: token }) }}
     </p>
 
-    <p style="margin-top: 20px;">
-        Merci de votre confiance !<br>
-        L’équipe du Centre Culturel Ibn Badis de Grenoble
+    <hr style="border:none;border-top:1px solid #eee;margin:20px 0;" />
+
+    <p>
+        <strong>Centre Culturel Ibn Badis de Grenoble</strong><br>
+        14 rue Peyroulat, 38000 Grenoble<br>
+        Tél. : + 33 7 65 75 34 21 <br>
+        Email : <a href="mailto:ccib38.contact@gmail.com">ccib38.contact@gmail.com</a>
     </p>
 
-    <p style="text-align: center; color: #777; margin-top: 30px;">
+    <p style="text-align: center; color: #777; margin-top: 20px;">
         Si vous n’avez pas effectué cette demande, ignorez simplement cet e-mail.
     </p>
 </div>
