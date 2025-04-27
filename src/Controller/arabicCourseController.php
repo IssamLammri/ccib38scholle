@@ -77,6 +77,9 @@ class arabicCourseController extends AbstractController
             ->setMedicalTreatment($data['medicalTreatment'])
             ->setLegalDeclaration((bool) $data['legalDeclaration'])
             ->setPaymentTerms((bool) $data['paymentTerms'])
+            ->setWasEnrolled2024($data['wasEnrolled2024'] ?? null)
+            ->setPreviousLevel($data['previousLevel'] ?? null)
+            ->setSiblingEnrolled($data['siblingEnrolled'] ?? null);
         ;
 
         // 3) upload de la photo si présente
@@ -99,14 +102,16 @@ class arabicCourseController extends AbstractController
 
         // 5) envoi de l’e-mail de confirmation
         $this->mailService->sendEmail(
-            $data['contactEmail'],
-            'Confirmation de votre demande d\'inscription [Cours d\'arabe]– CCIB38',
+            $registration->getContactEmail(),
+            'Confirmation de votre demande d\'inscription [Cours d\'arabe] – CCIB 38',
             'email/registration_confirmation.html.twig',
             [
-                'firstName'   => $registration->getChildFirstName(),
-                'lastName'    => $registration->getChildLastName(),
-                'token'       => $registration->getToken(),
-                'nextStep'    => 'Le paiement des frais scolaires afin que nous puissions traiter votre demande'
+                'firstName'         => $registration->getChildFirstName(),
+                'lastName'          => $registration->getChildLastName(),
+                'childDob'          => $registration->getChildDob(),
+                'childLevel'        => $registration->getChildLevel(),
+                'wasEnrolled2024'   => $registration->getWasEnrolled2024(),
+                'token'             => $registration->getToken(),
             ]
         );
 

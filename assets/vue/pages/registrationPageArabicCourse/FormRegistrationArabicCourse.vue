@@ -53,14 +53,20 @@
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="childDob" class="form-label">Date de naissance :</label>
-            <input
-                type="date"
-                id="childDob"
-                class="form-control"
-                v-model="form.childDob"
-                required
-            />
+            <label for="endTime" class="form-label">Date de naissance </label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fas fa-calendar-alt"></i>
+              </span>
+              <flatpickr
+                  v-model="form.childDob"
+                  :config="flatpickrDobConfig"
+                  class="form-control bg-white"
+                  id="childDob"
+                  placeholder="JJ/MM/AAAA"
+                  required
+              />
+            </div>
           </div>
           <div class="col-md-6 mb-3">
             <label for="childGender" class="form-label">Genre :</label>
@@ -76,48 +82,105 @@
             </select>
           </div>
         </div>
-        <div class="mb-3">
-          <label for="childLevel" class="form-label">
-            Niveau d’inscription au CCIB38 durant l’année scolaire 2024/2025 :
-          </label>
-          <select
-              id="childLevel"
-              class="form-select"
-              v-model="form.childLevel"
-              required
-          >
-            <option value="" disabled>-- sélectionner le niveau --</option>
-            <option v-for="level in levels" :key="level" :value="level">
-              {{ level }}
-            </option>
-          </select>
-        </div>
-        <!-- Upload photo -->
-        <div class="mb-4 text-center photo-upload">
-          <!-- Cercle contenant soit l'icône par défaut, soit l'aperçu -->
-          <div class="profile-placeholder mb-2">
-            <template v-if="photoPreview">
-              <img :src="photoPreview"
-                   alt="Photo de l’enfant"
-                   class="rounded-circle preview-img"/>
-            </template>
-            <template v-else>
-              <i class="bi bi-person-circle default-icon"></i>
-            </template>
+        <!-- Vérification inscription précédente -->
+        <fieldset class="mb-4 p-3 border rounded">
+          <legend class="fw-semibold">
+            <i class="bi bi-info-circle-fill text-primary me-2"></i>
+            Était-il inscrit au CCIB38 en 2024/2025 ?
+          </legend>
+          <div class="form-check form-check-inline">
+            <input
+                class="form-check-input"
+                type="radio"
+                id="wasEnrolledYes"
+                value="oui"
+                v-model="form.wasEnrolled2024"
+            />
+            <label class="form-check-label" for="wasEnrolledYes">oui</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input
+                class="form-check-input"
+                type="radio"
+                id="wasEnrolledNo"
+                value="non"
+                v-model="form.wasEnrolled2024"
+            />
+            <label class="form-check-label" for="wasEnrolledNo">non</label>
           </div>
 
-          <!-- Label stylé comme un bouton, input file caché -->
-          <label class="btn btn-outline-primary btn-sm">
-            Importer la photo de l’élève
-            <input
-                type="file"
-                accept="image/*"
-                name="childPhoto"
-                @change="onPhotoChange"
-                class="d-none"
-            />
-          </label>
-        </div>
+          <!-- Niveau précédent s’il était inscrit -->
+          <div v-if="form.wasEnrolled2024 === 'oui'" class="mt-3">
+            <label for="previousLevel" class="form-label">Quel niveau avait-il en 2024/2025 ?</label>
+            <select
+                id="previousLevel"
+                class="form-select"
+                v-model="form.previousLevel"
+            >
+              <option value="" disabled>-- sélectionner le niveau précédent --</option>
+              <option v-for="level in levels" :key="level" :value="level">
+                {{ level }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Frère ou sœur inscrit s’il ne l’était pas -->
+          <div v-if="form.wasEnrolled2024 === 'non'" class="mt-3">
+            <label class="form-label">Un frère ou une sœur était-il inscrit ?</label><br>
+            <div class="form-check form-check-inline">
+              <input
+                  class="form-check-input"
+                  type="radio"
+                  id="siblingEnrolledYes"
+                  value="oui"
+                  v-model="form.siblingEnrolled"
+              />
+              <label class="form-check-label" for="siblingEnrolledYes">oui</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                  class="form-check-input"
+                  type="radio"
+                  id="siblingEnrolledNo"
+                  value="non"
+                  v-model="form.siblingEnrolled"
+              />
+              <label class="form-check-label" for="siblingEnrolledNo">non</label>
+            </div>
+          </div>
+        </fieldset>
+        <alert
+            v-if="messageAlert"
+            :text="messageAlert"
+            :type="typeAlert"
+            :show-close-button="false"
+        />
+        <!-- Upload photo -->
+<!--        <div class="mb-4 text-center photo-upload">-->
+<!--          &lt;!&ndash; Cercle contenant soit l'icône par défaut, soit l'aperçu &ndash;&gt;-->
+<!--          <div class="profile-placeholder mb-2">-->
+<!--            <template v-if="photoPreview">-->
+<!--              <img :src="photoPreview"-->
+<!--                   alt="Photo de l’enfant"-->
+<!--                   class="rounded-circle preview-img"/>-->
+<!--            </template>-->
+<!--            <template v-else>-->
+<!--              <i class="bi bi-person-circle default-icon"></i>-->
+<!--            </template>-->
+<!--          </div>-->
+
+<!--          &lt;!&ndash; Label stylé comme un bouton, input file caché &ndash;&gt;-->
+<!--          <label class="btn btn-outline-primary btn-sm">-->
+<!--            Importer la photo de l’élève-->
+<!--            <input-->
+<!--                type="file"-->
+<!--                accept="image/*"-->
+<!--                name="childPhoto"-->
+<!--                @change="onPhotoChange"-->
+<!--                class="d-none"-->
+<!--            />-->
+<!--          </label>-->
+<!--        </div>-->
       </div>
 
       <!-- ÉTAPE 2 : informations des parents -->
@@ -337,7 +400,7 @@
                   <input
                       type="text"
                       class="form-control"
-                      placeholder="Relation"
+                      placeholder="Lien avec l’enfant"
                       v-model="form.authorizedOtherRelation"
                   />
                 </div>
@@ -502,7 +565,7 @@
             <ul class="list-group list-group-flush">
               <li class="list-group-item">
                 <i class="bi bi-person-circle text-primary me-2"></i>
-                <strong>Enfant :</strong> {{ form.childFirstName }} {{ form.childLastName }}, né(e) le {{ form.childDob }}, {{ form.childGender }}, niveau {{ form.childLevel }}
+                <strong>Enfant :</strong> {{ form.childFirstName }} {{ form.childLastName }}, né(e) le {{ form.childDob }}, {{ form.childGender }}, niveau {{ form.previousLevel }}
               </li>
               <li class="list-group-item">
                 <i class="bi bi-people-fill text-primary me-2"></i>
@@ -583,11 +646,11 @@
           />
           <label class="form-check-label" for="paymentTerms">
             <i class="bi bi-credit-card-fill text-info me-2"></i>
-            J’accepte que l’inscription soit validée à réception du règlement (carte, chèque en 4 fois max, ou espèce).<br>
+            J’accepte que l’inscription de mon enfant ne soit validée qu’à réception du règlement (carte bancaire, espèces ou chèque en plusieurs fois) ; la date limite pour valider l’inscription est fixée au 30 mai 2025.<br>
             <small class="text-muted">
-              Grille tarifaire : 1 enfant : 230 € | 2 enfants : 430 € | 3 enfants : 600 € | dossier : 10 €<br>
+              Grille tarifaire : 1 enfant : 230 € | 2 enfants : 430 € | 3 enfants : 600 € | frais de dossier : 10 € par enfant<br>
               Permanences paiement : mercredi. 16h–17h15, samedi. 9h15–12h & 14h–17h15, dimanche. 9h15–12h & 14h–17h15.<br>
-              (*) paiement possible en 4 fois de mai 2025 à fév. 2026.
+              (*) paiement possible en carte bancaire, espèce ou chèque en plusieurs fois.
             </small>
           </label>
         </div>
@@ -632,8 +695,9 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-body text-center py-4">
-            <h5>🎉 Inscription réussie !</h5>
+            <h5>🎉 Demande d'inscription enregistrée !</h5>
             <p>Votre demande a bien été enregistrée pour l’année 2025/2026.</p>
+            <p>Vous allez recevoir un email récapitulatif de votre demande, contenant un bouton pour suivre l'avancement de votre inscription.</p>
           </div>
           <div class="modal-footer justify-content-around">
             <!-- bouton pour réinscrire un autre enfant -->
@@ -665,8 +729,13 @@
 </template>
 
 <script>
+import Flatpickr from 'vue-flatpickr-component';
+import 'flatpickr/dist/flatpickr.css';
+import Alert from "../../ui/Alert.vue";
+
 export default {
   name: 'RegistrationArabicCourse',
+  components: {Alert, Flatpickr /* …autres composants… */ },
   data() {
     return {
       currentStep: 0,
@@ -679,9 +748,18 @@ export default {
         "Autorisations",
         "Validation"
       ],
+      flatpickrDobConfig: {
+        locale: 'fr',
+        dateFormat: 'd/m/Y',
+      },
+      messageAlert: '',
+      typeAlert: 'danger',
       form: {
         childFirstName: '',
         childPhotoFile: null,
+        wasEnrolled2024: '',
+        previousLevel: '',
+        siblingEnrolled: '',
         childLastName: '',
         childDob: '',
         childGender: '',
@@ -720,26 +798,34 @@ export default {
         'N3_2',
         'Adult/Arabe',
         'ADO/Coran',
-        'j’étais inscrit sur une autre école',
-        'j’étais nulle part inscrit et il me faut un test pour connaître mon niveau'
       ]
     };
   },
+  watch: {
+    'form.childDob'(newVal) {
+      if (!newVal) {
+        this.messageAlert = ''
+        return
+      }
+      // parse "JJ/MM/AAAA"
+      const [d, m, y] = newVal.split('/')
+      const picked = new Date(`${y}-${m}-${d}`)
+      const limit = new Date('2019-12-31')
+      if (picked > limit) {
+        this.messageAlert =
+            "L’âge de votre enfant ne permet pas d’être inscrit(e) " +
+            "pour l’année 2025/2026 au sein de notre centre."
+      } else {
+        this.messageAlert = ''
+      }
+    }
+  },
   computed: {
     stepValid() {
-
       const f = this.form;
 
-
-      // Étape 1 : infos de l'enfant
       if (this.currentStep === 0) {
-        return !!(
-            f.childLastName &&
-            f.childFirstName &&
-            f.childDob &&
-            f.childGender &&
-            f.childLevel
-        );
+        return this.validateStep1();
       }
 
       // Étape 2 : infos des parents
@@ -795,6 +881,51 @@ export default {
     }
   },
   methods: {
+    validateStep1() {
+      const {
+        childLastName,
+        childFirstName,
+        childDob,
+        childGender,
+        wasEnrolled2024,
+        previousLevel,
+        siblingEnrolled
+      } = this.form;
+
+      // 1) Tous les champs de base doivent être remplis
+      const baseFieldsFilled = [
+        childLastName,
+        childFirstName,
+        childDob,
+        childGender
+      ].every(Boolean);
+
+      if (!baseFieldsFilled) {
+        return false;
+      }
+      if (childDob) {
+        const [day, month, year] = childDob.split('/');
+        const dobDate = new Date(`${year}-${month}-${day}`);
+        const today = new Date();
+        const age = today.getFullYear() - dobDate.getFullYear();
+        if (age < 6) {
+
+          return false;
+        }
+      }
+
+      // 2) Validation conditionnelle selon l’inscription 2024/2025
+      if (wasEnrolled2024 === 'oui') {
+        return Boolean(previousLevel);
+      }
+
+      if (wasEnrolled2024 === 'non') {
+        return Boolean(siblingEnrolled);
+      }
+
+      // Si on n'a pas répondu à la question “était-il inscrit ?”, on bloque
+      return false;
+    },
     reloadPage() {
       window.location.reload();
     },

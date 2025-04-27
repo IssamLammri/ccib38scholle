@@ -6,6 +6,7 @@
   >
     <span class="flex-grow-1" v-html="text"></span>
     <button
+        v-if="showCloseButton"
         type="button"
         class="btn-close ms-3"
         data-bs-dismiss="alert"
@@ -25,6 +26,10 @@ export default {
     text: {
       type: String,
       required: true
+    },
+    showCloseButton: {
+      type: Boolean,
+      default: true
     }
   }
 }

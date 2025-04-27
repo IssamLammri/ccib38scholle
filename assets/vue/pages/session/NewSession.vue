@@ -133,7 +133,7 @@ import Flatpickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 
 export default {
-  name: "SessionCreate",
+  name: "NewSession",
   components: {
     Flatpickr,
   },

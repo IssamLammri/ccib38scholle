@@ -1,19 +1,23 @@
-<!-- assets/vue/pages/NewPage.vue -->
 <template>
   <div class="w-100">
     <nav-bar-guest />
-
     <div class="container py-4">
       <!-- titre général -->
       <h4 class="text-center mb-4">
         Étapes à suivre pour finaliser votre inscription au sein du Centre Culturel Ibn Badis de Grenoble
       </h4>
 
-      <div class="d-flex align-items-center justify-content-between wizard-steps mb-4">
+      <div class="wizard-steps d-flex justify-content-between align-items-start mb-4 position-relative">
         <template v-for="(step, idx) in stepLabels" :key="idx">
-          <div   data-bs-toggle="tooltip"
-                 data-bs-placement="top"
-                 :title="step.full" class="d-flex align-items-center flex-fill">
+          <div class="step-item d-flex flex-column align-items-center position-relative flex-fill">
+            <!-- Ligne entre les cercles -->
+            <div
+                v-if="idx < stepLabels.length - 1"
+                class="step-bar"
+                :class="{ completed: currentStep > idx + 1, active: currentStep === idx + 1 }"
+            ></div>
+
+            <!-- Cercle -->
             <div
                 class="step-circle"
                 :class="{ completed: currentStep > idx, active: currentStep === idx }"
@@ -23,15 +27,18 @@
               </template>
               <template v-else>{{ idx + 1 }}</template>
             </div>
-            <div class="flex-fill step-name text-center">{{ step.label }}</div>
+
+            <!-- Label -->
             <div
-                v-if="idx < stepLabels.length - 1"
-                class="step-bar"
-                :class="{ completed: currentStep > idx + 1, active: currentStep === idx + 1 }"
-            ></div>
+                class="step-name mt-2"
+                :class="{ 'text-success fw-semibold': currentStep > idx && step.label.toLowerCase().includes('formulaire') }"
+            >
+              {{ step.label }}
+            </div>
           </div>
         </template>
       </div>
+
 
       <div class="card shadow-sm">
         <!-- En-tête -->
@@ -46,22 +53,22 @@
             <h6 class="fw-semibold">Information de l'enfant</h6>
             <div class="row align-items-center">
               <!-- Colonne Photo -->
-              <div class="col-md-4 text-center">
-                <template v-if="registration.childPhotoFilename">
-                  <img
-                      :src="photoUrl"
-                      alt="Photo de l’enfant"
-                      class="img-fluid rounded mb-2"
-                      style="max-height: 180px; object-fit: cover;"
-                  />
-                </template>
-                <template v-else>
-                  <div class="text-muted mb-2">
-                    <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
-                  </div>
-                  <p class="small text-muted">Pas de photo</p>
-                </template>
-              </div>
+<!--              <div class="col-md-4 text-center">-->
+<!--                <template v-if="registration.childPhotoFilename">-->
+<!--                  <img-->
+<!--                      :src="photoUrl"-->
+<!--                      alt="Photo de l’enfant"-->
+<!--                      class="img-fluid rounded mb-2"-->
+<!--                      style="max-height: 180px; object-fit: cover;"-->
+<!--                  />-->
+<!--                </template>-->
+<!--                <template v-else>-->
+<!--                  <div class="text-muted mb-2">-->
+<!--                    <i class="bi bi-person-circle" style="font-size: 4rem;"></i>-->
+<!--                  </div>-->
+<!--                  <p class="small text-muted">Pas de photo</p>-->
+<!--                </template>-->
+<!--              </div>-->
               <!-- Colonne Données -->
               <div class="col-md-8 ps-md-4">
                 <div class="row">
@@ -77,6 +84,9 @@
                   <div class="col-sm-6 mb-2">
                     <p><strong>Niveau :</strong> {{ registration.childLevel }}</p>
                   </div>
+                  <div class="col-sm-6 mb-2">
+                    <p><i class="bi bi-envelope-fill me-1"></i><strong>Email de contact:</strong> {{ registration.contactEmail }}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -90,7 +100,6 @@
               <div class="col-md-6 border-end">
                 <p class="mb-1"><strong>Père :</strong> {{ registration.fatherLastName }} {{ registration.fatherFirstName }}</p>
                 <p class="mb-1"><i class="bi bi-telephone-fill me-1"></i><strong>Tél. Père :</strong> {{ registration.fatherPhone }}</p>
-                <p><i class="bi bi-envelope-fill me-1"></i><strong>Email :</strong> {{ registration.contactEmail }}</p>
               </div>
               <div class="col-md-6 ps-md-4">
                 <p class="mb-1"><strong>Mère :</strong> {{ registration.motherLastName }} {{ registration.motherFirstName }}</p>
@@ -191,26 +200,36 @@ export default {
   },
   data() {
     return {
-      steps: [
-        "Formulaire",
-        "Paiement",
-        "Validation",
-        "Répartition",
-        "Compte"
-      ],
-      stepLabels: [
-        { label: 'Formulaire', full: 'Remplir le formulaire et valider' },
-        { label: 'Paiement', full: 'Paiement des droits d\'inscription' },
-        { label: 'Validation', full: 'Validation par le service CCIB38' },
-        { label: 'Répartition', full: 'Distribution des élèves en classe' },
-        { label: 'Compte', full: 'Création et validation du compte sur la plateforme' }
-      ],
-      // ici on est sur l’étape 2 (index 1)
       currentStep: 1
     };
   },
   computed: {
-    // construit l'URL publique de la photo
+    // Génère dynamiquement les étapes, avec "Liste d’attente" si nécessaire
+    stepLabels() {
+      const labels = [
+        { label: 'Formulaire', full: 'Remplir le formulaire et valider' },
+      ];
+
+      // si l’enfant n’était pas inscrit en 2024/2025, on ajoute la étape "Liste d’attente"
+      console.log(this.registration.wasEnrolled2024)
+      if (this.registration.wasEnrolled2024 !== 'oui') {
+        labels.push({
+          label: 'Liste d’attente',
+          full:  'Gestion de la liste d’attente'
+        });
+      }
+
+      // on ajoute ensuite les étapes finales
+      labels.push(
+          { label: 'Paiement',   full: 'Paiement des droits d\'inscription' },
+          { label: 'Validation', full: 'Validation par le service CCIB38' },
+          { label: 'Répartition', full: 'Distribution des élèves en classe' },
+          { label: 'Création de compte',      full: 'Création et validation du compte sur la plateforme' }
+      );
+
+      return labels;
+    },
+    // URL de la photo si nécessaire
     photoUrl() {
       return `/uploads/${this.registration.childPhotoFilename}`;
     }
@@ -253,47 +272,58 @@ export default {
   background-color: #f8f9fa;
   font-size: 0.875rem;
 }
-
 .wizard-steps {
-  font-family: Arial, sans-serif;
+  position: relative;
+  gap: 0.5rem;
 }
+.step-item {
+  position: relative;
+  text-align: center;
+}
+
 .step-circle {
-  width: 2rem;
-  height: 2rem;
+  width: 36px;
+  height: 36px;
   border: 2px solid #ccc;
   border-radius: 50%;
-  background: #fff;
+  background-color: #e9ecef;
+  color: #6c757d;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: #ccc;
-  transition: all .2s;
+  z-index: 1;
 }
 .step-circle.active {
-  border-color: #0062cc;
-  color: #0062cc;
+  background-color: #fff;
+  border-color: #0d6efd;
+  color: #0d6efd;
 }
 .step-circle.completed {
-  background: #28a745;
+  background-color: #28a745;
   border-color: #28a745;
   color: #fff;
 }
+
+/* Barre horizontale entre les cercles */
 .step-bar {
+  position: absolute;
+  top: 18px; /* Alignée au milieu du cercle */
+  left: 50%;
+  width: 100%;
   height: 2px;
-  background: #ccc;
-  margin: 0 .5rem;
-  flex: 1;
-  transition: all .2s;
+  background-color: #dee2e6;
+  z-index: 0;
 }
 .step-bar.active {
-  background: #0062cc;
+  background-color: #0d6efd;
 }
 .step-bar.completed {
-  background: #28a745;
+  background-color: #28a745;
 }
+
 .step-name {
-  font-size: .85rem;
-  color: #666;
+  font-size: 0.9rem;
+  color: #333;
 }
 </style>

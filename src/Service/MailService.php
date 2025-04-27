@@ -48,7 +48,8 @@ class MailService
         } catch (SyntaxError $e) {
             throw new \Exception('Erreur de syntaxe dans le template Twig : ' . $e->getMessage(), 0, $e);
         }
-        $senderMail = $sender ?? 'ecole@ccib38.com';
+        $senderMail = $sender ?? 'contact@ccib38.fr';
+        //$senderMail = $sender ?? 'ecole@ccib38.com';
 
         $email = (new Email())
             ->from(new Address($senderMail, 'CCIB38'))
