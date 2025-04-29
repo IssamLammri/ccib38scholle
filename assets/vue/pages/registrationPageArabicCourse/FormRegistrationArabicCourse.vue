@@ -126,7 +126,7 @@
 
           <!-- Frère ou sœur inscrit s’il ne l’était pas -->
           <div v-if="form.wasEnrolled2024 === 'non'" class="mt-3">
-            <label class="form-label">Un frère ou une sœur était-il inscrit ?</label><br>
+            <label class="form-label">Un frère ou une soeur inscrit au CCIB38 en 2024/2025 ?</label><br>
             <div class="form-check form-check-inline">
               <input
                   class="form-check-input"
@@ -631,8 +631,7 @@
           />
           <label class="form-check-label" for="legalDeclaration">
             <i class="bi bi-file-earmark-check-fill text-success me-2"></i>
-            Je soussigné, responsable légal de l’enfant, déclare exacts les renseignements portés et autorise le CCIB38 à prendre, si besoin, toutes mesures (traitement médical, hospitalisation, intervention chirurgicale).
-          </label>
+            Je soussigné(e), responsable légal(e) de l’enfant, déclare exacts les renseignements fournis et autorise le CCIB38 à prendre, si besoin, toutes mesures nécessaires (traitement médical, hospitalisation, intervention chirurgicale).          </label>
         </div>
 
         <!-- Conditions de paiement -->
@@ -685,7 +684,7 @@
             type="submit"
             class="btn btn-success"
         >
-          Valider l’inscription
+          Envoyer la demande d'inscription
         </button>
       </div>
     </form>
@@ -836,8 +835,7 @@ export default {
             f.motherLastName &&
             f.motherFirstName &&
             f.contactEmail &&
-            f.fatherPhone &&
-            f.motherPhone &&
+            (f.fatherPhone || f.motherPhone) &&
             f.address &&
             f.postalCode &&
             f.city
