@@ -267,9 +267,9 @@
               <input
                   type="tel"
                   id="fatherPhone"
+                  name="fatherPhone"
                   class="form-control"
                   v-model.trim="form.fatherPhone"
-                  required
               />
             </div>
           </div>
@@ -280,9 +280,9 @@
               <input
                   type="tel"
                   id="motherPhone"
+                  name="motherPhone"
                   class="form-control"
                   v-model.trim="form.motherPhone"
-                  required
               />
             </div>
           </div>
