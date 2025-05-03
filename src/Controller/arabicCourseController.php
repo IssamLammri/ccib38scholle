@@ -53,7 +53,7 @@ class arabicCourseController extends AbstractController
         $registration
             ->setChildFirstName($data['childFirstName'])
             ->setChildLastName($data['childLastName'])
-            ->setChildDob(new \DateTimeImmutable($data['childDob']))
+            ->setChildDob(\DateTimeImmutable::createFromFormat('d/m/Y', $data['childDob']))
             ->setChildGender($data['childGender'])
             ->setChildLevel($data['childLevel'])
             ->setFatherFirstName($data['fatherFirstName'])
@@ -80,7 +80,6 @@ class arabicCourseController extends AbstractController
             ->setWasEnrolled2024($data['wasEnrolled2024'] ?? null)
             ->setPreviousLevel($data['previousLevel'] ?? null)
             ->setSiblingEnrolled($data['siblingEnrolled'] ?? null);
-        ;
 
         // 3) upload de la photo si présente
         /** @var UploadedFile|null $photoFile */
