@@ -19,10 +19,10 @@
             <h2 class="mb-4 text-primary">Informations sur le Père</h2>
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Nom :</strong> {{ parent_entity.fatherLastName ?? 'Non disponible' }}</p>
-                    <p><strong>Prénom :</strong> {{ parent_entity.fatherFirstName ?? 'Non disponible' }}</p>
-                    <p><strong>Email :</strong> {{ parent_entity.fatherEmail ?? 'Non disponible' }}</p>
-                    <p><strong>Téléphone :</strong> {{ parent_entity.fatherPhone ?? 'Non disponible' }}</p>
+                    <p><strong>Nom :</strong> {{ parent_entity.fatherLastName|default('Non disponible') }}</p>
+                    <p><strong>Prénom :</strong> {{ parent_entity.fatherFirstName|default('Non disponible') }}</p>
+                    <p><strong>Email :</strong> {{ parent_entity.fatherEmail|default('Non disponible') }}</p>
+                    <p><strong>Téléphone :</strong> {{ parent_entity.fatherPhone|default('Non disponible') }}</p>
                 </div>
             </div>
 
@@ -30,17 +30,17 @@
             <h2 class="mt-5 mb-4 text-success">Informations sur la Mère</h2>
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Nom :</strong> {{ parent_entity.motherLastName ?? 'Non disponible' }}</p>
-                    <p><strong>Prénom :</strong> {{ parent_entity.motherFirstName ?? 'Non disponible' }}</p>
-                    <p><strong>Email :</strong> {{ parent_entity.motherEmail ?? 'Non disponible' }}</p>
-                    <p><strong>Téléphone :</strong> {{ parent_entity.motherPhone ?? 'Non disponible' }}</p>
+                    <p><strong>Nom :</strong> {{ parent_entity.motherLastName|default('Non disponible') }}</p>
+                    <p><strong>Prénom :</strong> {{ parent_entity.motherFirstName|default('Non disponible') }}</p>
+                    <p><strong>Email :</strong> {{ parent_entity.motherEmail|default('Non disponible') }}</p>
+                    <p><strong>Téléphone :</strong> {{ parent_entity.motherPhone|default('Non disponible') }}</p>
                 </div>
             </div>
 
             <!-- Informations sur la Famille -->
             <h2 class="mt-5 mb-4 text-info">Informations sur la Famille</h2>
             <div>
-                <p><strong>Statut familial :</strong> {{ parent_entity.familyStatus ?? 'Non disponible' }}</p>
+                <p><strong>Statut familial :</strong> {{ parent_entity.familyStatus|default('Non disponible') }}</p>
             </div>
 
             <!-- Liste des étudiants associés -->
@@ -52,18 +52,30 @@
                         <th>Nom complet</th>
                         <th>Date de naissance</th>
                         <th>Niveau</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for student in students %}
                         <tr>
                             <td>{{ student.lastName }} {{ student.firstName }}</td>
-                            <td>{{ student.birthDate ? student.birthDate|date('d/m/Y') : 'Non disponible' }}</td>
-                            <td>{{ student.level ?? 'Non disponible' }}</td>
+                            <td>
+                                {{ student.birthDate
+                                ? student.birthDate|date('d/m/Y')
+                                : 'Non disponible'
+                                }}
+                            </td>
+                            <td>{{ student.level|default('Non disponible') }}</td>
+                            <td>
+                                <a href="{{ path('app_student_show', { id: student.id }) }}"
+                                   class="btn btn-info">
+                                    <i class="fas fa-eye"></i> Voir la fiche
+                                </a>
+                            </td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="3" class="text-center">Aucun étudiant associé</td>
+                            <td colspan="4" class="text-center">Aucun étudiant associé</td>
                         </tr>
                     {% endfor %}
                     </tbody>

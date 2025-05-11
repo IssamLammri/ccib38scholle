@@ -1,63 +1,114 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détails de l'Étudiant{% endblock %}
+{% block title %}détails de l'étudiant{% endblock %}
 
 {% block body %}
     <div class="container mt-5">
         <!-- Bouton retour -->
         <div class="mb-3">
             <a href="{{ path('app_student_index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour à la liste
+                <i class="fas fa-arrow-left"></i> retour à la liste
             </a>
         </div>
 
-        <!-- Titre principal -->
-        <h1 class="text-center mb-5">Fiche Étudiant</h1>
+        {# — Nouveau bloc : boutons vers l’inscription arabe — #}
+        {% if student.registrationArabicCours|length > 0 %}
+            <div class="mb-4">
+                {% for reg in student.registrationArabicCours %}
+                    <a href="{{ path('app_registration_arabic_course_view', { token: reg.token }) }}"
+                       class="btn btn-primary mr-2">
+                        <i class="fas fa-file-alt"></i>&nbsp;voir l'inscription arabe n°{{ loop.index }}
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <h1 class="text-center mb-5">fiche étudiant</h1>
 
         <div class="card shadow p-4">
-            <!-- Informations de l'étudiant -->
-            <h2 class="mb-4 text-primary">Informations sur l'Étudiant</h2>
+            <h2 class="mb-4 text-primary">informations sur l'étudiant</h2>
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Nom :</strong> {{ student.lastName ?? 'Non disponible' }}</p>
-                    <p><strong>Prénom :</strong> {{ student.firstName ?? 'Non disponible' }}</p>
-                    <p><strong>Date de naissance :</strong> {{ student.birthDate ? student.birthDate|date('d/m/Y') : 'Non disponible' }}</p>
-                    <p><strong>Sexe :</strong> {{ student.gender ?? 'Non disponible' }}</p>
+                    <p><strong>Nom :</strong> {{ student.lastName|default('non disponible') }}</p>
+                    <p><strong>Prénom :</strong> {{ student.firstName|default('non disponible') }}</p>
+                    <p><strong>Date de naissance :</strong>
+                        {{ student.birthDate is not null
+                        ? student.birthDate|date('d/m/Y')
+                        : 'non disponible'
+                        }}
+                    </p>
+                    <p><strong>Sexe :</strong> {{ student.gender|default('non disponible') }}</p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Adresse :</strong> {{ student.address ?? 'Non disponible' }}</p>
-                    <p><strong>Code Postal :</strong> {{ student.postalCode ?? 'Non disponible' }}</p>
-                    <p><strong>Ville :</strong> {{ student.city ?? 'Non disponible' }}</p>
-                    <p><strong>Niveau :</strong> {{ student.level ?? 'Non disponible' }}</p>
+                    <p><strong>Adresse :</strong> {{ student.address|default('non disponible') }}</p>
+                    <p><strong>Code postal :</strong> {{ student.postalCode|default('non disponible') }}</p>
+                    <p><strong>Ville :</strong> {{ student.city|default('non disponible') }}</p>
+                    <p><strong>Niveau :</strong> {{ student.level is not null ? student.level : 'non disponible' }}</p>
                 </div>
             </div>
 
-            <!-- Informations des parents -->
-            <h2 class="mt-5 mb-4 text-success">Informations sur les Parents</h2>
+            <h2 class="mt-5 mb-4 text-success">informations sur les parents</h2>
             <div class="row">
                 <div class="col-md-6">
-                    <h4>Informations du Père</h4>
-                    <p><strong>Nom :</strong> {{ (student.parent.fatherLastName ~ ' ' ~ student.parent.fatherFirstName) ?? 'Non disponible' }}</p>
-                    <p><strong>Email :</strong> {{ (student.parent.fatherEmail) ?? 'Non disponible' }}</p>
-                    <p><strong>Téléphone :</strong> {{ (student.parent.fatherPhone) ?? 'Non disponible' }}</p>
+                    <h4>informations du père</h4>
+                    <p><strong>Nom :</strong>
+                        {{ student.parent is not null
+                        ? student.parent.fatherLastName ~ ' ' ~ student.parent.fatherFirstName
+                        : 'non disponible'
+                        }}
+                    </p>
+                    <p><strong>Email :</strong>
+                        {{ student.parent is not null and student.parent.fatherEmail is defined
+                        ? student.parent.fatherEmail
+                        : 'non disponible'
+                        }}
+                    </p>
+                    <p><strong>Téléphone :</strong>
+                        {{ student.parent is not null and student.parent.fatherPhone is defined
+                        ? student.parent.fatherPhone
+                        : 'non disponible'
+                        }}
+                    </p>
                 </div>
                 <div class="col-md-6">
-                    <h4>Informations de la Mère</h4>
-                    <p><strong>Nom :</strong> {{ (student.parent.motherLastName ~ ' ' ~ student.parent.motherFirstName) ?? 'Non disponible' }}</p>
-                    <p><strong>Email :</strong> {{ (student.parent.motherEmail) ?? 'Non disponible' }}</p>
-                    <p><strong>Téléphone :</strong> {{ (student.parent.motherPhone) ?? 'Non disponible' }}</p>
+                    <h4>informations de la mère</h4>
+                    <p><strong>Nom :</strong>
+                        {{ student.parent is not null
+                        ? student.parent.motherLastName ~ ' ' ~ student.parent.motherFirstName
+                        : 'non disponible'
+                        }}
+                    </p>
+                    <p><strong>Email :</strong>
+                        {{ student.parent is not null and student.parent.motherEmail is defined
+                        ? student.parent.motherEmail
+                        : 'non disponible'
+                        }}
+                    </p>
+                    <p><strong>Téléphone :</strong>
+                        {{ student.parent is not null and student.parent.motherPhone is defined
+                        ? student.parent.motherPhone
+                        : 'non disponible'
+                        }}
+                    </p>
                 </div>
             </div>
+
             <div class="mt-4">
-                <p><strong>Statut familial :</strong> {{ (student.parent.familyStatus) ?? 'Non disponible' }}</p>
+                <p><strong>Statut familial :</strong>
+                    {{ student.parent is not null and student.parent.familyStatus is defined
+                    ? student.parent.familyStatus
+                    : 'non disponible'
+                    }}
+                </p>
             </div>
 
-            <!-- Boutons Modifier et Supprimer -->
             <div class="d-flex justify-content-end mt-5">
-                <a href="{{ path('app_student_edit', {'id': student.id}) }}" class="btn btn-warning mr-2">
-                    <i class="fas fa-edit"></i> Modifier
+                <a href="{{ path('app_student_edit', {'id': student.id}) }}"
+                   class="btn btn-warning mr-2">
+                    <i class="fas fa-edit"></i> modifier
                 </a>
-                {{ include('student/_delete_form.html.twig', {'button_label': 'Supprimer', 'class': 'btn btn-danger'}) }}
+                {{ include('student/_delete_form.html.twig',
+                    {'button_label': 'supprimer', 'class': 'btn btn-danger'}) }}
             </div>
         </div>
     </div>

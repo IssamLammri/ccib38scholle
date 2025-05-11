@@ -2,9 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\ParentEntity;
 use App\Entity\RegistrationArabicCours;
+use App\Entity\Student;
 use App\Model\ApiResponseTrait;
+use App\Repository\ParentsRepository;
 use App\Repository\RegistrationArabicCoursRepository;
+use App\Repository\StudentRepository;
 use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -20,7 +24,13 @@ class arabicCourseController extends AbstractController
 {
     use ApiResponseTrait;
 
-    public function __construct(private EntityManagerInterface $entityManager, private UserPasswordHasherInterface $hasher, private MailService $mailService,)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private UserPasswordHasherInterface $hasher,
+        private MailService $mailService,
+        private ParentsRepository $parentsRepository,
+        private StudentRepository $studentRepository,
+    )
     {
     }
     #[Route('/inscription', name: 'app_registration_course_arabe', methods: ['GET'])]
@@ -114,7 +124,56 @@ class arabicCourseController extends AbstractController
             ]
         );
 
-        // 5) réponse JSON avec le token
+        // 6) Création de parent et des enfants
+        $parentFather = $this->parentsRepository->findOneBy(['fatherEmail' => $registration->getContactEmail()]);
+        if ($parentFather === null){
+            $parentMather = $this->parentsRepository->findOneBy(['motherEmail' => $registration->getContactEmail()]);
+            if ($parentMather === null){
+                $parent = new ParentEntity();
+                $parent
+                    ->setFatherFirstName($registration->getFatherFirstName())
+                    ->setFatherLastName($registration->getFatherLastName())
+                    ->setFatherEmail($registration->getContactEmail())
+                    ->setFatherPhone($registration->getFatherPhone())
+                    ->setMotherFirstName($registration->getMotherFirstName())
+                    ->setMotherLastName($registration->getMotherLastName())
+                    ->setMotherEmail($registration->getContactEmail())
+                    ->setMotherPhone($registration->getMotherPhone())
+                    ->setFamilyStatus('married');
+                $this->entityManager->persist($parent);
+                $this->entityManager->flush();
+            } else {
+                $parent = $parentMather;
+            }
+        } else {
+            $parent = $parentFather;
+        }
+
+        // Enregistrement de l'enfant
+        $student = $this->studentRepository->findOneByNameAndParent(
+            $registration->getChildFirstName(),
+            $registration->getChildLastName(),
+            $parent
+        );
+        if ($student === null){
+            $student = new Student();
+            $student
+                ->setFirstName($registration->getChildFirstName())
+                ->setLastName($registration->getChildLastName())
+                ->setBirthDate($registration->getChildDob())
+                ->setParent($parent)
+                ->setGender($registration->getChildGender())
+                ->setCity($registration->getCity())
+                ->setAddress($registration->getAddress())
+                ->setPostalCode($registration->getPostalCode())
+                ->setLevel($registration->getChildLevel());
+            $this->entityManager->persist($student);
+            $this->entityManager->flush();
+        }
+
+        $student->addRegistrationArabicCours($registration);
+        $this->entityManager->flush();
+        // 7) réponse JSON avec le token
         return $this->json([
             'status' => 'success',
             'token'  => $registration->getToken(),
