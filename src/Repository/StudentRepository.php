@@ -28,4 +28,25 @@ class StudentRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Cherche un étudiant par prénom, nom et parent associé
+     *
+     * @param string       $firstName
+     * @param string       $lastName
+     * @param ParentEntity $parent
+     * @return Student|null
+     */
+    public function findOneByNameAndParent(string $firstName, string $lastName, ParentEntity $parent): ?Student
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.firstName = :firstName')
+            ->andWhere('s.lastName = :lastName')
+            ->andWhere('s.parent = :parent')
+            ->setParameter('firstName', $firstName)
+            ->setParameter('lastName', $lastName)
+            ->setParameter('parent', $parent)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 }

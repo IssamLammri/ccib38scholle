@@ -43,9 +43,16 @@ class Student
     #[ORM\Column(type: 'string', length: 255)]
     private ?string $city = null;
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'string')]
     #[Groups(['read_student','read_student_class_registered'])]
-    private ?int $level = null;
+    private ?string $level = null;
+
+    #[ORM\OneToMany(
+        targetEntity: RegistrationArabicCours::class,
+        mappedBy: 'student',
+        cascade: ['persist', 'remove']
+    )]
+    private Collection $registrationArabicCours;
 
     #[ORM\ManyToOne(inversedBy: 'students')]
     #[ORM\JoinColumn(nullable: false)]
@@ -61,6 +68,7 @@ class Student
     public function __construct()
     {
         $this->registrations = new ArrayCollection();
+        $this->registrationArabicCours = new ArrayCollection();
     }
 
     // Getters and Setters
@@ -166,12 +174,12 @@ class Student
         return $this;
     }
 
-    public function getLevel(): ?int
+    public function getLevel(): ?string
     {
         return $this->level;
     }
 
-    public function setLevel(int $level): self
+    public function setLevel(string $level): self
     {
         $this->level = $level;
 
@@ -258,19 +266,19 @@ class Student
     public function getLevelClass(): string
     {
         return match ($this->level) {
-            1 => 'CP',
-            2 => 'CE1',
-            3 => 'CE2',
-            4 => 'CM1',
-            5 => 'CM2',
-            6 => '6ème',
-            7 => '5ème',
-            8 => '4ème',
-            9 => '3ème',
-            10 => '2nde',
-            11 => '1ère',
-            12 => 'Terminale',
-            default => 'Niveau inconnu',
+            '1' => 'CP',
+            '2' => 'CE1',
+            '3' => 'CE2',
+            '4' => 'CM1',
+            '5' => 'CM2',
+            '6' => '6ème',
+            '7' => '5ème',
+            '8' => '4ème',
+            '9' => '3ème',
+            '10' => '2nde',
+            '11' => '1ère',
+            '12' => 'Terminale',
+            default => $this->level,
         };
     }
 
@@ -278,5 +286,35 @@ class Student
     public function getFullName(): string
     {
         return $this->getLastName() . ' ' . $this->getFirstName();
+    }
+
+    /**
+     * @return Collection<int, RegistrationArabicCours>
+     */
+    public function getRegistrationArabicCours(): Collection
+    {
+        return $this->registrationArabicCours;
+    }
+
+    public function addRegistrationArabicCours(RegistrationArabicCours $registration): self
+    {
+        if (!$this->registrationArabicCours->contains($registration)) {
+            $this->registrationArabicCours->add($registration);
+            $registration->setStudent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRegistrationArabicCours(RegistrationArabicCours $registration): self
+    {
+        if ($this->registrationArabicCours->removeElement($registration)) {
+            // assure la mise à jour du lien inverse
+            if ($registration->getStudent() === $this) {
+                $registration->setStudent(null);
+            }
+        }
+
+        return $this;
     }
 }

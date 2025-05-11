@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Model\ApiResponseTrait;
+use App\Repository\RegistrationArabicCoursRepository;
 use App\Security\AppAuthenticator;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,13 +18,18 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 #[IsGranted('ROLE_ADMIN')]
 class RegistrationController extends AbstractController
 {
-    public function __construct(private EmailVerifier $emailVerifier)
-    {
+    use ApiResponseTrait;
+    public function __construct(
+        private EmailVerifier $emailVerifier,
+        private  SerializerInterface $serializer,
+        private RegistrationArabicCoursRepository $arabicCoursRepository
+    ){
     }
 
     #[Route('/register', name: 'app_register')]
@@ -77,5 +84,31 @@ class RegistrationController extends AbstractController
         $this->addFlash('success', 'Your email address has been verified.');
 
         return $this->redirectToRoute('app_register');
+    }
+
+    #[Route('/registers', name: 'app_registers')]
+    public function registers(): Response
+    {
+        return $this->render('registration/list.html.twig', [
+            'controller_name' => 'registers',
+        ]);
+    }
+
+    #[Route('/registers/api/list', name: 'app_registers_list', options: ['expose' => true], methods: ['GET'])]
+    public function getRegisters(
+        Request $request,
+    ): Response {
+        $registrations = $this->arabicCoursRepository->findAll();
+
+        // on renvoie directement le tableau, en précisant le groupe de sérialisation
+        return $this->json(
+            [
+                'status'    => 'success',
+                'registers' => $registrations,  // PAS de serialize() ici
+            ],
+            Response::HTTP_OK,
+            [],
+            ['groups' => ['read_list_registration']]
+        );
     }
 }

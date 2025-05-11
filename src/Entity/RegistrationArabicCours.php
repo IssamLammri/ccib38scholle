@@ -9,59 +9,59 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class RegistrationArabicCours
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type:"integer")]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private ?int $id = null;
 
     #[ORM\Column(type:"string", length:32, unique:true)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration', 'read_list_registration'])]
     private string $token;
 
     #[ORM\Column(type:"string", length:100)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $childFirstName;
 
     #[ORM\Column(type:"string", length:100)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $childLastName;
 
     #[ORM\Column(type:"date")]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private \DateTimeInterface $childDob;
 
     #[ORM\Column(type:"string", length:10)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $childGender;
 
     #[ORM\Column(type:"string", length:50)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $childLevel;
 
     #[ORM\Column(type:"string", length:100)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $fatherFirstName;
 
     #[ORM\Column(type:"string", length:100)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $fatherLastName;
 
     #[ORM\Column(type:"string", length:100)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $motherFirstName;
 
     #[ORM\Column(type:"string", length:100)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $motherLastName;
 
     #[ORM\Column(type:"string", length:180)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $contactEmail;
 
     #[ORM\Column(type:"string", length:20)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $fatherPhone;
 
     #[ORM\Column(type:"string", length:20)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $motherPhone;
 
     #[ORM\Column(type:"string", length:255)]
@@ -89,7 +89,7 @@ class RegistrationArabicCours
     private ?string $authorizedOtherRelation = null;
 
     #[ORM\Column(type:"string", length:3)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private string $leaveAlone;
 
     #[ORM\Column(type:"string", length:3)]
@@ -125,20 +125,27 @@ class RegistrationArabicCours
     private ?string $childPhotoFilename = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private ?string $wasEnrolled2024 = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private ?string $previousLevel = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private ?string $siblingEnrolled = null;
 
     #[ORM\Column(type:"datetime_immutable")]
-    #[Groups(['read_registration'])]
+    #[Groups(['read_registration','read_list_registration'])]
     private \DateTimeImmutable $createdAt;
+
+    #[ORM\ManyToOne(
+        targetEntity: Student::class,
+        inversedBy: 'registrationArabicCours'
+    )]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Student $student = null;
 
     public function __construct()
     {
@@ -494,6 +501,17 @@ class RegistrationArabicCours
     public function setSiblingEnrolled(?string $siblingEnrolled): RegistrationArabicCours
     {
         $this->siblingEnrolled = $siblingEnrolled;
+        return $this;
+    }
+
+    public function getStudent(): ?Student
+    {
+        return $this->student;
+    }
+
+    public function setStudent(?Student $student): self
+    {
+        $this->student = $student;
         return $this;
     }
 

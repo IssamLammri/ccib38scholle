@@ -114,7 +114,7 @@ class ParentEntity
         return $this->fatherPhone;
     }
 
-    public function setFatherPhone(string $fatherPhone): self
+    public function setFatherPhone(?string $fatherPhone): self
     {
         $this->fatherPhone = $fatherPhone;
 
@@ -162,7 +162,7 @@ class ParentEntity
         return $this->motherPhone;
     }
 
-    public function setMotherPhone(string $motherPhone): self
+    public function setMotherPhone(?string $motherPhone): self
     {
         $this->motherPhone = $motherPhone;
 
