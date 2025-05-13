@@ -82,7 +82,7 @@
     </div>
 
     <!-- Tableau des factures -->
-    <div class="mt-4">
+    <div class="mt-4 table-responsive">
       <table class="table table-striped table-hover">
         <thead>
         <tr>
@@ -94,7 +94,7 @@
           <th>Nom du Parent</th>
           <th>Commentaire</th>
           <th>Paiements Associés</th>
-          <th>Actions</th>
+          <th  v-if="isAdmin" >Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -119,7 +119,7 @@
               </li>
             </ul>
           </td>
-          <td>
+          <td  v-if="isAdmin">
             <button
                 class="btn btn-danger btn-sm"
                 @click="deleteInvoice(invoice)"
@@ -144,6 +144,12 @@ export default {
   name: "ListInvoice",
   components: {
     Alert,
+  },
+  props: {
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -291,5 +297,17 @@ export default {
 
 .text-center {
   text-align: center;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Gestion du contenu des cellules */
+.table th, .table td {
+  word-break: break-word;
+  white-space: normal;
+  max-width: 200px; /* ajustable selon ton besoin */
 }
 </style>

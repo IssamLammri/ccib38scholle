@@ -18,7 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Service\MailService;
 
 
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_MANAGER')]
 #[Route('/invoice')]
 final class InvoiceController extends AbstractController
 {
@@ -32,7 +32,9 @@ final class InvoiceController extends AbstractController
     #[Route(name: 'app_invoice_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
+        $isSuperAdmin = $this->isGranted('ROLE_ADMIN');
         return $this->render('invoice/index.html.twig', [
+            'isSuperAdmin' => $isSuperAdmin,
         ]);
     }
 
