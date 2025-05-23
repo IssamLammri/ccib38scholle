@@ -795,6 +795,8 @@ export default {
         'N2_2',
         'N3_1',
         'N3_2',
+        'N3_2',
+        'N4_1',
         'Adult/Arabe',
         'ADO/Coran',
       ]
