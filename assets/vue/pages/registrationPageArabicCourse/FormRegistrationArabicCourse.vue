@@ -797,7 +797,12 @@ export default {
         'N3_2',
         'N3_2',
         'N4_1',
-        'Adult/Arabe',
+        'N4_2',
+        'N5_1',
+        'N5_2',
+        'Adult/Arabe_Niveau_1',
+        'Adult/Arabe_Niveau_2',
+        'ADO/Arabe',
         'ADO/Coran',
       ]
     };
