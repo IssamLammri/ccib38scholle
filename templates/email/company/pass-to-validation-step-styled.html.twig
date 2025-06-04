@@ -1,0 +1,174 @@
+{# templates/email/company/pass-to-validation-step-styled.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Paiement initié – Validation en cours</title>
+    <style>
+        /* Style minimal et CSS inline pour un rendu homogène dans la plupart des clients mail */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            margin: 20px 0;
+            padding: 0;
+        }
+        .main-table {
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 600px;
+        }
+        .header {
+            background: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #0056b3;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            color: #555555;
+        }
+        .subheader {
+            font-size: 14px;
+            color: #777777;
+        }
+        .content {
+            padding: 30px;
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .content h2 {
+            margin: 20px 0 10px;
+            font-size: 18px;
+            color: #0056b3;
+        }
+        .content ul {
+            margin: 10px 0 15px 20px;
+        }
+        .content ul ul {
+            margin: 5px 0 10px 20px;
+        }
+        .footer {
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #777777;
+            font-size: 12px;
+            text-align: center;
+        }
+        a {
+            color: #0056b3;
+            text-decoration: none;
+        }
+        .button {
+            display: inline-block;
+            background-color: #0056b3;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .link-container {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 4px solid #0056b3;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+<table class="container" role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td align="center">
+            <!-- Table principale -->
+            <table class="main-table" role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <!-- En-tête -->
+                <tr>
+                    <td class="header">
+                        <h1>Paiement initié – Validation en cours</h1>
+                        <p class="subheader">Votre dossier est en cours de traitement</p>
+                    </td>
+                </tr>
+                <!-- Corps du message -->
+                <tr>
+                    <td class="content">
+                        <p>Bonjour chers parents&nbsp;!</p>
+
+                        <p>
+                            Nous avons bien enregistré l’initiation du paiement pour la candidature de <strong>{{ fullNameStudent }}</strong> à l’année scolaire 2025/2026.
+                            Votre inscription est maintenant passée à l’étape de validation. Notre équipe CCIB38 va traiter votre dossier et vérifier que tout est conforme.
+                        </p>
+
+                        <h2>Que se passe-t-il maintenant&nbsp;?</h2>
+                        <ul>
+                            <li>Vous n’avez aucune démarche supplémentaire à effectuer pour le moment.</li>
+                            <li>Notre équipe vous contactera très prochainement pour vous informer de la suite : confirmation définitive de l’inscription et affectation en classe.</li>
+                            <li>En cas de questions, vous pouvez nous joindre aux coordonnées ci-dessous.</li>
+                        </ul>
+
+                        <h2>Facturation</h2>
+                        <p>
+                            Vous pouvez demander la facture pour votre paiement à tout moment : soit nous vous l’envoyons par e-mail, soit vous pouvez la récupérer sur place au centre.
+                        </p>
+
+                        <div style="text-align: center; margin: 20px 0;">
+                            <a href="{{ url('app_registration_arabic_course_view', { token: token }) }}" class="button">
+                                Suivre l’avancement
+                            </a>
+                        </div>
+
+                        <p>Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :</p>
+                        <p class="link-container">
+                            {{ url('app_registration_arabic_course_view', { token: token }) }}
+                        </p>
+
+                        <h2>Questions ou assistance&nbsp;?</h2>
+                        <p>
+                            Pour toute question relative à la validation de votre dossier ou à l’inscription, notre équipe se tient à votre disposition :
+                        </p>
+                        <ul>
+                            <li>par téléphone : <strong>+33 7 65 75 34 21</strong></li>
+                            <li>par e-mail : <a href="mailto:ccib38.contact@gmail.com">ccib38.contact@gmail.com</a></li>
+                            <li>sur place : Centre Culturel Ibn Badis de Grenoble • 18 Rue des Trembles, 38100 Grenoble</li>
+                        </ul>
+
+                        <p>
+                            Nous vous remercions de votre confiance et vous tiendrons informés dès que votre inscription sera définitivement validée.
+                        </p>
+
+                        <p>
+                            Cordialement,&nbsp;<br>
+                            L’équipe CCIB38
+                        </p>
+                    </td>
+                </tr>
+                <!-- Pied de page -->
+                <tr>
+                    <td class="footer">
+                        Centre Culturel Ibn Badis de Grenoble • 18 Rue des Trembles, 38100 Grenoble • Tél. : +33 7 65 75 34 21<br>
+                        <a href="https://www.ccib38.fr">www.ccib38.fr</a> • <a href="mailto:ccib38.contact@gmail.com">ccib38.contact@gmail.com</a><br>
+                        &copy; 2025 Centre Culturel Ibn Badis Grenoble. Tous droits réservés.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

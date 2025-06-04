@@ -91,6 +91,11 @@ class arabicCourseController extends AbstractController
             ->setPreviousLevel($data['previousLevel'] ?? null)
             ->setSiblingEnrolled($data['siblingEnrolled'] ?? null);
 
+        if ($data['wasEnrolled2024'] === 'oui') {
+            $registration->setStepRegistration(RegistrationArabicCours::STEP_PAYMENT);
+        } else {
+            $registration->setStepRegistration(RegistrationArabicCours::STEP_LIST_WAITING);
+        }
         // 3) upload de la photo si présente
         /** @var UploadedFile|null $photoFile */
         $photoFile = $request->files->get('childPhoto');

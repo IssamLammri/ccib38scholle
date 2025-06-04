@@ -8,6 +8,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: "App\Repository\RegistrationArabicCoursRepository")]
 class RegistrationArabicCours
 {
+    Const STEP_REGISTRATION = 'registration';
+    Const STEP_PAYMENT = 'payment';
+    Const STEP_LIST_WAITING = 'waiting';
+    Const STEP_VALIDATION = 'validation';
+    Const STEP_DISTRIBUTION = 'distribution';
+    Const STEP_COMPTE_CREATION = 'compte_creation';
+    Const STEP_COMPLETED = 'completed';
+
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type:"integer")]
     #[Groups(['read_registration','read_list_registration'])]
     private ?int $id = null;
@@ -111,6 +119,10 @@ class RegistrationArabicCours
     #[ORM\Column(type:"string", length:3)]
     #[Groups(['read_registration'])]
     private string $medicalTreatment;
+
+    #[ORM\Column(type:"string", length:100)]
+    #[Groups(['read_registration','read_list_registration'])]
+    private string $stepRegistration;
 
     #[ORM\Column(type:"boolean")]
     #[Groups(['read_registration'])]
@@ -515,4 +527,14 @@ class RegistrationArabicCours
         return $this;
     }
 
+    public function getStepRegistration(): string
+    {
+        return $this->stepRegistration;
+    }
+
+    public function setStepRegistration(string $stepRegistration): RegistrationArabicCours
+    {
+        $this->stepRegistration = $stepRegistration;
+        return $this;
+    }
 }

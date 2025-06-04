@@ -200,34 +200,37 @@ export default {
   },
   data() {
     return {
-      currentStep: 1
     };
   },
   computed: {
+    currentStep() {
+      switch (this.registration.stepRegistration) {
+        case 'registration':
+          return 0;
+        case 'waiting':
+          return 1;
+        case 'payment':
+          return 2;
+        case 'validation':
+          return 3;
+        case 'distribution':
+          return 4;
+        case 'accountCreation':
+          return 5;
+        default:
+          return 1; // Par défaut, on considère que l'on est à l'étape du formulaire
+      }
+    },
     // Génère dynamiquement les étapes, avec "Liste d’attente" si nécessaire
     stepLabels() {
-      const labels = [
+      return [
         { label: 'Formulaire', full: 'Remplir le formulaire et valider' },
+        { label: 'Liste d’attente', full: 'Gestion de la liste d’attente' },
+        { label: 'Paiement',   full: 'Paiement des droits d\'inscription' },
+        { label: 'Validation', full: 'Validation par le service CCIB38' },
+        { label: 'Répartition', full: 'Distribution des élèves en classe' },
+        { label: 'Création de compte',      full: 'Création et validation du compte sur la plateforme' }
       ];
-
-      // si l’enfant n’était pas inscrit en 2024/2025, on ajoute la étape "Liste d’attente"
-      console.log(this.registration.wasEnrolled2024)
-      if (this.registration.wasEnrolled2024 !== 'oui') {
-        labels.push({
-          label: 'Liste d’attente',
-          full:  'Gestion de la liste d’attente'
-        });
-      }
-
-      // on ajoute ensuite les étapes finales
-      labels.push(
-          { label: 'Paiement',   full: 'Paiement des droits d\'inscription' },
-          { label: 'Validation', full: 'Validation par le service CCIB38' },
-          { label: 'Répartition', full: 'Distribution des élèves en classe' },
-          { label: 'Création de compte',      full: 'Création et validation du compte sur la plateforme' }
-      );
-
-      return labels;
     },
     // URL de la photo si nécessaire
     photoUrl() {
