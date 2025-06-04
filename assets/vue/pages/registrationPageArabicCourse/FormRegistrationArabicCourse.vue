@@ -683,8 +683,11 @@
             v-else
             type="submit"
             class="btn btn-success"
+            :disabled="isSubmitting"
         >
-          Envoyer la demande d'inscription
+
+          <span v-if="isSubmitting">Envoi en cours…</span>
+          <span v-else>Envoyer la demande d'inscription</span>
         </button>
       </div>
     </form>
@@ -737,6 +740,7 @@ export default {
   components: {Alert, Flatpickr /* …autres composants… */ },
   data() {
     return {
+      isSubmitting: false,
       currentStep: 0,
       demandSent: false,
       photoPreview: null,
@@ -967,6 +971,7 @@ export default {
       }
     },
     submitForm() {
+      this.isSubmitting = true;
       const formData = new FormData();
       if (this.form.childPhotoFile) {
         formData.append('childPhoto', this.form.childPhotoFile);
@@ -1001,6 +1006,7 @@ export default {
           })
           .catch(err => {
             console.error('Erreur lors de l’inscription :', err);
+            this.isSubmitting = false;
           });
     }
   }

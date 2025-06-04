@@ -1,0 +1,190 @@
+{# templates/email/company/pass-to-payment-step-styled.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bonne nouvelle ! Règlement des frais pour garantir la place</title>
+    <style>
+        /* Style minimal et CSS inline pour un rendu homogène dans la plupart des clients mail */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            margin: 20px 0;
+            padding: 0;
+        }
+        .main-table {
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 600px;
+        }
+        .header {
+            background: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #0056b3;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            color: #555555;
+        }
+        .subheader {
+            font-size: 14px;
+            color: #777777;
+        }
+        .content {
+            padding: 30px;
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .content h2 {
+            margin: 20px 0 10px;
+            font-size: 18px;
+            color: #0056b3;
+        }
+        .content ul {
+            margin: 10px 0 15px 20px;
+        }
+        .content ul ul {
+            margin: 5px 0 10px 20px;
+        }
+        .footer {
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #777777;
+            font-size: 12px;
+            text-align: center;
+        }
+        a {
+            color: #0056b3;
+            text-decoration: none;
+        }
+        .button {
+            display: inline-block;
+            background-color: #0056b3;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .link-container {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 4px solid #0056b3;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+<table class="container" role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td align="center">
+            <!-- Table principale -->
+            <table class="main-table" role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <!-- En-tête -->
+                <tr>
+                    <td class="header">
+                        <h1>Candidature approuvée pour 2025/2026</h1>
+                        <p class="subheader">Règlement des frais requis</p>
+                    </td>
+                </tr>
+                <!-- Corps du message -->
+                <tr>
+                    <td class="content">
+                        <p>Bonjour chers parents&nbsp;!</p>
+
+                        <p>
+                            L’équipe CCIB38 est heureuse de vous annoncer que la candidature de <strong>{{ fullNameStudent }}</strong> a été approuvée pour l’année scolaire 2025/2026 : il ne reste plus qu’à régler les frais pour garantir la place et finaliser la validation du dossier.
+                        </p>
+
+                        <h2>Étape suivante&nbsp;: règlement des frais de scolarité</h2>
+                        <p>
+                            Afin de confirmer l’inscription de votre enfant, merci de régler avant le <strong>30 mai 2025</strong> :
+                        </p>
+                        <ul>
+                            <li>Frais de dossier&nbsp;: 10 € par enfant</li>
+                            <li>Frais pédagogiques (matériel, supports) selon la grille suivante&nbsp;:
+                                <ul>
+                                    <li>1 enfant&nbsp;: 230 €</li>
+                                    <li>2 enfants&nbsp;: 430 €</li>
+                                    <li>3 enfants&nbsp;: 600 €</li>
+                                </ul>
+                            </li>
+                            <li>Total à régler&nbsp;: calculé selon le nombre d’enfants (ex. 1 enfant&nbsp;: 240 € ; 2 enfants&nbsp;: 450 € ; 3 enfants&nbsp;: 630 €)</li>
+                        </ul>
+
+                        <p>
+                            Vous pouvez effectuer ce paiement selon l’un des moyens suivants&nbsp;:
+                        </p>
+                        <ul>
+                            <li>Espèces</li>
+                            <li>Carte bancaire</li>
+                            <li>Chèque à l’ordre de <em>CCIB38</em> (paiement en plusieurs fois possible)</li>
+                        </ul>
+
+                        <p>
+                            Permanences paiement&nbsp;: mercredi 14 h 15 – 17 h 15, samedi 9 h 15 – 12 h 00 & 14 h 00 – 17 h 15, dimanche 9 h 15 – 12 h 00 & 14 h 00 – 17 h 15.
+                        </p>
+
+                        <div style="text-align: center; margin: 20px 0;">
+                            <a href="{{ url('app_registration_arabic_course_view', { token: token }) }}" class="button">
+                                Suivre ma demande
+                            </a>
+                        </div>
+
+                        <p>Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur&nbsp;:</p>
+                        <p class="link-container">
+                            {{ url('app_registration_arabic_course_view', { token: token }) }}
+                        </p>
+
+                        <h2>Questions ou assistance&nbsp;?</h2>
+                        <p>
+                            Pour toute question relative au paiement ou à l’inscription, notre équipe se tient à votre disposition&nbsp;:
+                        </p>
+                        <ul>
+                            <li>par téléphone&nbsp;: <strong>+33 7 65 75 34 21</strong></li>
+                            <li>par e-mail&nbsp;: <a href="mailto:ccib38.contact@gmail.com">ccib38.contact@gmail.com</a></li>
+                            <li>sur place&nbsp;: Centre Culturel Ibn Badis de Grenoble • 18 Rue des Trembles, 38100 Grenoble</li>
+                        </ul>
+
+                        <p>
+                            Nous vous remercions de votre confiance et serons ravis d’accueillir <strong>{{ fullNameStudent }}</strong> au sein de notre centre.
+                        </p>
+
+                        <p>
+                            Cordialement,&nbsp;<br>
+                            L’équipe CCIB38
+                        </p>
+                    </td>
+                </tr>
+                <!-- Pied de page -->
+                <tr>
+                    <td class="footer">
+                        Centre Culturel Ibn Badis de Grenoble • 18 Rue des Trembles, 38100 Grenoble • Tél. : +33 7 65 75 34 21<br>
+                        <a href="https://www.ccib38.fr">www.ccib38.fr</a> • <a href="mailto:ccib38.contact@gmail.com">ccib38.contact@gmail.com</a><br>
+                        &copy; 2025 Centre Culturel Ibn Badis Grenoble. Tous droits réservés.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
