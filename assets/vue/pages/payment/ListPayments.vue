@@ -103,7 +103,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="(payment, index) in filteredArabPayments" :key="'arab-' + index">
+        <tr v-for="(payment, index) in filteredArabPayments" :key="'arabe-' + index">
           <td>{{ index + 1 }}</td>
           <td>{{ formatDate(payment.paymentDate) }}</td>
           <td>{{ formatCurrency(payment.amountPaid) }}</td>
@@ -150,7 +150,7 @@ export default {
     },
     filteredArabPayments() {
       return this.payments
-          .filter(payment => payment.serviceType === 'arab') // Filtrer les paiements de type "arab"
+          .filter(payment => payment.serviceType === 'arabe') // Filtrer les paiements de type "arabe"
           .filter(payment => this.matchesSearch(payment)); // Appliquer la recherche
     },
   },

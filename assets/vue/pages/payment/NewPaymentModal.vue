@@ -14,12 +14,12 @@
                 <input
                     type="radio"
                     class="btn-check"
-                    id="arab"
+                    id="arabe"
                     v-model="paymentType"
-                    value="arab"
+                    value="arabe"
                     autocomplete="off"
                 />
-                <label class="btn btn-primary btn-sm" for="arab">Arabe</label>
+                <label class="btn btn-primary btn-sm" for="arabe">Arabe</label>
 
                 <input
                     type="radio"
