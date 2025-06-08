@@ -3,12 +3,22 @@
     <!-- Facture -->
     <div id="invoice-content" style="padding: 20px">
       <header class="invoice-header">
-        <div class="logo">
-          <img src="/static/icons/logoccib38.webp" alt="Logo de l'entreprise" />
+        <div class="header-left">
+          <div class="logo">
+            <img src="/static/icons/logoccib38.webp" alt="Logo de l'entreprise" />
+          </div>
+          <div class="company-info">
+            <h2>Centre culturel Ibn Badis Grenoble</h2>
+            <p class="school-year">
+              Année scolaire {{ invoice.schoolYear || '2025/2026' }}
+            </p>
+          </div>
         </div>
-        <div class="invoice-title">
-          <h1>Facture</h1>
-          <p>Facture N° {{ invoice.id }}</p>
+        <div class="header-right">
+          <h1>FACTURE</h1>
+          <div class="invoice-number">
+            N° {{ invoice.id }}
+          </div>
         </div>
       </header>
 
@@ -46,7 +56,7 @@
             v-for="(payment, index) in invoice.payments"
             :key="index"
             :class="{
-              'arab-service': payment.serviceType === 'arab',
+              'arab-service': payment.serviceType === 'arabe',
               'soutien-service': payment.serviceType === 'soutien'
             }"
         >
@@ -144,7 +154,7 @@ export default {
       switch (type) {
         case "soutien":
           return "Soutien scolaire";
-        case "arab":
+        case "arabe":
           return "Cours d'arabe";
         default:
           return "Service inconnu";
@@ -304,6 +314,68 @@ export default {
   background-color: #fbe9e7;
 }
 
-</style>
+ .invoice-header {
+   display           : flex;
+   justify-content   : space-between;
+   align-items       : center;
+   padding           : 20px;
+   border-radius     : 8px;
+   background        : linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+   color             : #fff;
+   margin-bottom     : 20px;
+ }
 
+.header-left {
+  display           : flex;
+  align-items       : center;
+}
+
+.logo {
+  background-color  : #fff;
+  padding           : 8px;
+  border-radius     : 8px;
+}
+
+.logo img {
+  display           : block;
+}
+
+.company-info {
+  margin-left       : 16px;
+}
+
+.company-info h2 {
+  margin            : 0;
+  font-size         : 18px;
+  font-weight       : 600;
+}
+
+.school-year {
+  margin-top        : 4px;
+  font-size         : 14px;
+  font-style        : italic;
+  opacity           : 0.9;
+}
+
+.header-right {
+  text-align        : right;
+}
+
+.header-right h1 {
+  margin            : 0;
+  font-size         : 28px;
+  text-transform    : uppercase;
+  letter-spacing    : 1px;
+}
+
+.invoice-number {
+  display           : inline-block;
+  margin-top        : 8px;
+  padding           : 6px 14px;
+  border            : 1px solid rgba(255,255,255,0.7);
+  border-radius     : 4px;
+  font-size         : 14px;
+  background-color  : rgba(255,255,255,0.1);
+}
+</style>
 

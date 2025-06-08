@@ -79,7 +79,7 @@ class PaymentController extends AbstractController
 
         foreach ($selectedChildren as $childData) {
             $child = $this->entityManager->getRepository(Student::class)->find($childData['id']);
-            if ($serviceType === 'arab') {
+            if ($serviceType === 'arabe') {
                 $payment = new Payment();
                 $payment->setParent($parent);
                 $payment->setStudent($child);

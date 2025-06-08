@@ -45,22 +45,44 @@ class PasseAllStepFromRegistersCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        // 1) Récupérer tous les paiements "arab"
-        $allPaymentsArabicCours = $this->paymentRepository->findBy([
-            'serviceType' => 'arab',
+        // 1) Récupérer tous les paiements « arab »
+        $paymentsArabic = $this->paymentRepository->findBy([
+            'serviceType' => 'arabe',
         ]);
 
-        // 2) Construire un tableau des fullName des élèves ayant déjà payé
-        $allStudentPayments = [];
-        foreach ($allPaymentsArabicCours as $payment) {
+        // 2) Calculer le total payé par chaque parent
+        $parentTotals = [];
+        foreach ($paymentsArabic as $payment) {
+            /** @var Payment $payment */
+            $parent = $payment->getParent();
+            if (null === $parent) {
+                continue;
+            }
+
+            $pid = $parent->getId();
+            $parentTotals[$pid] = ($parentTotals[$pid] ?? 0.0) + (float) $payment->getAmountPaid();
+        }
+
+        // 3) Construire la liste des noms complets des étudiants éligibles
+        $eligibleStudentNames = [];
+        foreach ($paymentsArabic as $payment) {
             /** @var Payment $payment */
             $student = $payment->getStudent();
-            if ($student) {
-                $allStudentPayments[] = $student->getFullName();
+            $parent  = $payment->getParent();
+
+            if (null === $student || null === $parent) {
+                continue;
+            }
+
+            $pid = $parent->getId();
+            if (($parentTotals[$pid] ?? 0.0) > 230.0) {
+                $eligibleStudentNames[$student->getId()] = $student->getFullName();
             }
         }
 
-        // 3) Récupérer toutes les inscriptions
+        // on ne garde que les valeurs (noms complets), sans doublons
+        $allStudentPayments = array_values($eligibleStudentNames);
+        // 4) Récupérer toutes les inscriptions en attente de paiement
         $allRegistered = $this->registrationArabicCoursRepository->findBy([
             'stepRegistration' => RegistrationArabicCours::STEP_PAYMENT,
         ]);
@@ -68,37 +90,41 @@ class PasseAllStepFromRegistersCommand extends Command
         foreach ($allRegistered as $registered) {
             /** @var RegistrationArabicCours $registered */
             $student = $registered->getStudent();
-            if (!$student) {
-                // pas d'élève lié → on ne traite pas
+            if (null === $student) {
+                // pas d’élève lié → on ignore
                 continue;
             }
 
-            $fullName = $student->getFullName();
 
-            // 4) Si ce nom complet existe dans la liste des paiements → on bascule en STEP_VALIDATION
+            $fullName = $student->getFullName();
+            // 5) si l’élève a payé via son parent plus de 230 €, on passe en validation
             if (in_array($fullName, $allStudentPayments, true)) {
                 $registered->setStepRegistration(RegistrationArabicCours::STEP_VALIDATION);
 
-                // 5) Envoi d'un mail de confirmation
-                //    (adaptez "to:" selon l'adresse réelle du parent / de l'élève)
-                $subject = 'Paiement initié – Validation en cours [' . $registered->getChildFirstName() . ' ' . $registered->getChildLastName().']';
-                $this->mailService->sendEmail(
-                    to: $registered->getContactEmail(), // ou ->getParents()->getEmail() selon votre entité
-                    subject: $subject,
-                    template: 'email/company/pass-to-validation-step-styled.html.twig',
-                    context: [
-                        'fullNameStudent' => $registered->getChildFirstName() . ' ' . $registered->getChildLastName(),
-                        'token'           => $registered->getToken(),
-                    ],
-                    sender: "contact@ccib38.fr"
+                // 6) envoi d’un mail de confirmation
+                $subject = sprintf(
+                    'Paiement initié – Validation en cours [%s %s]',
+                    $registered->getChildFirstName(),
+                    $registered->getChildLastName()
                 );
+
+                 $this->mailService->sendEmail(
+                     to: $registered->getContactEmail(),
+                     subject: $subject,
+                     template: 'email/company/pass-to-validation-step-styled.html.twig',
+                     context: [
+                         'fullNameStudent' => $fullName,
+                         'token'           => $registered->getToken(),
+                     ],
+                     sender: 'contact@ccib38.fr'
+                 );
             }
         }
 
-        // 6) Persister toutes les modifications en base
+// 7) persister toutes les modifications
         $this->entityManager->flush();
 
-        $io->success('Mise à jour STEP_VALIDATION effectuée pour les inscriptions payées et e-mails envoyés.');
+        $io->success('Mise à jour STEP_VALIDATION effectuée et e-mails envoyés.');
 
         return Command::SUCCESS;
     }
