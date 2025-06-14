@@ -56,23 +56,22 @@ class PasseStepWaitingListFromRegistersCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $allRegistered = $this->registrationArabicCoursRepository->findAll();
+        $allRegistered = $this->registrationArabicCoursRepository->findBy(['stepRegistration' => RegistrationArabicCours::STEP_LIST_WAITING]);
         foreach ($allRegistered as $registration) {
             /** @var RegistrationArabicCours $registration */
             $registration->setStepRegistration(RegistrationArabicCours::STEP_PAYMENT);
-            if ($registration->getWasEnrolled2024() !== 'oui'){
-                $subject = 'Candidature approuvée pour 2025/2026 ['.$registration->getChildFirstName(). ' ' . $registration->getChildLastName().'] &  règlement des frais requis';
-                $this->mailService->sendEmail(
-                    to: $registration->getContactEmail(),
-                    subject: $subject,
-                    template: 'email/company/pass-to-payment-step.html.twig',
-                    context: [
-                        'fullNameStudent' => $registration->getChildFirstName(). ' ' . $registration->getChildLastName(),
-                        'token'=> $registration->getToken(),
-                    ],
-                    sender: "contact@ccib38.fr"
-                );
-            }
+            $subject = 'Candidature approuvée pour 2025/2026 ['.$registration->getChildFirstName(). ' ' . $registration->getChildLastName().'] &  règlement des frais requis';
+            $this->mailService->sendEmail(
+                to: $registration->getContactEmail(),
+                subject: $subject,
+                template: 'email/company/pass-to-payment-step.html.twig',
+                context: [
+                    'fullNameStudent' => $registration->getChildFirstName(). ' ' . $registration->getChildLastName(),
+                    'token'=> $registration->getToken(),
+                ],
+                sender: "contact@ccib38.fr"
+            );
+
         }
         $this->entityManager->flush();
 
