@@ -25,7 +25,7 @@ class PasseAllStepFromRegistersCommand extends Command
         PaymentRepository $paymentRepository,
         RegistrationArabicCoursRepository $registrationRepo
     ) {
-        parent::__construct();
+        parent::__construct(self::$defaultName);
         $this->registrationService = $registrationService;
         $this->paymentRepository   = $paymentRepository;
         $this->registrationRepo    = $registrationRepo;
