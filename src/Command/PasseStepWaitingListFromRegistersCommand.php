@@ -23,7 +23,7 @@ class PasseStepWaitingListFromRegistersCommand extends Command
         RegistrationArabicCoursRepository $registrationRepo,
         RegistrationService $registrationService
     ) {
-        parent::__construct();
+        parent::__construct(self::$defaultName);
         $this->registrationRepo     = $registrationRepo;
         $this->registrationService = $registrationService;
     }
