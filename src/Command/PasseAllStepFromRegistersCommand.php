@@ -1,13 +1,12 @@
 <?php
+// src/Command/PasseAllStepFromRegistersCommand.php
 
 namespace App\Command;
 
 use App\Entity\RegistrationArabicCours;
-use App\Entity\Payment;
 use App\Repository\PaymentRepository;
 use App\Repository\RegistrationArabicCoursRepository;
-use App\Service\MailService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\RegistrationService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,115 +16,79 @@ class PasseAllStepFromRegistersCommand extends Command
 {
     protected static $defaultName = 'app:passe-all-step-from-registers';
 
-    private EntityManagerInterface $entityManager;
-    private RegistrationArabicCoursRepository $registrationArabicCoursRepository;
-    private MailService $mailService;
+    private RegistrationService $registrationService;
     private PaymentRepository $paymentRepository;
+    private RegistrationArabicCoursRepository $registrationRepo;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        RegistrationArabicCoursRepository $registrationArabicCoursRepository,
-        MailService $mailService,
-        PaymentRepository $paymentRepository
+        RegistrationService $registrationService,
+        PaymentRepository $paymentRepository,
+        RegistrationArabicCoursRepository $registrationRepo
     ) {
         parent::__construct();
-        $this->entityManager = $entityManager;
-        $this->registrationArabicCoursRepository = $registrationArabicCoursRepository;
-        $this->mailService = $mailService;
-        $this->paymentRepository = $paymentRepository;
+        $this->registrationService = $registrationService;
+        $this->paymentRepository   = $paymentRepository;
+        $this->registrationRepo    = $registrationRepo;
     }
 
     protected function configure(): void
     {
-        $this            ->setName('app:passe-all-step-from-registers')
-            ->setDescription('Passe toutes les inscriptions en STEP_VALIDATION si le paiement a été effectué et envoie un e-mail.');
+        $this
+            ->setDescription('Passe toutes les inscriptions éligibles de STEP_PAYMENT à STEP_VALIDATION et envoie les e-mails correspondants.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        // 1) Récupérer tous les paiements « arab »
-        $paymentsArabic = $this->paymentRepository->findBy([
-            'serviceType' => 'arabe',
-        ]);
+        // 1) Récupérer tous les paiements pour le service "arabe"
+        $payments = $this->paymentRepository->findBy(['serviceType' => 'arabe']);
 
         // 2) Calculer le total payé par chaque parent
-        $parentTotals = [];
-        foreach ($paymentsArabic as $payment) {
-            /** @var Payment $payment */
-            $parent = $payment->getParent();
-            if (null === $parent) {
+        $totauxParParent = [];
+        foreach ($payments as $p) {
+            if (null === $p->getParent()) {
                 continue;
             }
-
-            $pid = $parent->getId();
-            $parentTotals[$pid] = ($parentTotals[$pid] ?? 0.0) + (float) $payment->getAmountPaid();
+            $pid = $p->getParent()->getId();
+            $totauxParParent[$pid] = ($totauxParParent[$pid] ?? 0.0) + (float) $p->getAmountPaid();
         }
 
-        // 3) Construire la liste des noms complets des étudiants éligibles
-        $eligibleStudentNames = [];
-        foreach ($paymentsArabic as $payment) {
-            /** @var Payment $payment */
-            $student = $payment->getStudent();
-            $parent  = $payment->getParent();
-
-            if (null === $student || null === $parent) {
-                continue;
-            }
-
-            $pid = $parent->getId();
-            if (($parentTotals[$pid] ?? 0.0) > 230.0) {
-                $eligibleStudentNames[$student->getId()] = $student->getFullName();
+        // 3) Lister les IDs des étudiants dont le parent a payé > 230€
+        $etudiantsEligibles = [];
+        foreach ($payments as $p) {
+            $parent = $p->getParent();
+            $student = $p->getStudent();
+            if (
+                $parent
+                && $student
+                && ($totauxParParent[$parent->getId()] ?? 0.0) > 230.0
+            ) {
+                $etudiantsEligibles[$student->getId()] = true;
             }
         }
 
-        // on ne garde que les valeurs (noms complets), sans doublons
-        $allStudentPayments = array_values($eligibleStudentNames);
-        // 4) Récupérer toutes les inscriptions en attente de paiement
-        $allRegistered = $this->registrationArabicCoursRepository->findBy([
+        // 4) Récupérer toutes les inscriptions en STEP_PAYMENT
+        $toProcess = $this->registrationRepo->findBy([
             'stepRegistration' => RegistrationArabicCours::STEP_PAYMENT,
         ]);
 
-        foreach ($allRegistered as $registered) {
-            /** @var RegistrationArabicCours $registered */
-            $student = $registered->getStudent();
-            if (null === $student) {
-                // pas d’élève lié → on ignore
-                continue;
-            }
-
-
-            $fullName = $student->getFullName();
-            // 5) si l’élève a payé via son parent plus de 230 €, on passe en validation
-            if (in_array($fullName, $allStudentPayments, true)) {
-                $registered->setStepRegistration(RegistrationArabicCours::STEP_VALIDATION);
-
-                // 6) envoi d’un mail de confirmation
-                $subject = sprintf(
-                    'Paiement initié – Validation en cours [%s %s]',
-                    $registered->getChildFirstName(),
-                    $registered->getChildLastName()
-                );
-
-                 $this->mailService->sendEmail(
-                     to: $registered->getContactEmail(),
-                     subject: $subject,
-                     template: 'email/company/pass-to-validation-step-styled.html.twig',
-                     context: [
-                         'fullNameStudent' => $fullName,
-                         'token'           => $registered->getToken(),
-                     ],
-                     sender: 'contact@ccib38.fr'
-                 );
+        $count = 0;
+        foreach ($toProcess as $reg) {
+            $student = $reg->getStudent();
+            if ($student && isset($etudiantsEligibles[$student->getId()])) {
+                try {
+                    // Appel unique : avance l'étape et envoie l’e-mail si nécessaire
+                    $this->registrationService->advanceStep($reg);
+                    $count++;
+                } catch (\DomainException $e) {
+                    // par sécurité on continue sur erreur métier
+                    $io->warning("Inscription #{$reg->getId()} non avancée : {$e->getMessage()}");
+                }
             }
         }
 
-// 7) persister toutes les modifications
-        $this->entityManager->flush();
-
-        $io->success('Mise à jour STEP_VALIDATION effectuée et e-mails envoyés.');
-
+        $io->success("$count inscription(s) passées en validation et e-mails envoyés.");
         return Command::SUCCESS;
     }
 }
