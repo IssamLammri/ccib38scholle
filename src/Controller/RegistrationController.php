@@ -2,19 +2,18 @@
 
 namespace App\Controller;
 
+use App\Entity\RegistrationArabicCours;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Model\ApiResponseTrait;
 use App\Repository\RegistrationArabicCoursRepository;
-use App\Security\AppAuthenticator;
 use App\Security\EmailVerifier;
+use App\Service\RegistrationService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -28,7 +27,8 @@ class RegistrationController extends AbstractController
     public function __construct(
         private EmailVerifier $emailVerifier,
         private  SerializerInterface $serializer,
-        private RegistrationArabicCoursRepository $arabicCoursRepository
+        private RegistrationArabicCoursRepository $arabicCoursRepository,
+        private RegistrationService $registrationService
     ){
     }
 
@@ -110,5 +110,23 @@ class RegistrationController extends AbstractController
             [],
             ['groups' => ['read_list_registration']]
         );
+    }
+
+
+    #[Route('/registers/{id}/advance', name: 'app_registration_advance', options: ['expose' => true], methods: ['POST'])]
+    public function advance(RegistrationArabicCours $registration): Response
+    {
+        try {
+            $newStep = $this->registrationService->advanceStep($registration);
+            return $this->json([
+                'status'  => 'success',
+                'newStep' => $newStep
+            ]);
+        } catch (\DomainException $e) {
+            return $this->json(
+                ['status' => 'error', 'message' => $e->getMessage()],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
     }
 }

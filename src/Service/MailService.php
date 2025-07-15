@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\RegistrationArabicCours;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -71,4 +72,41 @@ class MailService
             throw new \Exception('Erreur lors de l’envoi de l’email : ' . $e->getMessage(), 0, $e);
         }
     }
+
+    public function sendWaitingToPayment(RegistrationArabicCours $reg): void
+    {
+        $subject = sprintf(
+            'Candidature approuvée pour 2025/2026 [%s %s] & règlement des frais requis',
+            $reg->getChildFirstName(),
+            $reg->getChildLastName()
+        );
+        $this->sendEmail(
+            to:       'issamlammri5@gmail.com',
+            subject:  $subject,
+            template: 'email/company/pass-to-payment-step.html.twig',
+            context: [
+                'fullNameStudent' => $reg->getChildFirstName() . ' ' . $reg->getChildLastName(),
+                'token'           => $reg->getToken(),
+            ],
+            sender:   'contact@ccib38.fr'
+        );
+    }
+
+    public function sendPaymentToValidation(RegistrationArabicCours $reg): void
+    {
+        $fullName = $reg->getChildFirstName() . ' ' . $reg->getChildLastName();
+        $subject  = sprintf('Paiement initié – Validation en cours [%s]', $fullName);
+
+        $this->sendEmail(
+            to:       'issamlammri5@gmail.com',
+            subject:  $subject,
+            template: 'email/company/pass-to-validation-step-styled.html.twig',
+            context: [
+                'fullNameStudent' => $fullName,
+                'token'           => $reg->getToken(),
+            ],
+            sender:   'contact@ccib38.fr'
+        );
+    }
+
 }

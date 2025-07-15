@@ -4,7 +4,8 @@
     <!-- En-tête -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="text-primary">
-        <i class="fa-solid fa-user-graduate me-2"></i> Liste des inscrits au cours d’arabe 2025 / 2026
+        <i class="fa-solid fa-user-graduate me-2"></i>
+        Liste des inscrits au cours d’arabe 2025 / 2026
       </h1>
     </div>
 
@@ -47,7 +48,6 @@
               class="form-select"
           >
             <option value="">Tous</option>
-            <!-- On affiche ici la liste complète des statuts même s'ils n'existent pas encore dans registrations -->
             <option
                 v-for="st in allStatuses"
                 :key="st"
@@ -59,90 +59,59 @@
         </div>
       </div>
     </div>
-      <!-- Statistiques -->
-      <div class="mb-5">
-        <!-- Total affiché en grand -->
-        <div class="row mb-4 justify-content-center">
-          <div class="col-12">
-            <div class="card border-0 shadow-sm">
-              <div class="card-body py-4">
-                <h5 class="card-title text-primary mb-2">Total affiché</h5>
-                <p class="display-1 mb-0">{{ filteredRegistrations.length }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Autres statuts -->
-        <div class="row text-center g-3">
-          <!-- Pas encore inscrit -->
-          <div class="col-md-2 col-sm-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body py-3">
-                <h6 class="card-title text-secondary mb-1">Pas encore inscrit</h6>
-                <p class="display-4 mb-0">
-                  {{ filteredRegistrations.filter(r => r.stepRegistration === 'registration').length }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <!-- Liste d’attente -->
-          <div class="col-md-2 col-sm-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body py-3">
-                <h6 class="card-title text-warning mb-1">Liste d’attente</h6>
-                <p class="display-4 mb-0">
-                  {{ filteredRegistrations.filter(r => r.stepRegistration === 'waiting').length }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <!-- En attente de paiement -->
-          <div class="col-md-2 col-sm-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body py-3">
-                <h6 class="card-title text-primary mb-1">En attente de paiement</h6>
-                <p class="display-4 mb-0">
-                  {{ filteredRegistrations.filter(r => r.stepRegistration === 'payment').length }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <!-- Validation -->
-          <div class="col-md-2 col-sm-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body py-3">
-                <h6 class="card-title text-info mb-1">Validation</h6>
-                <p class="display-4 mb-0">
-                  {{ filteredRegistrations.filter(r => r.stepRegistration === 'validation').length }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <!-- Prêt à distribuer -->
-          <div class="col-md-2 col-sm-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body py-3">
-                <h6 class="card-title text-success mb-1">Prêt à distribuer</h6>
-                <p class="display-4 mb-0">
-                  {{ filteredRegistrations.filter(r => r.stepRegistration === 'distribution').length }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <!-- Création de compte -->
-          <div class="col-md-2 col-sm-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body py-3">
-                <h6 class="card-title text-dark mb-1">Création de compte</h6>
-                <p class="display-4 mb-0">
-                  {{ filteredRegistrations.filter(r => r.stepRegistration === 'compte_creation').length }}
-                </p>
-              </div>
+    <!-- Statistiques -->
+    <div class="mb-5">
+      <!-- Total affiché -->
+      <div class="row mb-4 justify-content-center">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body py-4">
+              <h5 class="card-title text-primary mb-2">Total affiché</h5>
+              <p class="display-1 mb-0">{{ filteredRegistrations.length }}</p>
             </div>
           </div>
         </div>
       </div>
+      <!-- Autres statuts -->
+      <div class="row text-center g-3">
+        <StatusCard
+            title="Pas encore inscrit"
+            color="secondary"
+            :count="filteredRegistrations.filter(r => r.stepRegistration === 'registration').length"
+        />
+        <StatusCard
+            title="Liste d’attente"
+            color="warning"
+            :count="filteredRegistrations.filter(r => r.stepRegistration === 'waiting').length"
+        />
+        <StatusCard
+            title="En attente de paiement"
+            color="primary"
+            :count="filteredRegistrations.filter(r => r.stepRegistration === 'payment').length"
+        />
+        <StatusCard
+            title="Validation"
+            color="info"
+            :count="filteredRegistrations.filter(r => r.stepRegistration === 'validation').length"
+        />
+        <StatusCard
+            title="Prêt à distribuer"
+            color="success"
+            :count="filteredRegistrations.filter(r => r.stepRegistration === 'distribution').length"
+        />
+        <StatusCard
+            title="Création de compte"
+            color="dark"
+            :count="filteredRegistrations.filter(r => r.stepRegistration === 'compte_creation').length"
+        />
+        <StatusCard
+            title="Terminé"
+            color="light"
+            :count="filteredRegistrations.filter(r => r.stepRegistration === 'completed').length"
+        />
+      </div>
+    </div>
 
     <!-- Tableau des inscriptions -->
     <div v-if="filteredRegistrations.length" class="card shadow-sm">
@@ -151,22 +120,21 @@
           <table class="table table-hover mb-0 align-middle">
             <thead class="table-light">
             <tr>
-              <th>ID</th>
-              <th>Prénom</th>
-              <th>Nom</th>
+              <th>Nom complet</th>
               <th>Date de naissance</th>
               <th>Niveau</th>
               <th>Parent</th>
               <th>Email</th>
               <th>Status</th>
               <th>Voir la demande</th>
+              <th>Action</th>
             </tr>
             </thead>
             <tbody>
             <tr v-for="reg in filteredRegistrations" :key="reg.id">
-              <td>{{ reg.id }}</td>
-              <td>{{ reg.childFirstName }}</td>
-              <td>{{ reg.childLastName }}</td>
+              <td>
+                {{ reg.childFirstName }} {{ reg.childLastName }}
+              </td>
               <td>{{ formatDate(reg.childDob) }}</td>
               <td>{{ reg.previousLevel || '—' }}</td>
               <td>{{ reg.fatherLastName }} {{ reg.fatherFirstName }}</td>
@@ -180,10 +148,20 @@
                 <a
                     :href="$routing.generate('app_registration_arabic_course_view', { token: reg.token })"
                     class="btn btn-outline-primary btn-sm"
-                    :title="`Voir la demande de ${reg.childFirstName} ${reg.childLastName}`"
+                    :title="`#${reg.id} — Voir la demande de ${reg.childFirstName} ${reg.childLastName}`"
                 >
                   <i class="fas fa-eye me-1"></i>
                 </a>
+              </td>
+              <td>
+                <button
+                    class="btn btn-sm btn-success"
+                    :disabled="!getNextStep(reg)"
+                    @click="advanceStep(reg)"
+                    :title="`#${reg.id} — Passer à l’étape « ${statusRegister({ stepRegistration: getNextStep(reg) })} »`"
+                >
+                  Passer
+                </button>
               </td>
             </tr>
             </tbody>
@@ -200,25 +178,36 @@
 </template>
 
 <script>
+import StatusCard from './StatusCard.vue';
+
 export default {
   name: 'RegistrationList',
+  components: { StatusCard },
   data() {
     return {
       registrations: [],
       searchInput: '',
       levelFilter: '',
-      statusFilter: ''
-    }
+      statusFilter: '',
+      // Séquence complète des steps (incluant completed)
+      stepsSequence: [
+        'registration',
+        'waiting',
+        'payment',
+        'validation',
+        'distribution',
+        'compte_creation',
+        'completed'
+      ]
+    };
   },
   computed: {
-    // Liste des niveaux présents dans 'registrations'
     levelsList() {
       return this.registrations
           .map(r => r.previousLevel || '—')
           .filter((v, i, a) => a.indexOf(v) === i && v !== '—')
           .sort();
     },
-    // Liste fixe de tous les libellés de statut possibles
     allStatuses() {
       return [
         'Pas encore inscrit',
@@ -227,96 +216,110 @@ export default {
         'Validation',
         'Prêt à distribuer',
         'Création de compte',
+        'Terminé',
         'Inconnu'
       ];
     },
-    // Tableau filtré en fonction de searchInput, levelFilter et statusFilter
     filteredRegistrations() {
       const term = this.searchInput.trim().toLowerCase();
       return this.registrations.filter(r => {
-        const lvl = r.previousLevel || '—';
+        const lvl  = r.previousLevel || '—';
         const stat = this.statusRegister(r);
-        const matchesSearch =
+        const matchSearch =
             r.childFirstName.toLowerCase().includes(term) ||
             r.childLastName.toLowerCase().includes(term) ||
             r.fatherFirstName.toLowerCase().includes(term) ||
             r.fatherLastName.toLowerCase().includes(term);
-        const matchesLevel = this.levelFilter
-            ? lvl.toLowerCase() === this.levelFilter.toLowerCase()
-            : true;
-        const matchesStatus = this.statusFilter
-            ? stat === this.statusFilter
-            : true;
-        return matchesSearch && matchesLevel && matchesStatus;
+        const matchLevel  = this.levelFilter ? lvl.toLowerCase() === this.levelFilter.toLowerCase() : true;
+        const matchStatus = this.statusFilter ? stat === this.statusFilter : true;
+        return matchSearch && matchLevel && matchStatus;
       });
     }
   },
   methods: {
+    getNextStep(register) {
+      const idx = this.stepsSequence.indexOf(register.stepRegistration);
+      if (idx === -1 || idx === this.stepsSequence.length - 1) {
+        return null;
+      }
+      return this.stepsSequence[idx + 1];
+    },
+    advanceStep(register) {
+      const next = this.getNextStep(register);
+      if (!next) return;
+
+      // Libellé de la prochaine étape
+      const nextLabel = this.statusRegister({ stepRegistration: next });
+
+      // Popup de confirmation
+      const msg = `Êtes‑vous sûr de vouloir passer l’inscription de ` +
+          `${register.childFirstName} ${register.childLastName} ` +
+          `à l’étape « ${nextLabel} » ?`;
+      if (!window.confirm(msg)) {
+        return;
+      }
+
+      // Si confirmé, on appelle l’API
+      this.axios
+          .post(
+              this.$routing.generate('app_registration_advance', { id: register.id }),
+              { step: next }
+          )
+          .then(() => {
+            register.stepRegistration = next;
+          })
+          .catch(err => {
+            console.error("Erreur à l'avancement :", err);
+            // ici, vous pouvez afficher un toast d'erreur
+          });
+    },
     fetchRegisters() {
       this.axios
           .get(this.$routing.generate('app_registers_list'))
           .then(({ data }) => {
             this.registrations = Array.isArray(data) ? data : data.registers;
           })
-          .catch(error => {
-            console.error('Erreur lors de la récupération des inscriptions :', error);
-          });
+          .catch(err => console.error('Erreur récupération inscrits :', err));
     },
     formatDate(dateStr) {
       if (!dateStr) return '—';
       const d = new Date(dateStr);
       return isNaN(d)
           ? '—'
-          : d.toLocaleDateString('fr-FR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          });
+          : d.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
     },
-    statusRegister(register) {
-      switch (register.stepRegistration) {
-        case 'registration':
-          return 'Pas encore inscrit';
-        case 'waiting':
-          return 'Liste d’attente';
-        case 'payment':
-          return 'En attente de paiement';
-        case 'validation':
-          return 'Validation';
-        case 'distribution':
-          return 'Prêt à distribuer';
-        case 'compte_creation':
-          return 'Création de compte';
-        default:
-          return 'Inconnu';
+    statusRegister(r) {
+      switch (r.stepRegistration) {
+        case 'registration':    return 'Pas encore inscrit';
+        case 'waiting':         return 'Liste d’attente';
+        case 'payment':         return 'En attente de paiement';
+        case 'validation':      return 'Validation';
+        case 'distribution':    return 'Prêt à distribuer';
+        case 'compte_creation': return 'Création de compte';
+        case 'completed':       return 'Terminé';
+        default:                return 'Inconnu';
       }
     },
-    badgeClass(register) {
-      switch (register.stepRegistration) {
-        case 'registration':
-          return 'bg-secondary text-white';    // gris
-        case 'waiting':
-          return 'bg-warning text-dark';        // jaune
-        case 'payment':
-          return 'bg-primary text-white';       // bleu
-        case 'validation':
-          return 'bg-info text-white';          // cyan
-        case 'distribution':
-          return 'bg-success text-white';       // vert
-        case 'compte_creation':
-          return 'bg-dark text-white';          // noir
-        default:
-          return 'bg-light text-dark';          // clair par défaut
+    badgeClass(r) {
+      switch (r.stepRegistration) {
+        case 'registration':    return 'bg-secondary text-white';
+        case 'waiting':         return 'bg-warning text-dark';
+        case 'payment':         return 'bg-primary text-white';
+        case 'validation':      return 'bg-info text-white';
+        case 'distribution':    return 'bg-success text-white';
+        case 'compte_creation': return 'bg-dark text-white';
+        case 'completed':       return 'bg-light text-dark';
+        default:                return 'bg-light text-dark';
       }
     },
     applyFilter() {
-      // Le calcul de filteredRegistrations est réactif, donc on n’a rien à faire ici.
+      // computed se met à jour automatiquement
     }
   },
   mounted() {
     this.fetchRegisters();
   }
-}
+};
 </script>
 
 <style scoped>
@@ -324,19 +327,9 @@ export default {
 .table td {
   vertical-align: middle;
 }
-.card-title {
-  font-weight: 600;
-}
-.display-1 {
-  font-size: 4rem;
-  font-weight: 700;
-}
-.display-4 {
-  font-size: 2rem;
-  font-weight: 600;
-}
-/* Si vous utilisez Bootstrap 5, ces classes existent déjà ;
-   sinon, adaptez-les à votre CSS ou framework : */
+.card-title { font-weight: 600; }
+.display-1 { font-size: 4rem; font-weight: 700; }
+.display-4 { font-size: 2rem; font-weight: 600; }
 .bg-secondary { background-color: #6c757d; }
 .bg-warning   { background-color: #ffc107; }
 .bg-primary   { background-color: #0d6efd; }
