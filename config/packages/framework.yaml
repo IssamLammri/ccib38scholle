@@ -3,6 +3,8 @@ framework:
     secret: '%env(APP_SECRET)%'
     default_locale: 'fr'
     #csrf_protection: true
+    router:
+        default_uri: '%env(APP_URL)%'
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true
