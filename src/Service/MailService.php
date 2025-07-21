@@ -81,7 +81,7 @@ class MailService
             $reg->getChildLastName()
         );
         $this->sendEmail(
-            to:       'issamlammri5@gmail.com',
+            to:       $reg->getContactEmail(),
             subject:  $subject,
             template: 'email/company/pass-to-payment-step.html.twig',
             context: [
@@ -98,7 +98,7 @@ class MailService
         $subject  = sprintf('Paiement initié – Validation en cours [%s]', $fullName);
 
         $this->sendEmail(
-            to:       'issamlammri5@gmail.com',
+            to:       $reg->getContactEmail(),
             subject:  $subject,
             template: 'email/company/pass-to-validation-step-styled.html.twig',
             context: [
