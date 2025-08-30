@@ -6,37 +6,26 @@ use App\Entity\RegistrationArabicCours;
 use App\Repository\RegistrationArabicCoursRepository;
 use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class SendMailCompanyStegIntensifCommand extends Command
+#[AsCommand(
+    name: 'app:send-email-company-stage-intensif',
+    description: 'Envoie l’email de rappel aux parents (stage intensif / rentrée).'
+)]
+class SendMailCompanyStageIntensifCommand extends Command
 {
     protected static $defaultName = 'app:send-email-company-haj';
 
-    private EntityManagerInterface $entityManager;
-    private MailService $mailService;
-    private RegistrationArabicCoursRepository $registrationArabicCoursRepository;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        MailService $mailService,
-        RegistrationArabicCoursRepository $registrationArabicCoursRepository
-
-    )
-    {
+        private readonly EntityManagerInterface $entityManager,
+        private readonly MailService $mailService,
+        private readonly RegistrationArabicCoursRepository $registrationArabicCoursRepository,
+    ) {
         parent::__construct();
-        $this->entityManager = $entityManager;
-        $this->mailService = $mailService;
-        $this->registrationArabicCoursRepository = $registrationArabicCoursRepository;
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->setName('app:send-email-company-stage-intensif')
-            ->setDescription('Send email to company HAJ');
     }
 
 
@@ -46,10 +35,7 @@ class SendMailCompanyStegIntensifCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $parentContact = $this->registrationArabicCoursRepository->findBy([
-            'stepRegistration' => RegistrationArabicCours::STEP_DISTRIBUTION
-        ]);
-       // dump($parentContact);
+
         $contactsm = [
            // ['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'issamlamri34000@gmail.com'],
             ['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'issamlammri5@gmail.com'],
@@ -620,13 +606,20 @@ class SendMailCompanyStegIntensifCommand extends Command
             [ 'id'=> 564, 'fullName'=> 'Mhamdi hala', 'email'=> 'halamhamdu@gmail.com'],
             [ 'id'=> 565, 'fullName'=> 'NASRI Amel ', 'email'=> 'benelhadj_amel@hotmail.fr'],
         ];
-        //dump(count($parentContact));
+        // Récupération des parents dont l’inscription est à l’étape DISTRIBUTION
+        $parentContact = $this->registrationArabicCoursRepository->findBy([
+            'stepRegistration' => RegistrationArabicCours::STEP_DISTRIBUTION,
+        ]);
+
         foreach ($parentContact as $contact) {
             /** @var RegistrationArabicCours $contact */
             $email = $contact->getContactEmail();
-            //dump($email);
-            $fullName = $contact->getChildFirstName() . ' ' . $contact->getChildLastName();
-            //$email = 'issamlammri5@gmail.com';
+            if (!$email) {
+                continue;
+            }
+
+            $fullName = trim(($contact->getChildFirstName() ?? '') . ' ' . ($contact->getChildLastName() ?? ''));
+
             $this->mailService->sendEmail(
                 to: $email,
                 subject: 'Votre inscription est confirmée – Rendez-vous en septembre !',
@@ -635,13 +628,13 @@ class SendMailCompanyStegIntensifCommand extends Command
                     'fullNameStudent' => $fullName,
                     'token' => $contact->getToken(),
                 ],
-                sender: "contact@ccib38.com"
+                sender: 'contact@ccib38.com',
             );
         }
 
         $this->entityManager->flush();
 
-        $io->success('All sessions have been created successfully!');
+        $io->success(sprintf('Emails envoyés à %d destinataire(s).', \count($parentContact)));
 
         return Command::SUCCESS;
     }
