@@ -1,0 +1,147 @@
+{# templates/email/company/welcome-back-to-school-2025.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenue pour l’année scolaire 2025/2026</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            margin: 20px 0;
+            padding: 0;
+        }
+        .main-table {
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 600px;
+        }
+        .header {
+            background: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #0056b3;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            color: #555555;
+        }
+        .subheader {
+            font-size: 14px;
+            color: #777777;
+        }
+        .content {
+            padding: 30px;
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .content h2 {
+            margin: 20px 0 10px;
+            font-size: 18px;
+            color: #0056b3;
+        }
+        .content ul {
+            margin: 10px 0 15px 20px;
+        }
+        .footer {
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #777777;
+            font-size: 12px;
+            text-align: center;
+        }
+        a {
+            color: #0056b3;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<table class="container" role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td align="center">
+            <table class="main-table" role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <!-- En-tête -->
+                <tr>
+                    <td class="header">
+                        <h1>Bienvenue au CCIB38 🎉</h1>
+                        <p class="subheader">Année scolaire 2025/2026</p>
+                    </td>
+                </tr>
+                <!-- Contenu -->
+                <tr>
+                    <td class="content">
+                        <p>Chers parents,</p>
+
+                        <p>
+                            Félicitations 🎊, l’inscription de <strong>{{ fullNameStudent }}</strong> est maintenant <strong>validée</strong> pour l’année scolaire 2025/2026 au Centre Culturel Ibn Badis de Grenoble.
+                        </p>
+
+                        <p>
+                            Toute l’équipe du CCIB38 vous souhaite la bienvenue et se réjouit d’accompagner votre enfant durant cette nouvelle année riche en apprentissages et en échanges.
+                        </p>
+
+                        <h2>📅 Dates importantes</h2>
+                        <ul>
+                            <li><strong>Réunion de rentrée avec les parents :</strong> samedi 06 septembre 2025</li>
+                            <li><strong>Début des cours :</strong>
+                                <ul>
+                                    <li>Mercredi 10 septembre 2025</li>
+                                    <li>Samedi 13 septembre 2025</li>
+                                    <li>Dimanche 14 septembre 2025</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <p>
+                            La réunion de rentrée sera l’occasion de présenter l’organisation de l’année, d’échanger avec les enseignants et de répondre à vos questions.
+                        </p>
+
+                        <h2>ℹ️ Informations pratiques</h2>
+                        <ul>
+                            <li>📍 Lieu : Centre Culturel Ibn Badis – 18 Rue des Trembles, 38100 Grenoble</li>
+                            <li>📞 Contact : +33 7 65 75 34 21</li>
+                            <li>📧 Email : <a href="mailto:ccib38.contact@gmail.com">ccib38.contact@gmail.com</a></li>
+                        </ul>
+
+                        <p>
+                            Nous vous remercions de votre confiance et sommes impatients de retrouver <strong>{{ fullNameStudent }}</strong> pour cette nouvelle aventure.
+                        </p>
+
+                        <p>
+                            Bien cordialement,<br>
+                            L’équipe CCIB38
+                        </p>
+                    </td>
+                </tr>
+                <!-- Pied -->
+                <tr>
+                    <td class="footer">
+                        Centre Culturel Ibn Badis de Grenoble • 18 Rue des Trembles, 38100 Grenoble • Tél. : +33 7 65 75 34 21<br>
+                        <a href="https://www.ccib38.fr">www.ccib38.fr</a> • <a href="mailto:ccib38.contact@gmail.com">ccib38.contact@gmail.com</a><br>
+                        &copy; 2025 Centre Culturel Ibn Badis Grenoble. Tous droits réservés.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

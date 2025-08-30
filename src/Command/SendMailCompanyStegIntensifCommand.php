@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Entity\RegistrationArabicCours;
+use App\Repository\RegistrationArabicCoursRepository;
 use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -15,16 +17,19 @@ class SendMailCompanyStegIntensifCommand extends Command
 
     private EntityManagerInterface $entityManager;
     private MailService $mailService;
+    private RegistrationArabicCoursRepository $registrationArabicCoursRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        MailService $mailService
+        MailService $mailService,
+        RegistrationArabicCoursRepository $registrationArabicCoursRepository
 
     )
     {
         parent::__construct();
         $this->entityManager = $entityManager;
         $this->mailService = $mailService;
+        $this->registrationArabicCoursRepository = $registrationArabicCoursRepository;
     }
 
     protected function configure(): void
@@ -41,7 +46,10 @@ class SendMailCompanyStegIntensifCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-
+        $parentContact = $this->registrationArabicCoursRepository->findBy([
+            'stepRegistration' => RegistrationArabicCours::STEP_DISTRIBUTION
+        ]);
+       // dump($parentContact);
         $contactsm = [
            // ['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'issamlamri34000@gmail.com'],
             ['id'=> 1,'fullName'=> 'Issam LAMMRI', 'email'=> 'issamlammri5@gmail.com'],
@@ -612,15 +620,20 @@ class SendMailCompanyStegIntensifCommand extends Command
             [ 'id'=> 564, 'fullName'=> 'Mhamdi hala', 'email'=> 'halamhamdu@gmail.com'],
             [ 'id'=> 565, 'fullName'=> 'NASRI Amel ', 'email'=> 'benelhadj_amel@hotmail.fr'],
         ];
-        foreach ($contacts as $contact) {
-            dump($contact['email']);
-            $email = $contact['email'];
+        //dump(count($parentContact));
+        foreach ($parentContact as $contact) {
+            /** @var RegistrationArabicCours $contact */
+            $email = $contact->getContactEmail();
+            //dump($email);
+            $fullName = $contact->getChildFirstName() . ' ' . $contact->getChildLastName();
+            //$email = 'issamlammri5@gmail.com';
             $this->mailService->sendEmail(
                 to: $email,
-                subject: 'Stage intensif Pré-Brevet et Pré-Bac – Préparation aux oraux',
-                template: 'email/company/stage-intensive.html.twig',
+                subject: 'Votre inscription est confirmée – Rendez-vous en septembre !',
+                template: 'email/company/send-rappel-to-parent.html.twig',
                 context: [
-                    'fullName' => $contact['fullName'],
+                    'fullNameStudent' => $fullName,
+                    'token' => $contact->getToken(),
                 ],
                 sender: "contact@ccib38.com"
             );

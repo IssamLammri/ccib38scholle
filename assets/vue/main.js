@@ -11,6 +11,8 @@ import RegistrationList from './pages/registers/RegistrationList.vue';
 import NewSession from './pages/session/NewSession.vue';
 import ShowInvoice from './pages/invoice/ShowInvoice.vue';
 import StudyClass from './pages/studyClass/StudyClass.vue';
+import EditStudyClass from './pages/studyClass/EditStudyClass.vue';
+import PlanningStudyClass from './pages/studyClass/PlanningStudyClass.vue';
 import SessionShow from './pages/session/SessionShow.vue';
 import SessionList from './pages/session/SessionList.vue';
 import RegistrationPageAcademicSupport from './pages/RegistrationPageAcademicSupport.vue';
@@ -47,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('RegistrationList', RegistrationList);
     app.component('ShowInvoice', ShowInvoice);
     app.component('StudyClass', StudyClass);
+    app.component('EditStudyClass', EditStudyClass);
+    app.component('PlanningStudyClass', PlanningStudyClass);
     app.component('SessionShow', SessionShow);
     app.component('SessionList', SessionList);
     app.component('RegistrationPageAcademicSupport', RegistrationPageAcademicSupport);

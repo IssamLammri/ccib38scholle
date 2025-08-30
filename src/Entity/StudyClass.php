@@ -10,6 +10,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity]
 class StudyClass
 {
+
+    public const CLASS_TYPE_ARABE = 'Arabe';
+    public const CLASS_TYPE_SOUTIEN = 'Soutien scolaire';
+    public const CLASS_TYPE_AUTRE = 'Autre';
+
+    public const DAY_SATURDAY = 'Samedi';
+    public const DAY_SUNDAY = 'Dimanche';
+    public const DAY_MONDAY = 'Lundi';
+    public const DAY_TUESDAY = 'Mardi';
+    public const DAY_WEDNESDAY = 'Mercredi';
+    public const DAY_THURSDAY = 'Jeudi';
+    public const DAY_FRIDAY = 'Vendredi';
+
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -20,13 +34,34 @@ class StudyClass
     #[Groups(['read_payment','read_student','read_study_class','read_session','read_invoice'])]
     private ?string $name = null;
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'string')]
     #[Groups(['read_study_class','read_session'])]
-    private ?int $level = null;
+    private ?string $level = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['read_study_class','read_session','read_payment','read_invoice'])]
     private ?string $speciality = null;
+
+    #[ORM\Column(type: 'string', length: 50)]
+    #[Groups(['read_study_class','read_session'])]
+    private ?string $day = self::DAY_SATURDAY;
+
+    #[ORM\Column(type: 'time')]
+    #[Groups(['read_study_class','read_session'])]
+    private ?\DateTimeInterface $startHour = null;
+
+    #[ORM\Column(type: 'time')]
+    #[Groups(['read_study_class','read_session'])]
+    private ?\DateTimeInterface $endHour = null;
+
+    #[ORM\Column(type: 'string', length: 100)]
+    #[Groups(['read_study_class','read_session'])]
+    private ?string $classType = null; // Ex: Arabe, Soutien, Autre
+
+    #[ORM\ManyToOne(targetEntity: Teacher::class, inversedBy: 'classes')]
+    #[Groups(['read_study_class','read_session'])]
+    private ?Teacher $principalTeacher = null;
+
 
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'studyClass')]
     private Collection $payments;
@@ -55,12 +90,12 @@ class StudyClass
         return $this;
     }
 
-    public function getLevel(): ?int
+    public function getLevel(): ?string
     {
         return $this->level;
     }
 
-    public function setLevel(int $level): self
+    public function setLevel(string $level): self
     {
         $this->level = $level;
 
@@ -117,20 +152,61 @@ class StudyClass
     #[Groups(['read_study_class','read_session'])]
     public function getLevelClass(): string
     {
-        return match ($this->level) {
-            1 => 'CP',
-            2 => 'CE1',
-            3 => 'CE2',
-            4 => 'CM1',
-            5 => 'CM2',
-            6 => '6ème',
-            7 => '5ème',
-            8 => '4ème',
-            9 => '3ème',
-            10 => '2nde',
-            11 => '1ère',
-            12 => 'Terminale',
-            default => 'Niveau inconnu',
-        };
+        return $this->level;
+    }
+
+    public function getDay(): ?string
+    {
+        return $this->day;
+    }
+
+    public function setDay(?string $day): StudyClass
+    {
+        $this->day = $day;
+        return $this;
+    }
+
+    public function getStartHour(): ?\DateTimeInterface
+    {
+        return $this->startHour;
+    }
+
+    public function setStartHour(?\DateTimeInterface $startHour): StudyClass
+    {
+        $this->startHour = $startHour;
+        return $this;
+    }
+
+    public function getEndHour(): ?\DateTimeInterface
+    {
+        return $this->endHour;
+    }
+
+    public function setEndHour(?\DateTimeInterface $endHour): StudyClass
+    {
+        $this->endHour = $endHour;
+        return $this;
+    }
+
+    public function getClassType(): ?string
+    {
+        return $this->classType;
+    }
+
+    public function setClassType(?string $classType): StudyClass
+    {
+        $this->classType = $classType;
+        return $this;
+    }
+
+    public function getPrincipalTeacher(): ?Teacher
+    {
+        return $this->principalTeacher;
+    }
+
+    public function setPrincipalTeacher(?Teacher $principalTeacher): StudyClass
+    {
+        $this->principalTeacher = $principalTeacher;
+        return $this;
     }
 }

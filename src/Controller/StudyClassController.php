@@ -12,6 +12,8 @@ use App\Repository\SessionStudyClassPresenceRepository;
 use App\Repository\StudentClassRegisteredRepository;
 use App\Repository\StudentRepository;
 use App\Repository\StudyClassRepository;
+use App\Repository\TeacherRepository;
+use App\Service\StudyClassService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,6 +21,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[IsGranted('ROLE_TEACHER')]
 #[Route('/study-class')]
@@ -31,7 +35,9 @@ class StudyClassController extends AbstractController
         private StudentRepository $studentRepository,
         private EntityManagerInterface $entityManager,
         private SessionStudyClassPresenceRepository $sessionStudyClassPresenceRepository,
-        private SessionRepository $sessionRepository
+        private StudyClassRepository $studyClassRepository,
+        private SessionRepository $sessionRepository,
+        private TeacherRepository $teacherRepository
     ) {
     }
 
@@ -83,6 +89,9 @@ class StudyClassController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $studyClass->setStartHour( new \DateTime() );
+            $studyClass->setEndHour( new \DateTime() );
+            $studyClass->setClassType(StudyClass::CLASS_TYPE_ARABE);
             $entityManager->persist($studyClass);
             $entityManager->flush();
 
@@ -95,7 +104,13 @@ class StudyClassController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_study_class_show', options: ['expose' => true], methods: ['GET'])]
+    #[Route(
+        '/{id}',
+        name: 'app_study_class_show',
+        requirements: ['id' => '\d+'],
+        options: ['expose' => true],
+        methods: ['GET']
+    )]
     public function show(StudyClass $studyClass): Response
     {
         $studentsNotInStudyClass = $this->studentRepository->findStudentsNotInStudyClass($studyClass);
@@ -155,18 +170,11 @@ class StudyClassController extends AbstractController
     #[Route('/{id}/edit', name: 'app_study_class_edit', options: ['expose' => true], methods: ['GET','POST'])]
     public function edit(Request $request, StudyClass $studyClass, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(StudyClassType::class, $studyClass);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_study_class_index', [], Response::HTTP_SEE_OTHER);
-        }
-
+        $allTeachers = $this->teacherRepository->findAll();
         return $this->render('study_class/edit.html.twig', [
-            'study_class' => $studyClass,
-            'form' => $form,
+            'studyClass' => $studyClass,
+            'allTeachers' => $allTeachers,
+            'userCurrent' => $this->getUser(),
         ]);
     }
 
@@ -179,5 +187,68 @@ class StudyClassController extends AbstractController
         }
 
         return $this->redirectToRoute('app_study_class_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+
+    #[Route('/planning', name: 'app_planning_study_class', methods: ['GET', 'POST'])]
+    public function planningPage(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        return $this->render('study_class/planning_study_class.html.twig');
+    }
+
+    #[Route(
+        '/list',
+        name: 'list_study_class_filtered',
+        options: ['expose' => true],
+        methods: ['GET']
+    )]
+    public function listFiltered(SerializerInterface $serializer): Response
+    {
+        // Récupère toutes les StudyClass
+        $classes = $this->studyClassRepository->findAll();
+
+        // Sérialise en JSON en réutilisant vos groupes de sérialisation
+        $json = $serializer->serialize(
+            $classes,
+            'json',
+            ['groups' => 'read_study_class'] // ou le groupe que vous voulez
+        );
+
+        return new Response(
+            $json,
+            Response::HTTP_OK,
+            ['Content-Type' => 'application/json']
+        );
+    }
+
+
+    #[Route('/save-data/{id}', name: 'save_data_study_class', options: ['expose' => true], methods: ['POST'])]
+    public function saveData(
+        int $id,
+        Request $request,
+        StudyClassService $studyClassService
+    ): Response {
+        // Récupérer l’entité (ou 404)
+        $studyClass = $this->studyClassRepository->findOneBy(['id' => $id]);
+
+        if (!$studyClass) {
+            return $this->apiErrorResponse('Classe introuvable.', Response::HTTP_NOT_FOUND);
+        }
+
+        // 1. Décoder le JSON
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (NotEncodableValueException $e) {
+            return $this->apiErrorResponse('JSON invalide.', Response::HTTP_BAD_REQUEST);
+        }
+        //dump($data);
+        // 2. Déléguer au service
+        $errors = $studyClassService->updateFromArray($studyClass, $data);
+        if (null !== $errors) {
+            return $this->apiErrorResponse((string)$errors, Response::HTTP_BAD_REQUEST);
+        }
+
+        // 3. Répondre avec l’entité mise à jour
+        return $this->apiResponse($studyClass);
     }
 }

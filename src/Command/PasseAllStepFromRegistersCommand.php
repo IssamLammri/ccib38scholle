@@ -62,7 +62,7 @@ class PasseAllStepFromRegistersCommand extends Command
             if (
                 $parent
                 && $student
-                && ($totauxParParent[$parent->getId()] ?? 0.0) > 230.0
+                && ($totauxParParent[$parent->getId()] ?? 0.0) > 10.0
             ) {
                 $etudiantsEligibles[$student->getId()] = true;
             }
@@ -75,6 +75,7 @@ class PasseAllStepFromRegistersCommand extends Command
 
         $count = 0;
         foreach ($toProcess as $reg) {
+            /** @var RegistrationArabicCours $reg */
             $student = $reg->getStudent();
             if ($student && isset($etudiantsEligibles[$student->getId()])) {
                 try {
