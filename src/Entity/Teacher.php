@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -37,6 +39,15 @@ class Teacher
     #[ORM\OneToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
+
+    #[ORM\OneToMany(targetEntity: StudyClass::class, mappedBy: 'principalTeacher')]
+    private Collection $classes;
+
+
+    public function __construct()
+    {
+        $this->classes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -124,6 +135,33 @@ class Teacher
     {
         $this->user = $user;
 
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StudyClass>
+     */
+    public function getClasses(): Collection
+    {
+        return $this->classes;
+    }
+
+    public function addClass(StudyClass $class): self
+    {
+        if (!$this->classes->contains($class)) {
+            $this->classes[] = $class;
+            $class->setPrincipalTeacher($this); // synchronise l’autre côté
+        }
+        return $this;
+    }
+
+    public function removeClass(StudyClass $class): self
+    {
+        if ($this->classes->removeElement($class)) {
+            if ($class->getPrincipalTeacher() === $this) {
+                $class->setPrincipalTeacher(null);
+            }
+        }
         return $this;
     }
 }

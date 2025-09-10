@@ -138,7 +138,7 @@
             </select>
           </div>
           <!-- Professeur principal (si manager) -->
-          <div class="col-md-6 mb-3" v-if="isManager">
+          <div class="col-md-6 mb-3">
             <label for="teacherId" class="form-label">Professeur principal</label>
             <select
                 id="teacherId"
@@ -152,7 +152,7 @@
                   :key="teacher.id"
                   :value="teacher.id"
               >
-                {{ teacher.fullName }}
+                {{ teacher.firstName }} {{ teacher.lastName }}
               </option>
             </select>
           </div>

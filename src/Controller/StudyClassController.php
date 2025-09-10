@@ -7,6 +7,7 @@ use App\Entity\StudentClassRegistered;
 use App\Entity\StudyClass;
 use App\Form\StudyClassType;
 use App\Model\ApiResponseTrait;
+use App\Repository\PaymentRepository;
 use App\Repository\SessionRepository;
 use App\Repository\SessionStudyClassPresenceRepository;
 use App\Repository\StudentClassRegisteredRepository;
@@ -17,6 +18,7 @@ use App\Service\StudyClassService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -32,6 +34,7 @@ class StudyClassController extends AbstractController
 
     public function __construct(
         private StudentClassRegisteredRepository $studentClassRegisteredRepository,
+        private PaymentRepository $paymentRepository,
         private StudentRepository $studentRepository,
         private EntityManagerInterface $entityManager,
         private SessionStudyClassPresenceRepository $sessionStudyClassPresenceRepository,
@@ -75,13 +78,27 @@ class StudyClassController extends AbstractController
             'current_page' => $page,
             'total_pages' => ceil(count($paginator) / $limit),
             'search' => $search,
-            'student_count_map' => $studentCountMap, // Add the map to the template
+            'student_count_map' => $studentCountMap,
         ]);
     }
 
 
+    #[Route('/all-study-class', name: 'study_class_list', options: ['expose' => true], methods: ['GET'])]
+    public function getAllStudyClass(): JsonResponse
+    {
+        $allStudyClass = $this->studyClassRepository->findAll();
+        $studentCounts = $this->studyClassRepository->getStudentCounts();
+        $studentCountMap = [];
+        foreach ($studentCounts as $count) {
+            $studentCountMap[$count['id']] = $count['studentCount'];
+        }
+        return $this->json([
+            'studyClass' => $allStudyClass,
+            'studentCountMap' => $studentCountMap,
+        ], 200, [], ['groups' => 'read_study_class']);
+    }
 
-    #[Route('/new', name: 'app_study_class_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'app_study_class_new', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $studyClass = new StudyClass();
@@ -178,19 +195,24 @@ class StudyClassController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_study_class_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_study_class_delete', options: ['expose' => true], methods: ['DELETE'])]
     public function delete(Request $request, StudyClass $studyClass, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$studyClass->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($studyClass);
-            $entityManager->flush();
+        $paymentsExist = $this->paymentRepository->findBy(['studyClass' => $studyClass]);
+        if ($paymentsExist){
+            return $this->apiErrorResponse('Impossible de supprimer cette classe car des paiements y sont rattachés.');
         }
-
-        return $this->redirectToRoute('app_study_class_index', [], Response::HTTP_SEE_OTHER);
+        $studentsRegistered = $this->studentClassRegisteredRepository->findBy(['studyClass' => $studyClass]);
+        foreach ($studentsRegistered as $studentRegistered){
+            $this->entityManager->remove($studentRegistered);
+        }
+        $entityManager->remove($studyClass);
+        $entityManager->flush();
+        return $this->apiResponse('Suppression effectuée' );
     }
 
 
-    #[Route('/planning', name: 'app_planning_study_class', methods: ['GET', 'POST'])]
+    #[Route('/planning', name: 'app_planning_study_class', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function planningPage(Request $request, EntityManagerInterface $entityManager): Response
     {
         return $this->render('study_class/planning_study_class.html.twig');
