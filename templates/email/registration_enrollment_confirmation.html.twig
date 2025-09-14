@@ -1,0 +1,188 @@
+{# templates/email/registration_enrollment_confirmation.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Inscription confirmée - {{ yearLabel }} - CCIB 38</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background: linear-gradient(135deg, #e7fbc2 0%, #e6eced 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.6;">
+<!-- Wrapper principal -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background: linear-gradient(135deg, #e7fbc2 0%, #efedf1 100%); padding: 20px 0;">
+    <tr>
+        <td align="center">
+            <!-- Container principal -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background: #ffffff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); overflow: hidden;">
+
+                <!-- Header avec dégradé -->
+                <tr>
+                    <td style="background: linear-gradient(45deg, #0a4da2, #1e73be); padding: 40px 30px; text-align: center; position: relative;">
+                        <!-- Motif décoratif -->
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);"></div>
+
+                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2); position: relative; z-index: 2;">
+                            🎓 Inscription confirmée !
+                        </h1>
+                        <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px; font-weight: 300; position: relative; z-index: 2;">
+                            Année scolaire {{ yearLabel }}
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Corps principal -->
+                <tr>
+                    <td style="padding: 40px 30px;">
+
+                        <!-- Salutation -->
+                        {% if parentFullName %}
+                            <p style="margin: 0 0 20px; font-size: 18px; color: #333; font-weight: 500;">
+                                Bonjour {{ parentFullName }} 👋
+                            </p>
+                        {% else %}
+                            <p style="margin: 0 0 20px; font-size: 18px; color: #333; font-weight: 500;">
+                                Bonjour chers parents 👋
+                            </p>
+                        {% endif %}
+
+                        <p style="margin: 0 0 25px; font-size: 16px; color: #555; line-height: 1.7;">
+                            Nous avons le plaisir de confirmer l'inscription de votre enfant
+                            <strong style="color: #0a4da2; background: rgba(10, 77, 162, 0.1); padding: 2px 6px; border-radius: 4px;">{{ studentFullName }}</strong>
+                            {% if studentDob is not null %}
+                                <span style="color: #666; font-size: 14px;">(né(e) le {{ studentDob|date('d/m/Y') }})</span>
+                            {% endif %}
+                            aux cours d'<strong>Arabe</strong> pour l'année scolaire <strong>{{ yearLabel }}</strong>.
+                        </p>
+
+                        <!-- Card informations importantes -->
+                        <div style="background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%); border: 2px solid #e3f2fd; border-radius: 16px; padding: 25px; margin: 30px 0; box-shadow: 0 8px 25px rgba(10, 77, 162, 0.08);">
+
+                            <!-- Titre avec icône -->
+                            <div style="display: flex; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(10, 77, 162, 0.2); padding-bottom: 15px;">
+                                <div style="width: 40px; height: 40px; background: linear-gradient(45deg, #0a4da2, #1e73be); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <span style="color: white; font-size: 18px;">📚</span>
+                                </div>
+                                <h3 style="margin: 0; font-size: 20px; color: #0a4da2; font-weight: 600;">
+                                    Détails de votre inscription
+                                </h3>
+                            </div>
+
+                            <!-- Informations organisées en grid -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td width="50%" style="padding-right: 15px;">
+                                        <div style="background: rgba(255,255,255,0.7); border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #4caf50;">
+                                            <p style="margin: 0 0 5px; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Classe</p>
+                                            <p style="margin: 0; font-size: 16px; color: #333; font-weight: 600;">
+                                                {{ className }}
+                                                {% if classLevel %}<span style="color: #666; font-size: 14px;"> (niveau {{ classLevel }})</span>{% endif %}
+                                            </p>
+                                        </div>
+                                    </td>
+                                    <td width="50%">
+                                        <div style="background: rgba(255,255,255,0.7); border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+                                            <p style="margin: 0 0 5px; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Jour</p>
+                                            <p style="margin: 0; font-size: 16px; color: #333; font-weight: 600;">{{ day }}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Créneau horaire - section mise en évidence -->
+                            <div style="background: linear-gradient(135deg, #0a4da2, #1e73be); border-radius: 12px; padding: 20px; margin: 20px 0; color: white; text-align: center; box-shadow: 0 8px 20px rgba(10, 77, 162, 0.3);">
+                                <p style="margin: 0 0 8px; font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">⏰ Votre créneau</p>
+                                <p style="margin: 0; font-size: 24px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                    {% if startHour is not null and endHour is not null %}
+                                        {{ startHour|date('H:i') }} – {{ endHour|date('H:i') }}
+                                    {% else %}
+                                        À préciser prochainement
+                                    {% endif %}
+                                </p>
+                                    <p style="margin: 10px 0 0; font-size: 14px; opacity: 0.9;">
+                                        📅 Tous les semaines le même créneau
+                                    </p>
+                            </div>
+
+                            <!-- Spécialité -->
+                            <div style="background: rgba(255,255,255,0.7); border-radius: 10px; padding: 15px; border-left: 4px solid #9c27b0;">
+                                <p style="margin: 0 0 5px; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Spécialité</p>
+                                <p style="margin: 0; font-size: 16px; color: #333; font-weight: 600;">{{ speciality }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Message de contact -->
+                        <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffecb3 100%); border-radius: 12px; padding: 20px; margin: 25px 0; border-left: 5px solid #ff9800;">
+                            <p style="margin: 0 0 10px; font-size: 16px; color: #333; font-weight: 500;">
+                                💡 <strong>Besoin d'aide ?</strong>
+                            </p>
+                            <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.6;">
+                                Notre équipe reste disponible pour toute question concernant l'organisation des cours, le matériel nécessaire ou les modalités pratiques.
+                            </p>
+                        </div>
+
+                        <!-- Message de conclusion -->
+                        <p style="margin: 25px 0 0; font-size: 16px; color: #333; text-align: center; padding: 20px; background: rgba(10, 77, 162, 0.05); border-radius: 12px;">
+                            Nous avons hâte d'accueillir votre enfant au<br>
+                            <strong style="color: #0a4da2; font-size: 18px;">Centre Culturel Ibn Badis de Grenoble</strong>
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="background: #f8f9fa; padding: 30px; border-top: 1px solid #e9ecef;">
+
+                        <!-- Informations de contact -->
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 15px; color: #0a4da2; font-size: 18px; font-weight: 600;">
+                                📍 Centre Culturel Ibn Badis
+                            </h4>
+
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                                <tr>
+                                    <td style="padding: 8px 15px; background: rgba(10, 77, 162, 0.1); border-radius: 8px; margin: 5px;">
+                                            <span style="font-size: 14px; color: #333;">
+                                                🏠 18 Rue des Trembles, 38100 Grenoble
+                                            </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 15px; background: rgba(10, 77, 162, 0.1); border-radius: 8px; margin: 5px;">
+                                            <span style="font-size: 14px; color: #333;">
+                                                📞 <a href="tel:+33663032967" style="color: #0a4da2; text-decoration: none;">+33 6 63 03 29 67</a>
+                                            </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 15px; background: rgba(10, 77, 162, 0.1); border-radius: 8px; margin: 5px;">
+                                            <span style="font-size: 14px; color: #333;">
+                                                ✉️ <a href="mailto:cours.arabe.ccib38@gmail.com" style="color: #0a4da2; text-decoration: none;">cours.arabe.ccib38@gmail.com</a>
+                                            </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Note de confidentialité -->
+                        <div style="border-top: 1px solid #dee2e6; padding-top: 20px; text-align: center;">
+                            <p style="margin: 0; font-size: 12px; color: #6c757d; line-height: 1.5;">
+                                Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer cet e-mail en toute sécurité.<br>
+                                Cet e-mail a été envoyé de manière automatique, merci de ne pas y répondre directement.
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
