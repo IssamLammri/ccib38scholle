@@ -256,7 +256,7 @@ export default {
     return {
       levelOptionsArabic: [
         'CP','N0','N1_1','N1_2','N2_1','N2_2','N3_1','N3_2',
-        'N4_1','N4_2','N5_1','N5_2','N6_1','N6_2','Adult'
+        'N4_1','N4_2','N5_1','N5_2','N6_1','N6_2','Adolescent','Adult'
       ],
       levelOptionsSupport: [
         'CP','CE1','CE2','CM1','CM2','6ème','5ème','4ème','3ème',
