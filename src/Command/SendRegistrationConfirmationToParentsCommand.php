@@ -239,13 +239,13 @@ class SendRegistrationConfirmationToParentsCommand extends Command
                 if ($dryRun) {
                     $io->text(sprintf('[DRY RUN] À: %s | Sujet: %s', $emailTo, $subject));
                 } else {
-                    /*$this->mailService->sendEmail(
+                    $this->mailService->sendEmail(
                         to: $emailTo,
                         subject: $subject,
                         template: 'email/registration_enrollment_confirmation.html.twig',
                         context: $context,
                         sender: 'contact@ccib38.fr'
-                    );*/
+                    );
                 }
                 $sentCount++;
 
