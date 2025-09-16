@@ -2,6 +2,8 @@
 
 namespace App\Repository;
 
+use App\Entity\ParentEntity;
+use App\Entity\Student;
 use App\Entity\StudentClassRegistered;
 use App\Entity\StudyClass;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -53,5 +55,25 @@ class StudentClassRegisteredRepository extends ServiceEntityRepository
             ->setParameter('startDate', $startDate)
             ->getQuery()
             ->getResult();
+    }
+
+    /** @return StudentClassRegistered[] */
+    public function findActiveByStudent(Student $student): array
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.student = :s')->setParameter('s', $student)
+            ->andWhere('r.active = true')
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()->getResult();
+    }
+
+    /** @return StudentClassRegistered[] */
+    public function findAllActiveByParent(ParentEntity $parent): array
+    {
+        return $this->createQueryBuilder('r')
+            ->join('r.student','st')->addSelect('st')
+            ->andWhere('st.parent = :p')->setParameter('p', $parent)
+            ->andWhere('r.active = true')
+            ->getQuery()->getResult();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\ParentEntity;
 use App\Entity\Session;
 use App\Entity\StudyClass;
 use App\Entity\User;
@@ -105,4 +106,55 @@ class SessionRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * Renvoie une ligne par (session, student) en scalaires.
+     */
+    // + use App\Entity\SessionStudyClassPresence; en haut du fichier
+
+    public function findForParentInRange(
+        ParentEntity $parent,
+        \DateTimeImmutable $start,
+        \DateTimeImmutable $end
+    ): array {
+        $qb = $this->createQueryBuilder('s')
+            ->select([
+                // Session
+                's.id            AS s_id',
+                's.startTime     AS s_start',
+                's.endTime       AS s_end',
+                // StudyClass
+                'sc.id           AS sc_id',
+                'sc.name         AS sc_name',
+                'sc.level        AS sc_level',
+                'sc.speciality   AS sc_speciality',
+                'sc.day          AS sc_day',
+                'sc.startHour    AS sc_startHour',
+                'sc.endHour      AS sc_endHour',
+                // Teacher
+                't.firstName     AS t_firstName',
+                't.lastName      AS t_lastName',
+                // Room
+                'room.name       AS room_name',
+                // Student
+                'st.id           AS st_id',
+                'st.firstName    AS st_firstName',
+                'st.lastName     AS st_lastName',
+                // Presence (peut être NULL)
+                'pres.isPresent  AS presence'
+            ])
+            ->join('s.studyClass', 'sc')
+            ->join(\App\Entity\StudentClassRegistered::class, 'r', 'WITH', 'r.studyClass = sc AND r.active = true')
+            ->join('r.student', 'st')
+            ->join('s.teacher', 't')
+            ->join('s.room', 'room')
+            ->leftJoin(\App\Entity\SessionStudyClassPresence::class, 'pres', 'WITH', 'pres.session = s AND pres.student = st')
+            ->andWhere('st.parent = :p')->setParameter('p', $parent)
+            ->andWhere('s.startTime >= :start')->setParameter('start', $start)
+            ->andWhere('s.endTime   <= :end')->setParameter('end', $end)
+            ->orderBy('s.startTime', 'ASC');
+
+        return $qb->getQuery()->getArrayResult();
+    }
+
 }

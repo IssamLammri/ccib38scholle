@@ -1,0 +1,39 @@
+{# Sujet: "Vos classes {{ yearLabel }} – {{ teacherName }}" #}
+
+<p>Bonjour {{ teacherName }},</p>
+
+<p>Voici vos classes pour l’année scolaire <strong>{{ yearLabel }}</strong> :</p>
+
+<table cellpadding="6" cellspacing="0" border="0" style="border-collapse:collapse;">
+    <thead>
+    <tr>
+        <th align="left">Jour</th>
+        <th align="left">Horaire</th>
+        <th align="left">Classe</th>
+        <th align="left">Niveau</th>
+        <th align="left">Spécialité</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for c in classes %}
+        <tr>
+            <td>{{ c.day }}</td>
+            <td>
+                {% if c.start %}{{ c.start }}{% else %}?{% endif %}
+                –
+                {% if c.end %}{{ c.end }}{% else %}?{% endif %}
+            </td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.level }}</td>
+            <td>{{ c.speciality }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<p>
+    Si une information vous paraît incorrecte, merci de répondre à ce message
+    afin que nous puissions mettre à jour le planning.
+</p>
+
+<p>Cordialement,<br>CCIB38</p>

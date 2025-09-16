@@ -56,6 +56,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeImmutable $tokenExpiration = null;
 
 
+    #[ORM\OneToOne(targetEntity: ParentEntity::class, mappedBy: 'user')]
+    private ?ParentEntity $parent = null;
+
     public function __construct()
     {
         $token = bin2hex(random_bytes(32));
@@ -204,6 +207,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTokenExpiration(?\DateTimeImmutable $tokenExpiration): self
     {
         $this->tokenExpiration = $tokenExpiration;
+        return $this;
+    }
+
+    public function getParent(): ?ParentEntity
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?ParentEntity $parent): self
+    {
+        $this->parent = $parent;
+
+        // tient la relation en synchro côté owning
+        if ($parent && $parent->getUser() !== $this) {
+            $parent->setUser($this);
+        }
+
         return $this;
     }
 }

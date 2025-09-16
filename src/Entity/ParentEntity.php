@@ -59,6 +59,10 @@ class ParentEntity
     #[ORM\OneToMany(targetEntity: Invoice::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
     private Collection $invoices;
 
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'parent', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', unique: false, nullable: true, onDelete: 'CASCADE')]
+    private ?User $user = null;
+
     public function __construct()
     {
         $this->students = new ArrayCollection();
@@ -279,5 +283,20 @@ class ParentEntity
 
         return $this;
     }
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
 
+    public function setUser(User $user): self
+    {
+        $this->user = $user;
+
+        // tient la relation en synchro côté inverse
+        if ($user->getParent() !== $this) {
+            $user->setParent($this);
+        }
+
+        return $this;
+    }
 }

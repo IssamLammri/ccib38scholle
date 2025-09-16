@@ -76,4 +76,15 @@
             {% endif %}
         </ul>
     </div>
+    {% if(is_granted('ROLE_PARENT')) %}
+        <div class="sidebar-menu">
+            <ul class="list-unstyled" style="font-size: 16px">
+                    <li>
+                        <a href="{{ path('app_dashboard_parent') }}">
+                            <i class="fa-solid fa-sliders m-3"></i> {{ 'Tableau de board'|trans }}
+                        </a>
+                    </li>
+            </ul>
+        </div>
+    {% endif %}
 </div>

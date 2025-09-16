@@ -7,6 +7,7 @@ import NewPage from './pages/NewPage.vue';
 import ListPayments from './pages/payment/ListPayments.vue';
 import ListInvoice from './pages/invoice/ListInvoice.vue';
 import Dashboard from './pages/dashboard/Dashboard.vue';
+import DashboardParent from './pages/dashboard/DashboardParent.vue';
 import RegistrationList from './pages/registers/RegistrationList.vue';
 import NewSession from './pages/session/NewSession.vue';
 import ShowInvoice from './pages/invoice/ShowInvoice.vue';
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('ListPayments', ListPayments);
     app.component('ListInvoice', ListInvoice);
     app.component('NewSession', NewSession);
+    app.component('DashboardParent', DashboardParent);
     app.component('Dashboard', Dashboard);
     app.component('RegistrationList', RegistrationList);
     app.component('ShowInvoice', ShowInvoice);
