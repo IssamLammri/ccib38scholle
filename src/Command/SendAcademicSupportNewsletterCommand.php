@@ -40,6 +40,7 @@ class SendAcademicSupportNewsletterCommand extends Command
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Limiter le nombre d’envois (0 = illimité)', 0)
             // Test & dry-run
             ->addOption('test-email', null, InputOption::VALUE_REQUIRED, 'N’envoie qu’à cet email (ignore filtres & limite)')
+            ->addOption('offset', null, InputOption::VALUE_REQUIRED, 'Décalage de départ (pour paginer les envois)', 0)
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'N’envoie rien, affiche seulement ce qui serait envoyé')
             // Batch
             ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Taille de lot pour flush (optimisation)', 100);
@@ -56,6 +57,8 @@ class SendAcademicSupportNewsletterCommand extends Command
         $limit       = max(0, (int) $input->getOption('limit'));
         $batchSize   = max(1, (int) $input->getOption('batch-size'));
         $testEmail   = $input->getOption('test-email');
+        $offset = max(0, (int) $input->getOption('offset'));
+
 
         // Parse arrays (segments/tags) depuis options multiples ou CSV
         $segmentsFilter = $this->parseArrayOption($input->getOption('segments'));
@@ -73,14 +76,19 @@ class SendAcademicSupportNewsletterCommand extends Command
             }
         } else {
             $qb = $this->contactRepository->createQueryBuilder('c')
-                ->where('c.status = :st')->setParameter('st', Contact::STATUS_SUBSCRIBED)
-                ->andWhere('c.consentNewsletter = true')
                 ->andWhere('c.email IS NOT NULL AND c.email <> \'\'')
-                ->orderBy('c.id', 'ASC');
+                ->orderBy('c.id', 'ASC')
+                ->setFirstResult($offset)
+                ->setMaxResults($limit);
 
+
+            if ($offset > 0) {
+                $qb->setFirstResult($offset);
+            }
             if ($limit > 0) {
                 $qb->setMaxResults($limit);
             }
+
 
             /** @var Contact[] $base */
             $base = $qb->getQuery()->getResult();
@@ -155,13 +163,14 @@ class SendAcademicSupportNewsletterCommand extends Command
             // Batch flush
             if (!$dryRun && (++$i % $batchSize) === 0) {
                 $this->em->flush();
-                $this->em->clear();
+              //  $this->em->clear();
             }
         }
 
         if (!$dryRun) {
             $this->em->flush();
         }
+        $io->note(sprintf('Fenêtre d’envoi: offset=%d, limit=%d (ordre: id ASC)', $offset, $limit));
 
         $io->success(sprintf(
             'Terminé. Emails envoyés: %d | Ignorés: %d%s',
