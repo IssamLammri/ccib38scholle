@@ -28,427 +28,429 @@
 
         <!-- Form -->
         <form @submit.prevent="submitForm">
-          <!-- Étape 1: Informations élève -->
-          <div class="form-section" :class="{ active: currentStep === 0 }">
-            <h2 class="section-title">
-              <i class="bi bi-person-circle"></i>
-              Informations de l'élève
-            </h2>
+          <fieldset :disabled="hasSubmitted">
+            <!-- Étape 1: Informations élève -->
+            <div class="form-section" :class="{ active: currentStep === 0 }">
+              <h2 class="section-title">
+                <i class="bi bi-person-circle"></i>
+                Informations de l'élève
+              </h2>
 
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="form-label" for="studentFirstName">
-                    <i class="bi bi-person"></i>
-                    Prénom de l'élève
-                  </label>
-                  <input
-                      id="studentFirstName"
-                      type="text"
-                      class="form-control"
-                      v-model.trim="form.studentFirstName"
-                      placeholder="Prénom de l'élève"
-                  />
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="studentFirstName">
+                      <i class="bi bi-person"></i>
+                      Prénom de l'élève
+                    </label>
+                    <input
+                        id="studentFirstName"
+                        type="text"
+                        class="form-control"
+                        v-model.trim="form.studentFirstName"
+                        placeholder="Prénom de l'élève"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="studentLastName">
+                      <i class="bi bi-person-vcard"></i>
+                      Nom de l'élève
+                    </label>
+                    <input
+                        id="studentLastName"
+                        type="text"
+                        class="form-control"
+                        v-model.trim="form.studentLastName"
+                        placeholder="Nom de l'élève"
+                    />
+                  </div>
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="form-label" for="studentLastName">
-                    <i class="bi bi-person-vcard"></i>
-                    Nom de l'élève
-                  </label>
-                  <input
-                      id="studentLastName"
-                      type="text"
-                      class="form-control"
-                      v-model.trim="form.studentLastName"
-                      placeholder="Nom de l'élève"
-                  />
-                </div>
-              </div>
-            </div>
 
-            <!-- AJOUT: Date de naissance avec Flatpickr -->
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="form-label" for="studentBirthDate">
-                    <i class="bi bi-calendar-date"></i>
-                    Date de naissance
-                  </label>
-                  <div class="input-group">
+              <!-- AJOUT: Date de naissance avec Flatpickr -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="studentBirthDate">
+                      <i class="bi bi-calendar-date"></i>
+                      Date de naissance
+                    </label>
+                    <div class="input-group">
         <span class="input-group-text">
           <i class="bi bi-calendar-event"></i>
         </span>
-                    <flatpickr
-                        id="studentBirthDate"
-                        v-model="form.studentBirthDate"
-                        :config="flatpickrDobConfig"
-                        class="form-control bg-white"
-                        placeholder="JJ/MM/AAAA"
-                        @input="dobTouched = true"
+                      <flatpickr
+                          id="studentBirthDate"
+                          v-model="form.studentBirthDate"
+                          :config="flatpickrDobConfig"
+                          class="form-control bg-white"
+                          placeholder="JJ/MM/AAAA"
+                          @input="dobTouched = true"
+                      />
+                    </div>
+                    <div class="invalid-feedback" v-show="dobTouched && !birthdateValid">
+                      Date de naissance invalide (ne doit pas être dans le futur).
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="level">
+                  <i class="bi bi-mortarboard"></i>
+                  Niveau d'étude
+                </label>
+                <select id="level" class="form-select" v-model="form.level">
+                  <option value="">Choisir un niveau</option>
+                  <option v-for="lvl in levels" :key="lvl" :value="lvl">{{ lvl }}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="bi bi-bookmarks"></i>
+                  Matières de soutien
+                </label>
+                <div class="subjects-grid">
+                  <div
+                      v-for="s in subjects"
+                      :key="s.value"
+                      class="subject-card"
+                      :class="{ selected: form.subjects.includes(s.value) }"
+                      @click="toggleSubject(s.value)"
+                  >
+                    <div class="subject-label">
+                      <div class="subject-icon">
+                        <i class="bi bi-check"></i>
+                      </div>
+                      <i :class="s.icon + ' me-2'"></i>{{ s.label }}
+                    </div>
+                  </div>
+                </div>
+                <div v-show="subjectsError" class="alert-custom alert-danger-custom mt-2">
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                  Veuillez sélectionner au moins une matière.
+                </div>
+              </div>
+            </div>
+
+            <!-- Étape 2: Responsables -->
+            <div class="form-section" :class="{ active: currentStep === 1 }">
+              <h2 class="section-title">
+                <i class="bi bi-people"></i>
+                Informations des responsables
+              </h2>
+
+              <!-- Parent principal -->
+              <h3 class="h5 text-primary mb-3">
+                <i class="bi bi-person-badge me-2"></i>Responsable principal
+              </h3>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="parentFirstName">
+                      <i class="bi bi-person"></i>
+                      Prénom du parent
+                    </label>
+                    <input
+                        id="parentFirstName"
+                        type="text"
+                        class="form-control"
+                        v-model.trim="form.parentFirstName"
+                        placeholder="Prénom du parent"
                     />
                   </div>
-                  <div class="invalid-feedback" v-show="dobTouched && !birthdateValid">
-                    Date de naissance invalide (ne doit pas être dans le futur).
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="parentLastName">
+                      <i class="bi bi-person-vcard"></i>
+                      Nom du parent
+                    </label>
+                    <input
+                        id="parentLastName"
+                        type="text"
+                        class="form-control"
+                        v-model.trim="form.parentLastName"
+                        placeholder="Nom du parent"
+                    />
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label class="form-label" for="level">
-                <i class="bi bi-mortarboard"></i>
-                Niveau d'étude
-              </label>
-              <select id="level" class="form-select" v-model="form.level">
-                <option value="">Choisir un niveau</option>
-                <option v-for="lvl in levels" :key="lvl" :value="lvl">{{ lvl }}</option>
-              </select>
-            </div>
+              <!-- Adresse -->
+              <div class="form-group">
+                <label class="form-label" for="address">
+                  <i class="bi bi-geo-alt"></i>
+                  Adresse postale
+                </label>
+                <input
+                    id="address"
+                    type="text"
+                    class="form-control"
+                    v-model.trim="form.address"
+                    placeholder="N° et rue"
+                />
+              </div>
 
-            <div class="form-group">
-              <label class="form-label">
-                <i class="bi bi-bookmarks"></i>
-                Matières de soutien
-              </label>
-              <div class="subjects-grid">
-                <div
-                    v-for="s in subjects"
-                    :key="s.value"
-                    class="subject-card"
-                    :class="{ selected: form.subjects.includes(s.value) }"
-                    @click="toggleSubject(s.value)"
-                >
-                  <div class="subject-label">
-                    <div class="subject-icon">
-                      <i class="bi bi-check"></i>
-                    </div>
-                    <i :class="s.icon + ' me-2'"></i>{{ s.label }}
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label" for="postalCode">
+                      <i class="bi bi-mailbox"></i>
+                      Code postal
+                    </label>
+                    <input
+                        id="postalCode"
+                        type="text"
+                        class="form-control"
+                        v-model.trim="form.postalCode"
+                        placeholder="75000"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="form-group">
+                    <label class="form-label" for="city">
+                      <i class="bi bi-building"></i>
+                      Ville
+                    </label>
+                    <input
+                        id="city"
+                        type="text"
+                        class="form-control"
+                        v-model.trim="form.city"
+                        placeholder="Paris"
+                    />
                   </div>
                 </div>
               </div>
-              <div v-show="subjectsError" class="alert-custom alert-danger-custom mt-2">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                Veuillez sélectionner au moins une matière.
+
+              <div class="form-group">
+                <label class="form-label" for="phone">
+                  <i class="bi bi-telephone"></i>
+                  Téléphone du parent
+                </label>
+                <input
+                    id="phone"
+                    type="tel"
+                    class="form-control"
+                    :class="{ 'is-invalid': phoneTouched && !phoneValid }"
+                    v-model.trim="form.phone"
+                    placeholder="06 12 34 56 78"
+                    @input="phoneTouched = true"
+                />
+                <div class="invalid-feedback" v-show="phoneTouched && !phoneValid">Numéro de téléphone invalide.</div>
               </div>
-            </div>
-          </div>
 
-          <!-- Étape 2: Responsables -->
-          <div class="form-section" :class="{ active: currentStep === 1 }">
-            <h2 class="section-title">
-              <i class="bi bi-people"></i>
-              Informations des responsables
-            </h2>
-
-            <!-- Parent principal -->
-            <h3 class="h5 text-primary mb-3">
-              <i class="bi bi-person-badge me-2"></i>Responsable principal
-            </h3>
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="form-label" for="parentFirstName">
-                    <i class="bi bi-person"></i>
-                    Prénom du parent
-                  </label>
-                  <input
-                      id="parentFirstName"
-                      type="text"
-                      class="form-control"
-                      v-model.trim="form.parentFirstName"
-                      placeholder="Prénom du parent"
-                  />
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="form-label" for="parentLastName">
-                    <i class="bi bi-person-vcard"></i>
-                    Nom du parent
-                  </label>
-                  <input
-                      id="parentLastName"
-                      type="text"
-                      class="form-control"
-                      v-model.trim="form.parentLastName"
-                      placeholder="Nom du parent"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Adresse -->
-            <div class="form-group">
-              <label class="form-label" for="address">
-                <i class="bi bi-geo-alt"></i>
-                Adresse postale
-              </label>
-              <input
-                  id="address"
-                  type="text"
-                  class="form-control"
-                  v-model.trim="form.address"
-                  placeholder="N° et rue"
-              />
-            </div>
-
-            <div class="row">
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label class="form-label" for="postalCode">
-                    <i class="bi bi-mailbox"></i>
-                    Code postal
-                  </label>
-                  <input
-                      id="postalCode"
-                      type="text"
-                      class="form-control"
-                      v-model.trim="form.postalCode"
-                      placeholder="75000"
-                  />
-                </div>
-              </div>
-              <div class="col-md-8">
-                <div class="form-group">
-                  <label class="form-label" for="city">
-                    <i class="bi bi-building"></i>
-                    Ville
-                  </label>
-                  <input
-                      id="city"
-                      type="text"
-                      class="form-control"
-                      v-model.trim="form.city"
-                      placeholder="Paris"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="phone">
-                <i class="bi bi-telephone"></i>
-                Téléphone du parent
-              </label>
-              <input
-                  id="phone"
-                  type="tel"
-                  class="form-control"
-                  :class="{ 'is-invalid': phoneTouched && !phoneValid }"
-                  v-model.trim="form.phone"
-                  placeholder="06 12 34 56 78"
-                  @input="phoneTouched = true"
-              />
-              <div class="invalid-feedback" v-show="phoneTouched && !phoneValid">Numéro de téléphone invalide.</div>
-            </div>
-
-            <!-- Mère -->
-            <h3 class="h5 text-primary mb-3 mt-4">
-              <i class="bi bi-person-heart me-2"></i>Mère (optionnel)
-            </h3>
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="form-label" for="motherFirstName">
-                    <i class="bi bi-person"></i>
-                    Prénom de la mère
-                  </label>
-                  <input
-                      id="motherFirstName"
-                      type="text"
-                      class="form-control"
-                      v-model.trim="form.motherFirstName"
-                      placeholder="Prénom de la mère"
-                  />
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="form-label" for="motherLastName">
-                    <i class="bi bi-person-vcard"></i>
-                    Nom de la mère
-                  </label>
-                  <input
-                      id="motherLastName"
-                      type="text"
-                      class="form-control"
-                      v-model.trim="form.motherLastName"
-                      placeholder="Nom de la mère"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="motherPhone">
-                <i class="bi bi-telephone"></i>
-                Téléphone de la mère
-              </label>
-              <input
-                  id="motherPhone"
-                  type="tel"
-                  class="form-control"
-                  :class="{ 'is-invalid': motherPhoneTouched && !motherPhoneValid }"
-                  v-model.trim="form.motherPhone"
-                  placeholder="06 12 34 56 78"
-                  @input="motherPhoneTouched = true"
-              />
-              <div class="invalid-feedback" v-show="motherPhoneTouched && !motherPhoneValid">Numéro de téléphone invalide.</div>
-            </div>
-
-            <!-- Email -->
-            <div class="form-group">
-              <label class="form-label" for="email">
-                <i class="bi bi-envelope"></i>
-                Email de contact
-              </label>
-              <input
-                  id="email"
-                  type="email"
-                  class="form-control"
-                  :class="{ 'is-invalid': emailTouched && !emailValid }"
-                  v-model.trim="form.email"
-                  placeholder="exemple@gmail.com"
-                  @input="emailTouched = true"
-              />
-              <div class="invalid-feedback" v-show="emailTouched && !emailValid">Adresse email invalide.</div>
-            </div>
-
-            <!-- At least one phone -->
-            <div
-                class="alert-custom alert-danger-custom"
-                v-show="triedNext && !atLeastOnePhone"
-            >
-              <i class="bi bi-exclamation-triangle-fill"></i>
-              Veuillez renseigner au moins un numéro de téléphone.
-            </div>
-          </div>
-
-          <!-- Étape 3: Validation -->
-          <div class="form-section" :class="{ active: currentStep === 2 }">
-            <h2 class="section-title">
-              <i class="bi bi-check2-circle"></i>
-              Validation de l'inscription
-            </h2>
-
-            <!-- Récap -->
-            <div class="summary-card">
-              <h3 class="h5 mb-3">
-                <i class="bi bi-journal-text me-2"></i>Récapitulatif de votre inscription
+              <!-- Mère -->
+              <h3 class="h5 text-primary mb-3 mt-4">
+                <i class="bi bi-person-heart me-2"></i>Mère (optionnel)
               </h3>
-              <div class="summary-item">
-                <div class="summary-icon"><i class="bi bi-person-circle"></i></div>
-                <div>
-                  <strong>Élève :</strong> {{ summaryStudent }}<br>
-                  <small class="text-muted">Niveau : {{ form.level || '—' }}</small><br>
-                  <small class="text-muted">
-                    Né(e) le : {{ formattedBirthDate || '—' }}
-                    <template v-if="studentAge !== null"> ({{ studentAge }} ans)</template>
-                  </small>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="motherFirstName">
+                      <i class="bi bi-person"></i>
+                      Prénom de la mère
+                    </label>
+                    <input
+                        id="motherFirstName"
+                        type="text"
+                        class="form-control"
+                        v-model.trim="form.motherFirstName"
+                        placeholder="Prénom de la mère"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="motherLastName">
+                      <i class="bi bi-person-vcard"></i>
+                      Nom de la mère
+                    </label>
+                    <input
+                        id="motherLastName"
+                        type="text"
+                        class="form-control"
+                        v-model.trim="form.motherLastName"
+                        placeholder="Nom de la mère"
+                    />
+                  </div>
                 </div>
               </div>
-              <div class="summary-item">
-                <div class="summary-icon"><i class="bi bi-bookmarks"></i></div>
-                <div>
-                  <strong>Matières :</strong><br>
-                  <small class="text-muted">{{ form.subjects.join(', ') || '—' }}</small>
-                </div>
+
+              <div class="form-group">
+                <label class="form-label" for="motherPhone">
+                  <i class="bi bi-telephone"></i>
+                  Téléphone de la mère
+                </label>
+                <input
+                    id="motherPhone"
+                    type="tel"
+                    class="form-control"
+                    :class="{ 'is-invalid': motherPhoneTouched && !motherPhoneValid }"
+                    v-model.trim="form.motherPhone"
+                    placeholder="06 12 34 56 78"
+                    @input="motherPhoneTouched = true"
+                />
+                <div class="invalid-feedback" v-show="motherPhoneTouched && !motherPhoneValid">Numéro de téléphone invalide.</div>
               </div>
-              <div class="summary-item">
-                <div class="summary-icon"><i class="bi bi-people"></i></div>
-                <div>
-                  <strong>Responsable :</strong> {{ form.parentFirstName }} {{ form.parentLastName }}<br>
-                  <template v-if="form.motherFirstName || form.motherLastName">
-                    <strong>Mère :</strong> {{ form.motherFirstName }} {{ form.motherLastName }}<br>
-                  </template>
-                  <small class="text-muted">Email : {{ form.email || '—' }}</small>
-                </div>
+
+              <!-- Email -->
+              <div class="form-group">
+                <label class="form-label" for="email">
+                  <i class="bi bi-envelope"></i>
+                  Email de contact
+                </label>
+                <input
+                    id="email"
+                    type="email"
+                    class="form-control"
+                    :class="{ 'is-invalid': emailTouched && !emailValid }"
+                    v-model.trim="form.email"
+                    placeholder="exemple@gmail.com"
+                    @input="emailTouched = true"
+                />
+                <div class="invalid-feedback" v-show="emailTouched && !emailValid">Adresse email invalide.</div>
               </div>
-              <div class="summary-item">
-                <div class="summary-icon"><i class="bi bi-telephone"></i></div>
-                <div>
-                  <strong>Téléphones :</strong><br>
-                  <small class="text-muted">{{ summaryPhones }}</small>
-                </div>
+
+              <!-- At least one phone -->
+              <div
+                  class="alert-custom alert-danger-custom"
+                  v-show="triedNext && !atLeastOnePhone"
+              >
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                Veuillez renseigner au moins un numéro de téléphone.
               </div>
             </div>
 
-            <!-- Accords -->
-            <div class="agreement-card" :class="{ checked: form.legalDeclaration }" @click="form.legalDeclaration = !form.legalDeclaration">
-              <div class="agreement-header">
-                <input type="checkbox" class="agreement-checkbox" v-model="form.legalDeclaration" @click.stop>
-                <h4 class="agreement-title">
-                  <i class="bi bi-file-earmark-check text-success me-2"></i>
-                  Certification des informations
-                </h4>
-              </div>
-              <p class="mb-0">Je certifie l'exactitude de toutes les informations saisies dans ce formulaire.</p>
-            </div>
-
-            <div class="agreement-card" :class="{ checked: form.paymentTerms }" @click="form.paymentTerms = !form.paymentTerms">
-              <div class="agreement-header">
-                <input type="checkbox" class="agreement-checkbox" v-model="form.paymentTerms" @click.stop>
-                <h4 class="agreement-title">
-                  <i class="bi bi-credit-card text-info me-2"></i>
-                  Tarification & Conditions de paiement
-                </h4>
-              </div>
-              <ul class="mb-0 ps-4">
-                <li>Prix du soutien scolaire : <strong>30 € / mois / enfant</strong></li>
-                <li>Tarif préférentiel : <strong>25 € / mois / enfant</strong> si 2+ enfants inscrits ou plusieurs matières</li>
-                <li>Paiement obligatoire du 1er trimestre (<strong>octobre</strong>, <strong>novembre</strong>, <strong>décembre</strong>) avant acceptation</li>
-                <li>Modes de paiement : <strong>cash</strong>, <strong>carte bancaire</strong> ou <strong>chèques</strong> échelonnés</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Boutons navigation -->
-          <div class="btn-nav">
-            <button
-                type="button"
-                id="prevBtn"
-                class="btn-custom btn-outline-custom"
-                v-show="currentStep > 0"
-                @click="previousStep"
-            >
-              <i class="bi bi-arrow-left"></i>
-              Précédent
-            </button>
-            <div v-show="currentStep === 0" style="flex:1"></div>
-
-            <button
-                type="button"
-                id="nextBtn"
-                class="btn-custom btn-primary-custom"
-                v-show="currentStep < stepLabels.length - 1"
-                @click="nextStep"
-            >
-              Suivant
-              <i class="bi bi-arrow-right"></i>
-            </button>
-
-            <button
-                type="submit"
-                id="submitBtn"
-                class="btn-custom btn-success-custom"
-                :disabled="isSubmitting || !finalValid || hasSubmitted"
-                v-show="currentStep === stepLabels.length - 1"
-            >
-              <template v-if="isSubmitting">
-                <div class="spinner"></div> Envoi en cours...
-              </template>
-              <template v-else-if="hasSubmitted">
+            <!-- Étape 3: Validation -->
+            <div class="form-section" :class="{ active: currentStep === 2 }">
+              <h2 class="section-title">
                 <i class="bi bi-check2-circle"></i>
-                Inscription envoyée
-              </template>
-              <template v-else>
-                <i class="bi bi-check-lg"></i>
-                Envoyer l'inscription
-              </template>
-            </button>
-          </div>
+                Validation de l'inscription
+              </h2>
+
+              <!-- Récap -->
+              <div class="summary-card">
+                <h3 class="h5 mb-3">
+                  <i class="bi bi-journal-text me-2"></i>Récapitulatif de votre inscription
+                </h3>
+                <div class="summary-item">
+                  <div class="summary-icon"><i class="bi bi-person-circle"></i></div>
+                  <div>
+                    <strong>Élève :</strong> {{ summaryStudent }}<br>
+                    <small class="text-muted">Niveau : {{ form.level || '—' }}</small><br>
+                    <small class="text-muted">
+                      Né(e) le : {{ formattedBirthDate || '—' }}
+                      <template v-if="studentAge !== null"> ({{ studentAge }} ans)</template>
+                    </small>
+                  </div>
+                </div>
+                <div class="summary-item">
+                  <div class="summary-icon"><i class="bi bi-bookmarks"></i></div>
+                  <div>
+                    <strong>Matières :</strong><br>
+                    <small class="text-muted">{{ form.subjects.join(', ') || '—' }}</small>
+                  </div>
+                </div>
+                <div class="summary-item">
+                  <div class="summary-icon"><i class="bi bi-people"></i></div>
+                  <div>
+                    <strong>Responsable :</strong> {{ form.parentFirstName }} {{ form.parentLastName }}<br>
+                    <template v-if="form.motherFirstName || form.motherLastName">
+                      <strong>Mère :</strong> {{ form.motherFirstName }} {{ form.motherLastName }}<br>
+                    </template>
+                    <small class="text-muted">Email : {{ form.email || '—' }}</small>
+                  </div>
+                </div>
+                <div class="summary-item">
+                  <div class="summary-icon"><i class="bi bi-telephone"></i></div>
+                  <div>
+                    <strong>Téléphones :</strong><br>
+                    <small class="text-muted">{{ summaryPhones }}</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Accords -->
+              <div class="agreement-card" :class="{ checked: form.legalDeclaration }" @click="form.legalDeclaration = !form.legalDeclaration">
+                <div class="agreement-header">
+                  <input type="checkbox" class="agreement-checkbox" v-model="form.legalDeclaration" @click.stop>
+                  <h4 class="agreement-title">
+                    <i class="bi bi-file-earmark-check text-success me-2"></i>
+                    Certification des informations
+                  </h4>
+                </div>
+                <p class="mb-0">Je certifie l'exactitude de toutes les informations saisies dans ce formulaire.</p>
+              </div>
+
+              <div class="agreement-card" :class="{ checked: form.paymentTerms }" @click="form.paymentTerms = !form.paymentTerms">
+                <div class="agreement-header">
+                  <input type="checkbox" class="agreement-checkbox" v-model="form.paymentTerms" @click.stop>
+                  <h4 class="agreement-title">
+                    <i class="bi bi-credit-card text-info me-2"></i>
+                    Tarification & Conditions de paiement
+                  </h4>
+                </div>
+                <ul class="mb-0 ps-4">
+                  <li>Prix du soutien scolaire : <strong>30 € / mois / enfant</strong></li>
+                  <li>Tarif préférentiel : <strong>25 € / mois / enfant</strong> si 2+ enfants inscrits ou plusieurs matières</li>
+                  <li>Paiement obligatoire du 1er trimestre (<strong>octobre</strong>, <strong>novembre</strong>, <strong>décembre</strong>) avant acceptation</li>
+                  <li>Modes de paiement : <strong>cash</strong>, <strong>carte bancaire</strong> ou <strong>chèques</strong> échelonnés</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Boutons navigation -->
+            <div class="btn-nav">
+              <button
+                  type="button"
+                  id="prevBtn"
+                  class="btn-custom btn-outline-custom"
+                  v-show="currentStep > 0"
+                  @click="previousStep"
+              >
+                <i class="bi bi-arrow-left"></i>
+                Précédent
+              </button>
+              <div v-show="currentStep === 0" style="flex:1"></div>
+
+              <button
+                  type="button"
+                  id="nextBtn"
+                  class="btn-custom btn-primary-custom"
+                  v-show="currentStep < stepLabels.length - 1"
+                  @click="nextStep"
+              >
+                Suivant
+                <i class="bi bi-arrow-right"></i>
+              </button>
+
+              <button
+                  type="submit"
+                  id="submitBtn"
+                  class="btn-custom btn-success-custom"
+                  :disabled="isSubmitting || !finalValid || hasSubmitted"
+                  v-show="currentStep === stepLabels.length - 1"
+              >
+                <template v-if="isSubmitting">
+                  <div class="spinner"></div> Envoi en cours...
+                </template>
+                <template v-else-if="hasSubmitted">
+                  <i class="bi bi-check2-circle"></i>
+                  Inscription envoyée
+                </template>
+                <template v-else>
+                  <i class="bi bi-check-lg"></i>
+                  Envoyer l'inscription
+                </template>
+              </button>
+            </div>
+          </fieldset>
         </form>
       </div>
     </div>
