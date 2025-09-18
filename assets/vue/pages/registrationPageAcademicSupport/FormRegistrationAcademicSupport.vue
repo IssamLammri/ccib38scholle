@@ -433,11 +433,15 @@
                 type="submit"
                 id="submitBtn"
                 class="btn-custom btn-success-custom"
-                :disabled="isSubmitting || !finalValid"
+                :disabled="isSubmitting || !finalValid || hasSubmitted"
                 v-show="currentStep === stepLabels.length - 1"
             >
               <template v-if="isSubmitting">
                 <div class="spinner"></div> Envoi en cours...
+              </template>
+              <template v-else-if="hasSubmitted">
+                <i class="bi bi-check2-circle"></i>
+                Inscription envoyée
               </template>
               <template v-else>
                 <i class="bi bi-check-lg"></i>
@@ -496,6 +500,7 @@ export default {
     return {
       // UI state
       currentStep: 0,
+      hasSubmitted: false,
       flatpickrDobConfig: {
         locale: French,
         dateFormat: 'Y-m-d',   // valeur de v-model => 2025-09-18 (pour le back)
@@ -692,7 +697,10 @@ export default {
       (this.axios || window.axios)
           .post(url, payload)
           .then(() => {
-            // Show success modal via Bootstrap provided in app as this.$bootstrap
+            // marquer comme envoyé pour bloquer le bouton
+            this.hasSubmitted = true;
+
+            // Afficher le modal de succès
             const modalEl = document.getElementById('successModal');
             const Modal = this.$bootstrap?.Modal || window.bootstrap?.Modal;
             if (Modal && modalEl) {
