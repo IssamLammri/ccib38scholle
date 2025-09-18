@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Model\ApiResponseTrait;
 use App\Repository\AcademicSupportRegistrationRepository;
 use App\Service\AcademicSupportRegistrationService;
+use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +22,7 @@ class academicSupportController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $hasher,
+        private MailService $mailService,
         private AcademicSupportRegistrationRepository $academicSupportRegistrationRepository
     )
     {
@@ -41,7 +43,20 @@ class academicSupportController extends AbstractController
 
         try {
             $reg = $service->createFromPayload($data);
-
+            $this->mailService->sendEmail(
+                $reg->getEmail(),
+                'Confirmation de votre demande d’inscription au soutien scolaire – CCIB38',
+                'email/registration_academic_support_confirmation.html.twig',
+                [
+                    'firstNameParent'         => $reg->getParentFirstName(),
+                    'lastNameParent'          => $reg->getParentLastName(),
+                    'motherFirstName'         => $reg->getMotherFirstName(),
+                    'motherLastName'          => $reg->getMotherLastName(),
+                    'studentFirstName'       => $reg->getStudentFirstName(),
+                    'studentLastName'        => $reg->getStudentLastName(),
+                    'level'                => $reg->getLevel(),
+                ]
+            );
             return $this->json([
                 'success' => true,
                 'id'      => $reg->getId(),

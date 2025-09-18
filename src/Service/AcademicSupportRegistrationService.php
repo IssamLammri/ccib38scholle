@@ -19,6 +19,16 @@ class AcademicSupportRegistrationService
      */
     public function createFromPayload(array $payload): AcademicSupportRegistration
     {
+        // Parse date de naissance si fournie
+        $birthDate = null;
+        if (isset($payload['student_birth_date']) && $payload['student_birth_date'] !== '') {
+            $birthDate = \DateTimeImmutable::createFromFormat('Y-m-d', $payload['student_birth_date']);
+            $parseErrors = \DateTimeImmutable::getLastErrors();
+            if ($birthDate === false || ($parseErrors['warning_count'] ?? 0) > 0 || ($parseErrors['error_count'] ?? 0) > 0) {
+                throw new \InvalidArgumentException('Format de date invalide pour "student_birth_date" (attendu: YYYY-MM-DD).');
+            }
+        }
+
         $reg = (new AcademicSupportRegistration())
             ->setStudentFirstName($payload['student_first_name'] ?? '')
             ->setStudentLastName($payload['student_last_name'] ?? '')
@@ -34,6 +44,7 @@ class AcademicSupportRegistrationService
             ->setAddress($payload['address'] ?? null)
             ->setPostalCode($payload['postal_code'] ?? null)
             ->setCity($payload['city'] ?? null)
+            ->setStudentBirthDate($birthDate) // ⬅️ AJOUT
             ->setAcceptedPaymentTerms((bool)($payload['accepted_payment_terms'] ?? false));
 
         $errors = $this->validator->validate($reg);

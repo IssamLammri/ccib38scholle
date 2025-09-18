@@ -68,6 +68,34 @@
               </div>
             </div>
 
+            <!-- AJOUT: Date de naissance avec Flatpickr -->
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label" for="studentBirthDate">
+                    <i class="bi bi-calendar-date"></i>
+                    Date de naissance
+                  </label>
+                  <div class="input-group">
+        <span class="input-group-text">
+          <i class="bi bi-calendar-event"></i>
+        </span>
+                    <flatpickr
+                        id="studentBirthDate"
+                        v-model="form.studentBirthDate"
+                        :config="flatpickrDobConfig"
+                        class="form-control bg-white"
+                        placeholder="JJ/MM/AAAA"
+                        @input="dobTouched = true"
+                    />
+                  </div>
+                  <div class="invalid-feedback" v-show="dobTouched && !birthdateValid">
+                    Date de naissance invalide (ne doit pas être dans le futur).
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="form-group">
               <label class="form-label" for="level">
                 <i class="bi bi-mortarboard"></i>
@@ -314,7 +342,11 @@
                 <div class="summary-icon"><i class="bi bi-person-circle"></i></div>
                 <div>
                   <strong>Élève :</strong> {{ summaryStudent }}<br>
-                  <small class="text-muted">Niveau : {{ form.level || '—' }}</small>
+                  <small class="text-muted">Niveau : {{ form.level || '—' }}</small><br>
+                  <small class="text-muted">
+                    Né(e) le : {{ formattedBirthDate || '—' }}
+                    <template v-if="studentAge !== null"> ({{ studentAge }} ans)</template>
+                  </small>
                 </div>
               </div>
               <div class="summary-item">
@@ -452,17 +484,32 @@
 </template>
 
 <script>
+
+import Flatpickr from 'vue-flatpickr-component';
+import 'flatpickr/dist/flatpickr.css';
+import { French } from 'flatpickr/dist/l10n/fr.js';
+
 export default {
-  name: 'RegistrationAcademicSupportFancy',
+  name: 'RegistrationAcademicSupport',
+  components: { Flatpickr },
   data() {
     return {
       // UI state
       currentStep: 0,
+      flatpickrDobConfig: {
+        locale: French,
+        dateFormat: 'Y-m-d',   // valeur de v-model => 2025-09-18 (pour le back)
+        altInput: true,        // champ de saisie “humain”
+        altFormat: 'd/m/Y',    // affichage => 18/09/2025
+        maxDate: 'today',      // pas de date future
+        allowInput: true
+      },
       isSubmitting: false,
       triedNext: false,
       emailTouched: false,
       phoneTouched: false,
       motherPhoneTouched: false,
+      dobTouched: false, // AJOUT
 
       // Labels
       stepLabels: ['Élève & Matières', 'Responsables', 'Validation'],
@@ -476,13 +523,14 @@ export default {
         { value: 'Physique/Chimie', label: 'Physique/Chimie', icon: 'bi bi-gear' },
         { value: 'SVT', label: 'SVT', icon: 'bi bi-tree' },
         { value: 'Informatique', label: 'Informatique', icon: 'bi bi-laptop' },
-        { value: 'ST', label: 'ST', icon: 'bi bi-translate' }, // remplacé Arabe par ST
+        { value: 'ST', label: 'ST', icon: 'bi bi-translate' },
       ],
 
       // Form model
       form: {
         studentFirstName: '',
         studentLastName: '',
+        studentBirthDate: '',     // AJOUT
         level: '',
         subjects: [],
         parentFirstName: '',
@@ -492,14 +540,46 @@ export default {
         motherLastName: '',
         motherPhone: '',
         email: '',
+        address: '',              // AJOUT (déjà utilisé dans ton template)
+        postalCode: '',           // AJOUT
+        city: '',                 // AJOUT
         legalDeclaration: false,
         paymentTerms: false,
       },
     };
   },
   computed: {
+    todayIso() {
+      const d = new Date();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    },
+    birthdateValid() {
+      if (!this.form.studentBirthDate) return false;
+      const d = new Date(this.form.studentBirthDate);
+      if (isNaN(d.getTime())) return false;
+      const today = new Date(this.todayIso);
+      return d <= today;
+    },
+    formattedBirthDate() {
+      if (!this.form.studentBirthDate) return '';
+      const [y, m, d] = this.form.studentBirthDate.split('-');
+      if (!y || !m || !d) return '';
+      return `${d}/${m}/${y}`; // affichage FR
+    },
+    studentAge() {
+      if (!this.birthdateValid) return null;
+      const [y, m, d] = this.form.studentBirthDate.split('-');
+      const dob = new Date(`${y}-${m}-${d}`);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const mm = today.getMonth() - dob.getMonth();
+      if (mm < 0 || (mm === 0 && today.getDate() < dob.getDate())) age--;
+      return age >= 0 ? age : null;
+    },
     progressPercent() {
-      const steps = this.stepLabels.length - 1; // last index
+      const steps = this.stepLabels.length - 1;
       return (this.currentStep / steps) * 100;
     },
     subjectsError() {
@@ -510,11 +590,11 @@ export default {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email);
     },
     phoneValid() {
-      if (!this.form.phone) return true; // optional but format-checked when present
+      if (!this.form.phone) return true;
       return /^(?:0|\+33\s?)[1-9](?:[ .-]?\d{2}){4}$/.test(this.form.phone);
     },
     motherPhoneValid() {
-      if (!this.form.motherPhone) return true; // optional but format-checked when present
+      if (!this.form.motherPhone) return true;
       return /^(?:0|\+33\s?)[1-9](?:[ .-]?\d{2}){4}$/.test(this.form.motherPhone);
     },
     atLeastOnePhone() {
@@ -532,7 +612,13 @@ export default {
     },
     // Validation per step
     step0Valid() {
-      return !!(this.form.studentFirstName && this.form.studentLastName && this.form.level && this.form.subjects.length > 0);
+      return !!(
+          this.form.studentFirstName &&
+          this.form.studentLastName &&
+          this.birthdateValid &&          // AJOUT: la date devient obligatoire et valide
+          this.form.level &&
+          this.form.subjects.length > 0
+      );
     },
     step1Valid() {
       const namesOk = !!(this.form.parentFirstName && this.form.parentLastName);
@@ -583,6 +669,7 @@ export default {
       const payload = {
         student_first_name: this.form.studentFirstName,
         student_last_name: this.form.studentLastName,
+        student_birth_date: this.form.studentBirthDate,  // AJOUT
         level: this.form.level,
         subjects: this.form.subjects,
         parent_first_name: this.form.parentFirstName,
@@ -592,6 +679,9 @@ export default {
         mother_first_name: this.form.motherFirstName || null,
         mother_last_name: this.form.motherLastName || null,
         mother_phone: this.form.motherPhone || null,
+        address: this.form.address || null,              // AJOUT
+        postal_code: this.form.postalCode || null,       // AJOUT
+        city: this.form.city || null,                    // AJOUT
         accepted_payment_terms: this.form.paymentTerms === true,
       };
 
@@ -764,4 +854,43 @@ export default {
 
 .text-primary { color: var(--primary-color) !important; }
 .text-muted { color: var(--gray-600) !important; }
+/* Flatpickr: make the visible input look like .form-control */
+:deep(.flatpickr-alt) {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: 12px;
+  font-size: 1rem;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+/* Focus ring identique */
+:deep(.flatpickr-alt:focus) {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Erreur via le wrapper input-group */
+:deep(.input-group.has-error .flatpickr-alt) {
+  border-color: var(--danger-color);
+}
+
+/* Harmoniser input-group (icône + input) comme tes autres champs */
+:deep(.input-group .input-group-text) {
+  border: 2px solid var(--gray-200);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: var(--gray-50);
+  padding: 0.75rem 0.9rem;
+}
+:deep(.input-group .flatpickr-alt) {
+  border-left: 0;
+  border-radius: 0 12px 12px 0;
+}
+
+/* Z-index pour que le calendrier passe au-dessus des cartes/modals si besoin */
+:deep(.flatpickr-calendar) { z-index: 2000; }
+
 </style>

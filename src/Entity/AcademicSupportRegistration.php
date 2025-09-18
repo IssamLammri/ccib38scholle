@@ -113,6 +113,12 @@ class AcademicSupportRegistration
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    #[Assert\NotBlank(message: 'La date de naissance est obligatoire.')]
+    #[Assert\LessThanOrEqual('today', message: 'La date de naissance ne peut pas être dans le futur.')]
+    #[Groups(['read_list_registration_academic_support'])]
+    private ?\DateTimeImmutable $studentBirthDate = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -358,5 +364,14 @@ class AcademicSupportRegistration
         return $this;
     }
 
+    public function getStudentBirthDate(): ?\DateTimeImmutable
+    {
+        return $this->studentBirthDate;
+    }
 
+    public function setStudentBirthDate(?\DateTimeImmutable $studentBirthDate): AcademicSupportRegistration
+    {
+        $this->studentBirthDate = $studentBirthDate;
+        return $this;
+    }
 }
