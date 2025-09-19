@@ -36,6 +36,15 @@ class academicSupportController extends AbstractController
         ]);
     }
 
+    #[Route('/inscription', name: 'app_registration_academic_support_helper', methods: ['GET'])]
+    public function indexHelper(): Response
+    {
+        return $this->render('academic_support/new.html.twig', [
+            'controller_path' => __FILE__,
+            'template_path' => __DIR__ . '/../../templates/new_page.html.twig',
+        ]);
+    }
+
     #[Route('/inscription-requests', name: 'app_registration_academic_support_request', options: ['expose' => true], methods: ['POST'])]
     public function inscriptionRequest(Request $request, AcademicSupportRegistrationService $service): JsonResponse
     {
