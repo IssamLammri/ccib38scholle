@@ -215,7 +215,7 @@
               loading="lazy"
           />
           <div class="charter-title">
-            <h1>Charte de l'Élève et de CCIB38</h1>
+            <h1>Charte de l'Élève et du CCIB38</h1>
             <p class="charter-subtitle">Centre Culturel Ibn Badis Grenoble</p>
           </div>
         </div>
@@ -374,7 +374,7 @@
             </div>
 
             <div class="signature-block">
-              <div class="signature-title">Cachet et Signature de centre</div>
+              <div class="signature-title">Cachet et signature du centre</div>
               <div class="signature-area"></div>
               <div class="signature-name">Centre Culturel Ibn Badis Grenoble</div>
               <div class="signature-note">Direction Pédagogique</div>
