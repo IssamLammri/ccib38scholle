@@ -3,6 +3,7 @@ namespace App\Service;
 
 use App\Entity\StudyClass;
 use App\Entity\Teacher;
+use App\Repository\RoomRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -15,7 +16,8 @@ class StudyClassService
 
     public function __construct(
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        private RoomRepository $roomRepository
     ) {
         $this->em          = $em;
         $this->validator = $validator;
@@ -53,6 +55,18 @@ class StudyClassService
                 new \DateTimeImmutable($data['endHour'], new \DateTimeZone('Europe/Paris'))
             );
         }
+        dump($data);
+        if (array_key_exists('schoolYear', $data)) {
+            $studyClass->setSchoolYear($data['schoolYear'] ? : null);
+        }
+
+        if (array_key_exists('principalRoomId', $data)) {
+            $room = $data['principalRoomId']
+                ? $this->roomRepository->findOneBy(['id' => $data['principalRoomId']])
+                : null;
+            $studyClass->setPrincipalRoom($room);
+        }
+
         if (array_key_exists('principalTeacherId', $data)) {
             $teacher = $data['principalTeacherId']
                 ? $this->em->getRepository(Teacher::class)

@@ -5,7 +5,7 @@
       <a :href="$routing.generate('app_study_class_index')" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left"></i> Retour à la liste
       </a>
-      <h1 class="text-primary mb-0">Modifier une Classe</h1>
+      <h1 class="text-primary mb-0">Créer une Classe</h1>
     </div>
 
     <alert v-if="messageAlert" :text="messageAlert" :type="messageType" />
@@ -103,9 +103,8 @@
           </div>
         </div>
 
-        <!-- >>> NOUVEAU : Année scolaire + Salle principale -->
+        <!-- Année scolaire + Salle principale -->
         <div class="row">
-          <!-- Année scolaire -->
           <div class="col-md-6 mb-3">
             <label for="schoolYear" class="form-label">Année scolaire</label>
             <select
@@ -121,27 +120,21 @@
             <small class="text-muted">Par défaut : 2025/2026</small>
           </div>
 
-          <!-- Salle principale -->
           <div class="col-md-6 mb-3">
             <label for="principalRoomId" class="form-label">Salle principale</label>
             <select
                 id="principalRoomId"
                 class="form-control"
-                v-model.number="form.principalRoomId"
+                v-model="form.principalRoomId"
                 :disabled="!canEditClass || rooms.length === 0"
             >
-              <option :value="null">-- Aucune salle --</option>
-              <option
-                  v-for="r in rooms"
-                  :key="r.id"
-                  :value="r.id"
-              >
+            <option :value="null">-- Aucune salle --</option>
+              <option v-for="r in rooms" :key="r.id" :value="r.id">
                 {{ r.name }}
               </option>
             </select>
           </div>
         </div>
-        <!-- <<< /NOUVEAU -->
 
         <div class="row">
           <!-- Jour -->
@@ -237,7 +230,7 @@
           >
             <i v-if="isSaving" class="fas fa-spinner fa-spin" aria-hidden="true"></i>
             <i v-else class="fa fa-save" aria-hidden="true"></i>
-            {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+            {{ isSaving ? 'Création...' : 'Créer' }}
           </button>
         </div>
       </form>
@@ -251,18 +244,60 @@ import 'flatpickr/dist/flatpickr.css';
 import { French } from 'flatpickr/dist/l10n/fr.js';
 import Alert from "../../ui/Alert.vue";
 
+/**
+ * Convertit "HH:mm" -> ISO time "1970-01-01THH:mm:00.000Z"
+ * (souvent bien accepté par un champ Doctrine time avec normalizer)
+ */
+function toIsoTime(hhmm) {
+  if (!hhmm || typeof hhmm !== 'string' || !/^\d{2}:\d{2}$/.test(hhmm)) return null;
+  const [h, m] = hhmm.split(':').map(Number);
+  const d = new Date(Date.UTC(1970, 0, 1, h, m, 0));
+  return d.toISOString(); // "1970-01-01T14:30:00.000Z"
+}
+
+/**
+ * Extrait le meilleur message d’erreur possible depuis une réponse backend.
+ */
+function extractBackendMessage(err, fallback = 'Erreur lors de la création') {
+  const data = err?.response?.data;
+
+  // API Platform / RFC7807
+  if (typeof data?.['hydra:description'] === 'string' && data['hydra:description'].trim()) return data['hydra:description'];
+  if (typeof data?.detail === 'string' && data.detail.trim()) return data.detail;
+  if (typeof data?.message === 'string' && data.message.trim()) return data.message;
+  if (typeof data?.title === 'string' && data.title.trim()) return data.title;
+
+  // Violations (API Platform)
+  if (Array.isArray(data?.violations) && data.violations.length) {
+    const first = data.violations[0];
+    if (first?.message) return `${first.propertyPath ?? 'champ'}: ${first.message}`;
+  }
+
+  // errors[]
+  if (Array.isArray(data?.errors) && data.errors.length) {
+    const first = data.errors[0];
+    if (typeof first === 'string') return first;
+    if (first?.message) return first.message;
+  }
+
+  // texte brut ?
+  if (typeof data === 'string' && data.trim()) return data;
+
+  return fallback;
+}
+
 export default {
-  name: 'EditStudyClass',
+  name: 'CreateStudyClass',
   components: { Alert, FlatPickr },
   props: {
-    studyClass: { type: Object, required: true },
     userCurrent: { type: Object, required: true },
     allTeachers: { type: Array, default: () => [] },
-    rooms: { type: Array, required: false, default: () => [] },
+    // rooms = [{id, name}]
+    rooms: { type: Array, default: () => [] },
+    createRouteName: { type: String, default: 'create_study_class' }
   },
   data() {
     return {
-      // constantes d'années scolaires
       SCHOOL_YEARS: ['2024/2025', '2025/2026'],
 
       levelOptionsArabic: [
@@ -273,26 +308,27 @@ export default {
         'CP','CE1','CE2','CM1','CM2','6ème','5ème','4ème','3ème',
         '2nde','1ère','Terminale'
       ],
+
       isFormReady: false,
       messageAlert: null,
       messageType: null,
       isSaving: false,
+
       form: {
         name: '',
-        level: '',
+        level: '',                 // si Arabe/Soutien → string (liste); sinon → number
         speciality: '',
         classType: '',
         day: '',
-        startHour: null,
-        endHour: null,
-        principalTeacherId: null,
-        // nouveaux champs
-        schoolYear: '',
-        principalRoomId: null,
+        startHour: null,           // "HH:mm"
+        endHour: null,             // "HH:mm"
+        principalTeacherId: null,  // facultatif
+        schoolYear: '2025/2026',   // défaut requis
+        principalRoomId: null,     // facultatif
       },
+
       days: ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'],
       teachers: this.allTeachers,
-      isManager: false,
       timePickerConfig: {
         enableTime: true,
         noCalendar: true,
@@ -330,10 +366,9 @@ export default {
           this.form.speciality &&
           this.form.classType &&
           this.form.day &&
-          this.form.schoolYear &&           // année scolaire requise
+          this.form.schoolYear &&
           this.form.startHour &&
           this.form.endHour;
-      // principalRoomId reste facultatif
     },
     calculatedDuration() {
       const startStr = this.form.startHour;
@@ -348,59 +383,16 @@ export default {
       if (diffM < 0) { diffM += 60; diffH -= 1; }
       if (diffH < 0) { diffH += 24; }
 
-      const pad = num => num < 10 ? '0' + num : String(num);
+      const pad = n => n < 10 ? '0' + n : String(n);
       return `${diffH}h${pad(diffM)}`;
     }
   },
-  watch: {
-    studyClass: {
-      handler() { this.initForm(); },
-      immediate: true,
-      deep: true
-    }
-  },
   mounted() {
-    this.$nextTick(() => {
-      this.initForm();
-      setTimeout(() => { this.isFormReady = true; }, 100);
-    });
+    // prêt pour afficher Flatpickr
+    setTimeout(() => { this.isFormReady = true; }, 50);
   },
   methods: {
-    extractTimeFromISOString(isoString) {
-      if (!isoString || typeof isoString !== 'string') return '';
-      const date = new Date(isoString);
-      if (isNaN(date.getTime())) return '';
-      const hours   = date.getUTCHours().toString().padStart(2, '0');
-      const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-      return `${hours}:${minutes}`;
-    },
-
-    initForm() {
-      if (!this.studyClass) return;
-      const s = this.studyClass;
-
-      this.form = {
-        name: s.name || '',
-        level: s.level ?? '',
-        speciality: s.speciality || '',
-        classType: s.classType || '',
-        day: s.day || '',
-        startHour: this.extractTimeFromISOString(s.startHour),
-        endHour: this.extractTimeFromISOString(s.endHour),
-        principalTeacherId: s.principalTeacher?.id ?? null,
-
-        // nouveaux champs
-        schoolYear: s.schoolYear || '2025/2026',                 // défaut si absent
-        principalRoomId: s.principalRoom?.id ?? null,
-      };
-
-      // si la valeur backend n'est pas dans la liste autorisée, on force un des choix
-      if (!this.SCHOOL_YEARS.includes(this.form.schoolYear)) {
-        this.form.schoolYear = '2025/2026';
-      }
-    },
-
-    save() {
+    async save() {
       if (!this.isFormValid) {
         alert('Veuillez remplir tous les champs obligatoires correctement.');
         return;
@@ -408,49 +400,72 @@ export default {
       this.isSaving = true;
 
       try {
+        // Casts propres (évite NaN avec <select>)
+        const principalRoomId = (this.form.principalRoomId == null || this.form.principalRoomId === '')
+            ? null
+            : Number(this.form.principalRoomId);
+
+        const principalTeacherId = (this.form.principalTeacherId == null || this.form.principalTeacherId === '')
+            ? null
+            : Number(this.form.principalTeacherId);
+
+        // Envoi des heures en ISO (choix "Option 2")
         const payload = {
           name: this.form.name,
           level: (this.isArabic || this.isSupport) ? this.form.level : Number(this.form.level),
           speciality: this.form.speciality,
           classType: this.form.classType,
           day: this.form.day,
-          startHour: this.form.startHour,
-          endHour: this.form.endHour,
-          principalTeacherId: this.form.principalTeacherId,
-
-          // >>> ajout au payload
+          startHour: toIsoTime(this.form.startHour),
+          endHour:   toIsoTime(this.form.endHour),
+          principalTeacherId,
           schoolYear: this.form.schoolYear,
-          principalRoomId: this.form.principalRoomId, // peut être null
+          principalRoomId
         };
 
-        this.axios
-            .post(
-                this.$routing.generate('save_data_study_class', { id: this.studyClass.id }),
-                payload
-            )
-            .then(response => {
-              this.$emit('updated', response.data);
-              this.messageAlert = 'Classe mise à jour avec succès.';
-              this.messageType = 'success';
-            })
-            .catch(err => {
-              let errorMessage = 'Erreur lors de la sauvegarde';
-              if (err?.response?.data?.message) errorMessage = err.response.data.message;
-              this.messageAlert = errorMessage;
-              this.messageType = 'danger';
-              alert(`Erreur: ${errorMessage}`);
-            })
-            .finally(() => {
-              this.isSaving = false;
-            });
-      } catch (error) {
-        alert('Erreur lors de la préparation des données');
+        const url = this.$routing.generate(this.createRouteName);
+        const res = await this.$axios.post(url, payload, { headers: { Accept: 'application/json' } });
+
+        this.messageAlert = 'Classe créée avec succès.';
+        this.messageType = 'success';
+
+        // Redirection si l'API renvoie l'id
+        const createdId = res?.data?.id;
+        console.log('Created StudyClass ID:', createdId);
+        if (createdId) {
+          window.location.href = this.$routing.generate('app_study_class_show', { id: createdId });
+        } else {
+          this.resetForm();
+        }
+      } catch (err) {
+        console.error('Create error payload:', err?.response?.data ?? err);
+        const errorMessage = extractBackendMessage(err, 'Erreur lors de la création');
+        this.messageAlert = errorMessage;
+        this.messageType = 'danger';
+        alert(`Erreur: ${errorMessage}`);
+      } finally {
         this.isSaving = false;
       }
+    },
+
+    resetForm() {
+      this.form = {
+        name: '',
+        level: '',
+        speciality: '',
+        classType: '',
+        day: '',
+        startHour: null,
+        endHour: null,
+        principalTeacherId: null,
+        schoolYear: '2025/2026',
+        principalRoomId: null,
+      };
     }
   }
 };
 </script>
+
 
 <style scoped>
 .flatpickr-input { background-color: white !important; }

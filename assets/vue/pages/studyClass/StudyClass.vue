@@ -19,12 +19,14 @@
       </div>
     </div>
 
-    <!-- En-tête principal avec animation -->
+    <!-- En-tête principal -->
     <div class="hero-header">
       <div class="hero-content">
         <div class="class-badge">{{ studyClass.levelClass }}</div>
         <h1 class="hero-title">{{ studyClass.name }}</h1>
         <p class="hero-subtitle">{{ studyClass.speciality }}</p>
+
+        <!-- >>> Ajout: Salle + Année scolaire dans les stats -->
         <div class="hero-stats">
           <div class="stat-item">
             <i class="fas fa-users"></i>
@@ -38,7 +40,16 @@
             <i class="fas fa-clock"></i>
             <span>{{ formatTime(studyClass.startHour) }} - {{ formatTime(studyClass.endHour) }}</span>
           </div>
+          <div class="stat-item" v-if="studyClass.schoolYear">
+            <i class="fas fa-graduation-cap"></i>
+            <span>{{ studyClass.schoolYear }}</span>
+          </div>
+          <div class="stat-item" v-if="studyClass.principalRoom">
+            <i class="fas fa-door-open"></i>
+            <span>{{ formatRoom(studyClass.principalRoom) }}</span>
+          </div>
         </div>
+        <!-- <<< -->
       </div>
       <div class="hero-decoration">
         <div class="floating-element element-1"></div>
@@ -54,16 +65,15 @@
         class="modern-alert"
     />
 
-    <!-- Section informations de classe modernisée -->
+    <!-- Informations de la Classe -->
     <div class="glass-card class-info-card">
       <div class="card-header">
         <h2><i class="fas fa-info-circle"></i> Informations de la Classe</h2>
       </div>
+
       <div class="info-grid">
         <div class="info-card">
-          <div class="info-icon level-icon">
-            <i class="fas fa-graduation-cap"></i>
-          </div>
+          <div class="info-icon level-icon"><i class="fas fa-graduation-cap"></i></div>
           <div class="info-content">
             <label>Niveau</label>
             <value>{{ studyClass.levelClass }}</value>
@@ -71,9 +81,7 @@
         </div>
 
         <div class="info-card">
-          <div class="info-icon specialty-icon">
-            <i class="fas fa-book"></i>
-          </div>
+          <div class="info-icon specialty-icon"><i class="fas fa-book"></i></div>
           <div class="info-content">
             <label>Spécialité</label>
             <value>{{ studyClass.speciality }}</value>
@@ -81,9 +89,7 @@
         </div>
 
         <div class="info-card">
-          <div class="info-icon type-icon">
-            <i class="fas fa-tag"></i>
-          </div>
+          <div class="info-icon type-icon"><i class="fas fa-tag"></i></div>
           <div class="info-content">
             <label>Type</label>
             <value>{{ studyClass.classType }}</value>
@@ -91,9 +97,7 @@
         </div>
 
         <div class="info-card">
-          <div class="info-icon schedule-icon">
-            <i class="fas fa-calendar-alt"></i>
-          </div>
+          <div class="info-icon schedule-icon"><i class="fas fa-calendar-alt"></i></div>
           <div class="info-content">
             <label>Planning</label>
             <value>{{ studyClass.day }}</value>
@@ -101,9 +105,7 @@
         </div>
 
         <div class="info-card">
-          <div class="info-icon time-icon">
-            <i class="fas fa-clock"></i>
-          </div>
+          <div class="info-icon time-icon"><i class="fas fa-clock"></i></div>
           <div class="info-content">
             <label>Horaires</label>
             <value>{{ formatTime(studyClass.startHour) }} - {{ formatTime(studyClass.endHour) }}</value>
@@ -111,18 +113,35 @@
         </div>
 
         <div class="info-card" v-if="studyClass.principalTeacher">
-          <div class="info-icon teacher-icon">
-            <i class="fas fa-user-tie"></i>
-          </div>
+          <div class="info-icon teacher-icon"><i class="fas fa-user-tie"></i></div>
           <div class="info-content">
             <label>Professeur</label>
             <value>{{ studyClass.principalTeacher.firstName }} {{ studyClass.principalTeacher.lastName }}</value>
           </div>
         </div>
+
+        <!-- >>> Ajout: Année scolaire -->
+        <div class="info-card" v-if="studyClass.schoolYear">
+          <div class="info-icon level-icon"><i class="fas fa-graduation-cap"></i></div>
+          <div class="info-content">
+            <label>Année scolaire</label>
+            <value>{{ studyClass.schoolYear }}</value>
+          </div>
+        </div>
+
+        <!-- >>> Ajout: Salle principale -->
+        <div class="info-card" v-if="studyClass.principalRoom">
+          <div class="info-icon time-icon"><i class="fas fa-door-open"></i></div>
+          <div class="info-content">
+            <label>Salle principale</label>
+            <value>{{ formatRoom(studyClass.principalRoom) }}</value>
+          </div>
+        </div>
+        <!-- <<< -->
       </div>
     </div>
 
-    <!-- Section étudiants modernisée -->
+    <!-- Étudiants -->
     <div class="glass-card students-section">
       <div class="students-header">
         <div class="section-title">
@@ -131,7 +150,6 @@
         </div>
 
         <div class="controls-container">
-          <!-- Toggle de filtrage stylisé -->
           <div class="filter-toggle">
             <label class="toggle-label">
               <input type="checkbox" v-model="filterActive" class="toggle-input">
@@ -141,7 +159,6 @@
             </label>
           </div>
 
-          <!-- Bouton ajouter modernisé -->
           <button class="add-student-btn" data-bs-toggle="modal" data-bs-target="#newStudentModal">
             <i class="fas fa-plus"></i>
             <span>Ajouter un étudiant</span>
@@ -149,7 +166,6 @@
         </div>
       </div>
 
-      <!-- Tableau modernisé -->
       <div class="modern-table-container">
         <div class="table-wrapper">
           <table class="modern-table">
@@ -178,17 +194,13 @@
               </td>
               <td>{{ studentClassRegistered.student.firstName }}</td>
               <td>{{ new Date(studentClassRegistered.student.birthDate).toLocaleDateString('fr-FR') }}</td>
-              <td>
-                <span class="level-badge">{{ studentClassRegistered.student.levelClass }}</span>
-              </td>
+              <td><span class="level-badge">{{ studentClassRegistered.student.levelClass }}</span></td>
               <td>
                 <label class="status-switch">
                   <input type="checkbox"
                          :checked="studentClassRegistered.active"
                          @change="confirmDeactivation(studentClassRegistered)">
-                  <span class="switch-slider">
-                      <span class="switch-indicator"></span>
-                    </span>
+                  <span class="switch-slider"><span class="switch-indicator"></span></span>
                 </label>
               </td>
               <td>
@@ -201,6 +213,7 @@
                 </button>
               </td>
             </tr>
+
             <tr v-if="!filteredStudents.length" class="empty-state">
               <td colspan="7">
                 <div class="empty-content">
@@ -216,28 +229,26 @@
       </div>
     </div>
 
-    <!-- Modals modernisés -->
+    <!-- Modals -->
     <div class="modal fade" id="deactivationConfirmationModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modern-modal">
           <div class="modal-header">
-            <div class="modal-icon warning-icon">
-              <i class="fas fa-exclamation-triangle"></i>
-            </div>
+            <div class="modal-icon warning-icon"><i class="fas fa-exclamation-triangle"></i></div>
             <h5 class="modal-title">Désactiver l'étudiant</h5>
             <button type="button" class="btn-close modern-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="warning-message">
-              <p><strong>Attention :</strong> Veuillez vérifier que cet élève a réglé tous ses frais de session avant de procéder.</p>
+              <p><strong>Attention :</strong> Vérifiez que l'élève a réglé tous ses frais avant de procéder.</p>
               <div class="action-guide">
                 <div class="guide-item valid">
                   <i class="fas fa-check-circle"></i>
-                  <span>Si les paiements sont à jour → Désactiver</span>
+                  <span>Paiements à jour → Désactiver</span>
                 </div>
                 <div class="guide-item invalid">
                   <i class="fas fa-times-circle"></i>
-                  <span>Si des paiements sont en attente → Consulter l'administration</span>
+                  <span>Paiements en attente → Contacter l'administration</span>
                 </div>
               </div>
             </div>
@@ -260,9 +271,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modern-modal">
           <div class="modal-header">
-            <div class="modal-icon danger-icon">
-              <i class="fas fa-trash-alt"></i>
-            </div>
+            <div class="modal-icon danger-icon"><i class="fas fa-trash-alt"></i></div>
             <h5 class="modal-title">Supprimer l'étudiant</h5>
             <button type="button" class="btn-close modern-close" data-bs-dismiss="modal"></button>
           </div>
@@ -290,23 +299,11 @@ import NewStudentToClassModal from "./NewStudentToClassModal.vue";
 
 export default {
   name: "StudyClassDetails",
-  components: {
-    Alert,
-    NewStudentToClassModal
-  },
+  components: { Alert, NewStudentToClassModal },
   props: {
-    studyClass: {
-      type: Object,
-      required: true,
-    },
-    studentsInStudyClass: {
-      type: Object,
-      required: true,
-    },
-    studentsNotInStudyClass: {
-      type: Object,
-      required: true,
-    }
+    studyClass: { type: Object, required: true },
+    studentsInStudyClass: { type: Object, required: true },
+    studentsNotInStudyClass: { type: Object, required: true }
   },
   data() {
     return {
@@ -320,7 +317,7 @@ export default {
   },
   computed: {
     filteredStudents() {
-      return this.localStudentsInStudyClass.filter(student => student.active === this.filterActive);
+      return this.localStudentsInStudyClass.filter(s => s.active === this.filterActive);
     }
   },
   methods: {
@@ -328,17 +325,18 @@ export default {
       if (!timeString) return '';
       const date = new Date(timeString);
       return date.toLocaleTimeString('fr-FR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'UTC'
+        hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
       });
+    },
+    formatRoom(room) {
+      if (!room) return '';
+      return room.name || `Salle #${room.id ?? ''}`.trim();
     },
     printClassReport() {
       const printContent = this.generatePrintContent();
       const printWindow = window.open('', '_blank');
       printWindow.document.write(printContent);
       printWindow.document.close();
-
       printWindow.onload = function() {
         printWindow.print();
         printWindow.close();
@@ -346,7 +344,7 @@ export default {
     },
     generatePrintContent() {
       const currentDate = new Date().toLocaleDateString('fr-FR');
-      const activeStudents = this.localStudentsInStudyClass.filter(student => student.active);
+      const activeStudents = this.localStudentsInStudyClass.filter(s => s.active);
 
       return `
         <!DOCTYPE html>
@@ -355,78 +353,19 @@ export default {
           <meta charset="utf-8">
           <title>Rapport de classe - ${this.studyClass.name}</title>
           <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              margin: 20px;
-              color: #333;
-              line-height: 1.6;
-            }
-            .header {
-              text-align: center;
-              margin-bottom: 30px;
-              border-bottom: 3px solid #6c63ff;
-              padding-bottom: 20px;
-            }
-            .header h1 {
-              color: #6c63ff;
-              margin-bottom: 10px;
-            }
-            .class-info {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              padding: 25px;
-              border-radius: 15px;
-              margin-bottom: 30px;
-            }
-            .class-info h2 {
-              margin-top: 0;
-              color: white;
-            }
-            .info-grid {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-              gap: 15px;
-              margin-top: 20px;
-            }
-            .info-item {
-              background: rgba(255,255,255,0.1);
-              padding: 15px;
-              border-radius: 10px;
-              backdrop-filter: blur(10px);
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 20px;
-              box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-              border-radius: 10px;
-              overflow: hidden;
-            }
-            th, td {
-              padding: 15px;
-              text-align: left;
-              border-bottom: 1px solid #eee;
-            }
-            th {
-              background: linear-gradient(135deg, #6c63ff, #5a52d5);
-              color: white;
-              font-weight: 600;
-            }
-            tr:nth-child(even) {
-              background-color: #f8f9ff;
-            }
-            .footer {
-              margin-top: 40px;
-              text-align: center;
-              font-size: 12px;
-              color: #888;
-              border-top: 1px solid #eee;
-              padding-top: 20px;
-            }
-            @media print {
-              body { margin: 0; }
-              .header { page-break-after: avoid; }
-            }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; color: #333; line-height: 1.6; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #6c63ff; padding-bottom: 20px; }
+            .header h1 { color: #6c63ff; margin-bottom: 10px; }
+            .class-info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; }
+            .class-info h2 { margin-top: 0; color: white; }
+            .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+            .info-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px); }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
+            th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+            th { background: linear-gradient(135deg, #6c63ff, #5a52d5); color: white; font-weight: 600; }
+            tr:nth-child(even) { background-color: #f8f9ff; }
+            .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
+            @media print { body { margin: 0; } .header { page-break-after: avoid; } }
           </style>
         </head>
         <body>
@@ -438,80 +377,68 @@ export default {
           <div class="class-info">
             <h2>📋 Informations sur la Classe</h2>
             <div class="info-grid">
-              <div class="info-item"><strong>🎓 Niveau :</strong> ${this.studyClass.levelClass}</div>
-              <div class="info-item"><strong>📚 Spécialité :</strong> ${this.studyClass.speciality}</div>
-              <div class="info-item"><strong>🏷️ Type :</strong> ${this.studyClass.classType}</div>
-              <div class="info-item"><strong>📅 Jour :</strong> ${this.studyClass.day}</div>
+              <div class="info-item"><strong>🎓 Niveau :</strong> ${this.studyClass.levelClass ?? ''}</div>
+              <div class="info-item"><strong>📚 Spécialité :</strong> ${this.studyClass.speciality ?? ''}</div>
+              <div class="info-item"><strong>🏷️ Type :</strong> ${this.studyClass.classType ?? ''}</div>
+              <div class="info-item"><strong>📅 Jour :</strong> ${this.studyClass.day ?? ''}</div>
               <div class="info-item"><strong>⏰ Horaires :</strong> ${this.formatTime(this.studyClass.startHour)} - ${this.formatTime(this.studyClass.endHour)}</div>
+              ${this.studyClass.schoolYear ? `<div class="info-item"><strong>📆 Année scolaire :</strong> ${this.studyClass.schoolYear}</div>` : ''}
+              ${this.studyClass.principalRoom ? `<div class="info-item"><strong>🚪 Salle :</strong> ${this.formatRoom(this.studyClass.principalRoom)}</div>` : ''}
               ${this.studyClass.principalTeacher ? `<div class="info-item"><strong>👨‍🏫 Professeur :</strong> ${this.studyClass.principalTeacher.firstName} ${this.studyClass.principalTeacher.lastName}</div>` : ''}
             </div>
           </div>
 
           <div class="students-section">
-            <h2>👥 Liste des Étudiants Actifs (${activeStudents.length} étudiants)</h2>
+            <h2>👥 Étudiants Actifs (${activeStudents.length})</h2>
             <table>
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nom de famille</th>
-                  <th>Prénom</th>
-                  <th>Date de naissance</th>
-                  <th>Niveau</th>
-                </tr>
+                <tr><th>ID</th><th>Nom de famille</th><th>Prénom</th><th>Date de naissance</th><th>Niveau</th></tr>
               </thead>
               <tbody>
-                ${activeStudents.map((studentReg, index) => `
+                ${activeStudents.map(s => `
                   <tr>
-                    <td>${studentReg.student.id}</td>
-                    <td>${studentReg.student.lastName}</td>
-                    <td>${studentReg.student.firstName}</td>
-                    <td>${new Date(studentReg.student.birthDate).toLocaleDateString('fr-FR')}</td>
-                    <td>${studentReg.student.levelClass}</td>
-                  </tr>
-                `).join('')}
-                ${activeStudents.length === 0 ? '<tr><td colspan="5" style="text-align: center; color: #666; padding: 40px;">Aucun étudiant actif dans cette classe</td></tr>' : ''}
+                    <td>${s.student.id}</td>
+                    <td>${s.student.lastName}</td>
+                    <td>${s.student.firstName}</td>
+                    <td>${new Date(s.student.birthDate).toLocaleDateString('fr-FR')}</td>
+                    <td>${s.student.levelClass}</td>
+                  </tr>`).join('')}
+                ${activeStudents.length === 0 ? '<tr><td colspan="5" style="text-align:center;color:#666;padding:40px;">Aucun étudiant actif dans cette classe</td></tr>' : ''}
               </tbody>
             </table>
           </div>
 
-          <div class="footer">
-            <p>📄 Document généré automatiquement le ${currentDate}</p>
-          </div>
+          <div class="footer">📄 Document généré automatiquement le ${currentDate}</div>
         </body>
         </html>
       `;
     },
     confirmDeactivation(student) {
       if (!student.active) return;
-
       this.studentToDeactivate = student;
       const deactivationModal = new this.$bootstrap.Modal(document.getElementById('deactivationConfirmationModal'));
       deactivationModal.show();
     },
     deactivateStudent() {
       const url = this.$routing.generate('deactivate_student_from_class', { id: this.studentToDeactivate.id });
-
       this.$axios.post(url)
           .then(() => {
-            this.localStudentsInStudyClass = this.localStudentsInStudyClass.map(student =>
-                student.id === this.studentToDeactivate.id ? { ...student, active: false } : student
+            this.localStudentsInStudyClass = this.localStudentsInStudyClass.map(s =>
+                s.id === this.studentToDeactivate.id ? { ...s, active: false } : s
             );
           })
-          .catch(error => console.error("Erreur lors de la désactivation", error));
+          .catch(err => console.error("Erreur lors de la désactivation", err));
     },
     deleteStudent() {
       const url = this.$routing.generate('delete_student_from_class', { id: this.studentToDelete.id });
-
       this.$axios.post(url)
           .then(() => {
             this.messageAlert = "L'étudiant a été supprimé avec succès!";
             this.typeAlert = "success";
-            this.localStudentsInStudyClass = this.localStudentsInStudyClass.filter(student =>
-                student.id !== this.studentToDelete.id
-            );
+            this.localStudentsInStudyClass = this.localStudentsInStudyClass.filter(s => s.id !== this.studentToDelete.id);
           })
-          .catch(error => {
-            console.error("Erreur lors de la suppression de l'étudiant", error);
+          .catch(err => {
+            console.error("Erreur lors de la suppression de l'étudiant", err);
             this.messageAlert = "Erreur lors de la suppression de l'étudiant.";
             this.typeAlert = "danger";
           });

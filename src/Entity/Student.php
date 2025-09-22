@@ -13,19 +13,19 @@ class Student
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_student','read_study_class','read_student_class_registered','read_payment'])]
+    #[Groups(['read_student','read_study_class','read_student_class_registered','read_payment','read_parent'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read'])]
+    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read','read_parent'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read'])]
+    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read','read_parent'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['read_student','read_student_class_registered'])]
+    #[Groups(['read_student','read_student_class_registered','read_parent'])]
     private ?\DateTimeInterface $birthDate = null;
 
     #[ORM\Column(type: 'array')]
@@ -35,16 +35,19 @@ class Student
     private ?string $gender = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_student','read_student_class_registered','read_parent'])]
     private ?string $address = null;
 
     #[ORM\Column(type: 'string', length: 10)]
+    #[Groups(['read_student','read_student_class_registered','read_parent'])]
     private ?string $postalCode = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_student','read_student_class_registered','read_parent'])]
     private ?string $city = null;
 
     #[ORM\Column(type: 'string')]
-    #[Groups(['read_student','read_student_class_registered'])]
+    #[Groups(['read_student','read_student_class_registered','read_parent'])]
     private ?string $level = null;
 
     #[ORM\OneToMany(

@@ -14,46 +14,46 @@ class ParentEntity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?string $fatherLastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?string $fatherFirstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?string $fatherEmail = null;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?string $fatherPhone = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?string $motherLastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?string $motherFirstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?string $motherEmail = null;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private ?string $motherPhone = null;
 
     #[ORM\Column(type: 'string', length: 20)]
     private ?string $familyStatus = null; // Married or Divorced
 
     #[ORM\OneToMany(targetEntity: Student::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment', 'read_parent'])]
     private Collection $students;
 
     #[ORM\OneToMany(targetEntity: Invoice::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
@@ -227,7 +227,7 @@ class ParentEntity
         return  $father . ' - ' . $mother;
     }
 
-    #[Groups(['read_payment', 'read_invoice'])]
+    #[Groups(['read_payment', 'read_parent', 'read_invoice'])]
     public function getFullNameParent(): string
     {
         $father = trim($this->fatherLastName . ' ' . $this->fatherFirstName);
@@ -246,13 +246,13 @@ class ParentEntity
         return !empty($parts) ? implode(' - ', $parts) : '';
     }
 
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment', 'read_parent','read_invoice'])]
     public function getEmailContact(): string
     {
         return $this->fatherEmail ?? $this->motherEmail ?? 'ecole@ccib38.com';
     }
 
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment', 'read_parent','read_invoice'])]
     public function getPhoneContact(): string
     {
         return $this->fatherPhone ?? $this->motherPhone ?? '04 76 09 33 33';

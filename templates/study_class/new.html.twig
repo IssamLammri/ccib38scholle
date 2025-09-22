@@ -1,49 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New StudyClass{% endblock %}
+{% block title %}Création d'une nouvelle classe{% endblock %}
 
 {% block body %}
-    <div class="container mt-5">
-        <!-- Back to list button -->
-        <div class="mb-3">
-            <a href="{{ path('app_study_class_index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to list
-            </a>
-        </div>
-
-        <h1 class="mb-4">Create New Study Class</h1>
-
-        <div class="card p-4">
-            <!-- Form to create a new studyClass -->
-            {{ form_start(form) }}
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.name, 'Class Name') }}
-                        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form_label(form.level, 'Class Level') }}
-                        {{ form_widget(form.level, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group mb-3">
-                {{ form_label(form.speciality, 'Speciality') }}
-                {{ form_widget(form.speciality, {'attr': {'class': 'form-control'}}) }}
-            </div>
-
-            <!-- Save and Cancel buttons -->
-            <div class="d-flex justify-content-between mt-4">
-                <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-                <a href="{{ path('app_study_class_index') }}" class="btn btn-secondary">Cancel</a>
-            </div>
-
-            {{ form_end(form) }}
-        </div>
+    <div id="app">
+        <new-study-class
+                :all-teachers="{{ allTeachers|serialize('json', {'groups': 'read_study_class'}) }}"
+                :rooms="{{ rooms|serialize('json', {'groups': 'read_room'}) }}"
+                :user-current="{{ userCurrent|serialize('json', {'groups': 'read_study_class'}) }}">
+        </new-study-class>
     </div>
 {% endblock %}

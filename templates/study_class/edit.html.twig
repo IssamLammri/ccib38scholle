@@ -7,6 +7,7 @@
         <edit-study-class
                 :study-class="{{ studyClass|serialize('json', {'groups': 'read_study_class'}) }}"
                 :all-teachers="{{ allTeachers|serialize('json', {'groups': 'read_study_class'}) }}"
+                :rooms="{{ rooms|serialize('json', {'groups': 'read_room'}) }}"
                 :user-current="{{ userCurrent|serialize('json', {'groups': 'read_study_class'}) }}">
         </edit-study-class>
     </div>

@@ -17,7 +17,6 @@
     </div>
 
     <!-- Filtres -->
-    <!-- Filtres -->
     <div class="filters-card mb-4">
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-light border-0 py-3">
@@ -33,9 +32,9 @@
             <div class="col-12 col-lg-6">
               <label class="form-label fw-semibold">Recherche générale</label>
               <div class="input-group">
-            <span class="input-group-text bg-light border-end-0">
-              <i class="fas fa-search text-muted"></i>
-            </span>
+                <span class="input-group-text bg-light border-end-0">
+                  <i class="fas fa-search text-muted"></i>
+                </span>
                 <input
                     v-model.trim="searchTerm"
                     type="text"
@@ -99,6 +98,30 @@
             </div>
           </div>
 
+          <!-- ligne 2bis : Année scolaire + Salle principale -->
+          <div class="row g-3 mt-0">
+            <div class="col-12 col-sm-6 col-lg-3">
+              <label class="form-label fw-semibold">Année scolaire</label>
+              <select v-model="selectedSchoolYear" class="form-select">
+                <option value="">Toutes</option>
+                <option v-for="y in schoolYearOptions" :key="y" :value="y">
+                  {{ y }}
+                </option>
+              </select>
+              <small class="text-muted">Par défaut : 2025/2026</small>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-3">
+              <label class="form-label fw-semibold">Salle principale</label>
+              <select v-model.number="selectedRoomId" class="form-select">
+                <option :value="''">Toutes</option>
+                <option v-for="r in roomOptions" :key="r.id" :value="r.id">
+                  {{ r.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+
           <!-- ligne 3 : profs + créneau + actions alignées -->
           <div class="row g-3 mt-1 align-items-end">
             <div class="col-12 col-sm-6 col-lg-3">
@@ -134,7 +157,7 @@
               </select>
             </div>
 
-            <!-- Actions à droite, bien alignées au bas -->
+            <!-- Actions à droite -->
             <div class="col-12 col-lg-2">
               <div class="filters-actions d-flex gap-2 justify-content-lg-end">
                 <select v-model.number="itemsPerPage" class="form-select w-auto">
@@ -155,11 +178,11 @@
                   </label>
                 </div>
 
-                <button class="btn btn-outline-secondary" @click="clearAllFilters">
+                <button class="btn btn-outline-secondary" @click="clearAllFilters" title="Effacer">
                   <i class="fas fa-eraser me-1"></i>
                 </button>
 
-                <button class="btn btn-outline-info" @click="exportToCSV">
+                <button class="btn btn-outline-info" @click="exportToCSV" title="Exporter CSV">
                   <i class="fas fa-download"></i>
                 </button>
               </div>
@@ -236,10 +259,9 @@
               >
                 <i class="fas fa-sort me-1"></i>
                 Nom
-                <i v-if="sortField === 'name'"
-                   :class="sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'"
-                   class="ms-1"></i>
+                <i v-if="sortField === 'name'" :class="sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'" class="ms-1"></i>
               </button>
+
               <button
                   class="btn btn-outline-primary btn-sm"
                   @click="sortBy('startHour')"
@@ -247,9 +269,27 @@
               >
                 <i class="fas fa-sort me-1"></i>
                 Heure
-                <i v-if="sortField === 'startHour'"
-                   :class="sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'"
-                   class="ms-1"></i>
+                <i v-if="sortField === 'startHour'" :class="sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'" class="ms-1"></i>
+              </button>
+
+              <button
+                  class="btn btn-outline-primary btn-sm"
+                  @click="sortBy('schoolYear')"
+                  :class="{ active: sortField === 'schoolYear' }"
+              >
+                <i class="fas fa-sort me-1"></i>
+                Année
+                <i v-if="sortField === 'schoolYear'" :class="sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'" class="ms-1"></i>
+              </button>
+
+              <button
+                  class="btn btn-outline-primary btn-sm"
+                  @click="sortBy('principalRoom')"
+                  :class="{ active: sortField === 'principalRoom' }"
+              >
+                <i class="fas fa-sort me-1"></i>
+                Salle
+                <i v-if="sortField === 'principalRoom'" :class="sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'" class="ms-1"></i>
               </button>
             </div>
           </div>
@@ -283,6 +323,14 @@
                 Type
                 <i class="fas fa-sort ms-1"></i>
               </th>
+              <th @click="sortBy('schoolYear')" class="sortable">
+                Année scolaire
+                <i class="fas fa-sort ms-1"></i>
+              </th>
+              <th @click="sortBy('principalRoom')" class="sortable">
+                Salle
+                <i class="fas fa-sort ms-1"></i>
+              </th>
               <th @click="sortBy('students')" class="sortable">
                 Élèves
                 <i class="fas fa-sort ms-1"></i>
@@ -310,6 +358,18 @@
                   <span class="badge bg-warning rounded-pill text-dark">
                     {{ c.classType || 'Non défini' }}
                   </span>
+              </td>
+              <td>
+                  <span class="badge bg-light text-dark rounded-pill">
+                    {{ c.schoolYear || 'Non définie' }}
+                  </span>
+              </td>
+              <td>
+                  <span v-if="c.principalRoom">
+                    <i class="fas fa-door-open me-1 text-secondary"></i>
+                    {{ formatRoomName(c.principalRoom) }}
+                  </span>
+                <span v-else class="text-muted">Aucune</span>
               </td>
               <td>
                   <span class="badge bg-info rounded-pill">
@@ -356,7 +416,7 @@
             </tr>
 
             <tr v-if="filteredClasses.length === 0 && !isLoading">
-              <td colspan="8" class="text-center py-5 text-muted">
+              <td colspan="11" class="text-center py-5 text-muted">
                 <i class="fas fa-search fa-3x mb-3 text-secondary"></i>
                 <div>
                   <strong>Aucune classe trouvée</strong>
@@ -375,50 +435,25 @@
           <nav aria-label="Pagination des classes">
             <ul class="pagination justify-content-center mb-0">
               <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                <button
-                    class="page-link"
-                    @click="setPage(1)"
-                    :disabled="currentPage === 1"
-                    title="Première page"
-                >
+                <button class="page-link" @click="setPage(1)" :disabled="currentPage === 1" title="Première page">
                   <i class="fas fa-angle-double-left"></i>
                 </button>
               </li>
               <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                <button
-                    class="page-link"
-                    @click="setPage(currentPage - 1)"
-                    :disabled="currentPage === 1"
-                    title="Page précédente"
-                >
+                <button class="page-link" @click="setPage(currentPage - 1)" :disabled="currentPage === 1" title="Page précédente">
                   <i class="fas fa-angle-left"></i>
                 </button>
               </li>
-              <li
-                  v-for="p in visiblePages"
-                  :key="p"
-                  class="page-item"
-                  :class="{ active: p === currentPage }"
-              >
+              <li v-for="p in visiblePages" :key="p" class="page-item" :class="{ active: p === currentPage }">
                 <button class="page-link" @click="setPage(p)">{{ p }}</button>
               </li>
               <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                <button
-                    class="page-link"
-                    @click="setPage(currentPage + 1)"
-                    :disabled="currentPage === totalPages"
-                    title="Page suivante"
-                >
+                <button class="page-link" @click="setPage(currentPage + 1)" :disabled="currentPage === totalPages" title="Page suivante">
                   <i class="fas fa-angle-right"></i>
                 </button>
               </li>
               <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                <button
-                    class="page-link"
-                    @click="setPage(totalPages)"
-                    :disabled="currentPage === totalPages"
-                    title="Dernière page"
-                >
+                <button class="page-link" @click="setPage(totalPages)" :disabled="currentPage === totalPages" title="Dernière page">
                   <i class="fas fa-angle-double-right"></i>
                 </button>
               </li>
@@ -485,6 +520,21 @@
                     </span>
                   </p>
                 </div>
+
+                <div class="col-6">
+                  <small class="text-muted">Année scolaire</small>
+                  <p class="mb-0 fw-semibold">
+                    {{ c.schoolYear || 'Non définie' }}
+                  </p>
+                </div>
+                <div class="col-6">
+                  <small class="text-muted">Salle</small>
+                  <p class="mb-0 fw-semibold">
+                    <span v-if="c.principalRoom">{{ formatRoomName(c.principalRoom) }}</span>
+                    <span v-else class="text-muted">Aucune</span>
+                  </p>
+                </div>
+
                 <div class="col-12">
                   <small class="text-muted">Professeur</small>
                   <p class="mb-0">
@@ -502,16 +552,10 @@
             </div>
             <div class="card-footer bg-light border-0">
               <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                <a
-                    :href="$routing.generate('app_study_class_show', {id: c.id})"
-                    class="btn btn-outline-info btn-sm"
-                >
+                <a :href="$routing.generate('app_study_class_show', {id: c.id})" class="btn btn-outline-info btn-sm">
                   <i class="fas fa-eye me-1"></i> Voir
                 </a>
-                <a
-                    :href="$routing.generate('app_study_class_edit', {id: c.id})"
-                    class="btn btn-outline-warning btn-sm"
-                >
+                <a :href="$routing.generate('app_study_class_edit', {id: c.id})" class="btn btn-outline-warning btn-sm">
                   <i class="fas fa-edit me-1"></i> Modifier
                 </a>
                 <button
@@ -543,46 +587,25 @@
         <nav aria-label="Pagination des classes">
           <ul class="pagination justify-content-center mb-0">
             <li class="page-item" :class="{ disabled: currentPage === 1 }">
-              <button
-                  class="page-link"
-                  @click="setPage(1)"
-                  :disabled="currentPage === 1"
-              >
+              <button class="page-link" @click="setPage(1)" :disabled="currentPage === 1">
                 <i class="fas fa-angle-double-left"></i>
               </button>
             </li>
             <li class="page-item" :class="{ disabled: currentPage === 1 }">
-              <button
-                  class="page-link"
-                  @click="setPage(currentPage - 1)"
-                  :disabled="currentPage === 1"
-              >
+              <button class="page-link" @click="setPage(currentPage - 1)" :disabled="currentPage === 1">
                 <i class="fas fa-angle-left"></i>
               </button>
             </li>
-            <li
-                v-for="p in visiblePages"
-                :key="p"
-                class="page-item"
-                :class="{ active: p === currentPage }"
-            >
+            <li v-for="p in visiblePages" :key="p" class="page-item" :class="{ active: p === currentPage }">
               <button class="page-link" @click="setPage(p)">{{ p }}</button>
             </li>
             <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-              <button
-                  class="page-link"
-                  @click="setPage(currentPage + 1)"
-                  :disabled="currentPage === totalPages"
-              >
+              <button class="page-link" @click="setPage(currentPage + 1)" :disabled="currentPage === totalPages">
                 <i class="fas fa-angle-right"></i>
               </button>
             </li>
             <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-              <button
-                  class="page-link"
-                  @click="setPage(totalPages)"
-                  :disabled="currentPage === totalPages"
-              >
+              <button class="page-link" @click="setPage(totalPages)" :disabled="currentPage === totalPages">
                 <i class="fas fa-angle-double-right"></i>
               </button>
             </li>
@@ -591,7 +614,6 @@
       </div>
     </div>
 
-    <!-- Modal de confirmation de suppression -->
     <!-- Modal de confirmation de suppression -->
     <div v-if="classToDelete" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog">
@@ -602,12 +624,10 @@
           </div>
 
           <div class="modal-body">
-            <!-- Erreur locale visible DANS le modal -->
             <div v-if="deleteError" class="alert alert-danger py-2 px-3 mb-3">
               <i class="fas fa-exclamation-triangle me-1"></i>
               {{ deleteError }}
             </div>
-
             <p>Êtes-vous sûr de vouloir supprimer la classe :</p>
             <p class="fw-bold">{{ classToDelete.name }}</p>
             <p class="text-muted">Cette action est irréversible.</p>
@@ -623,7 +643,6 @@
         </div>
       </div>
     </div>
-
 
     <!-- Alerte -->
     <alert v-if="messageAlert" :text="messageAlert" :type="typeAlert" class="mt-4" />
@@ -652,9 +671,13 @@ export default {
       selectedSpeciality: "",
       selectedLevel: "",
       selectedType: "",
-      selectedTeacher: "", // "", "with", "without"
-      selectedSlot: "",    // "", "morning", "afternoon", "evening", "none"
-      selectedTeacherId: "",
+      selectedTeacher: "",    // "", "with", "without"
+      selectedSlot: "",       // "", "morning", "afternoon", "evening", "none"
+      selectedTeacherId: "",  // id number or ""
+
+      // nouveaux filtres
+      selectedSchoolYear: "2025/2026", // défaut demandé
+      selectedRoomId: "",              // id number or ""
 
       // vue & pagination
       viewType: "table",
@@ -684,13 +707,14 @@ export default {
           .map(([id, label]) => ({ id, label }))
           .sort((a,b) => a.label.localeCompare(b.label, 'fr'));
     },
-    // options pour filtres avec gestion des valeurs vides
+
+    // options pour filtres
     dayOptions() {
       const days = this.classes.map(c => c.day).filter(d => d);
       const uniqueDays = [...new Set(days)];
       return uniqueDays.sort((a, b) => {
-        const dayOrder = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-        return dayOrder.indexOf(a) - dayOrder.indexOf(b);
+        const order = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+        return order.indexOf(a) - order.indexOf(b);
       });
     },
     specialityOptions() {
@@ -705,12 +729,31 @@ export default {
       const types = this.classes.map(c => c.classType).filter(t => t);
       return [...new Set(types)].sort((a, b) => a.localeCompare(b, "fr"));
     },
+    schoolYearOptions() {
+      const years = this.classes.map(c => c.schoolYear).filter(Boolean);
+      const unique = [...new Set(years)];
+      return unique.sort().reverse(); // 2025/2026 en premier
+    },
+    roomOptions() {
+      const map = new Map(); // id -> label
+      this.classes.forEach(c => {
+        const r = c.principalRoom;
+        if (r && r.id != null) {
+          const label = (r.name || `Salle #${r.id}`).trim();
+          if (!map.has(r.id)) map.set(r.id, label);
+        }
+      });
+      return [...map.entries()]
+          .map(([id, label]) => ({ id, label }))
+          .sort((a,b) => a.label.localeCompare(b.label, 'fr'));
+    },
+
     teacherCount() {
       return this.classes.filter(c => c.principalTeacher &&
           (c.principalTeacher.firstName || c.principalTeacher.lastName)).length;
     },
 
-    // filtrage + tri amélioré
+    // filtrage + tri
     filteredClasses() {
       const normalize = v => (v || "").toString().normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -725,8 +768,10 @@ export default {
             c.classType,
             c.levelClass || c.level,
             c.day,
+            c.schoolYear,
             c.principalTeacher?.firstName,
-            c.principalTeacher?.lastName
+            c.principalTeacher?.lastName,
+            c.principalRoom?.name
           ].filter(Boolean);
 
           const matchText = searchFields.some(field =>
@@ -742,7 +787,12 @@ export default {
         if (this.selectedLevel && (c.levelClass || c.level) !== this.selectedLevel) return false;
         if (this.selectedType && c.classType !== this.selectedType) return false;
 
-        // filtre professeur
+        // filtre année scolaire
+        if (this.selectedSchoolYear && c.schoolYear !== this.selectedSchoolYear) return false;
+
+        // filtre salle principale
+        if (this.selectedRoomId !== "" && (c.principalRoom?.id !== this.selectedRoomId)) return false;
+
         // filtre professeur précis (prioritaire)
         if (this.selectedTeacherId !== "" && this.selectedTeacherId != null) {
           const teacherId = c.principalTeacher?.id;
@@ -753,7 +803,6 @@ export default {
           if (this.selectedTeacher === "with" && !hasTeacher) return false;
           if (this.selectedTeacher === "without" && hasTeacher) return false;
         }
-
 
         // filtre créneau
         if (this.selectedSlot) {
@@ -801,11 +850,9 @@ export default {
       const total = this.totalPages;
       const current = this.currentPage;
 
-      // Logique pour afficher les pages visibles
       let start = Math.max(1, current - 2);
       let end = Math.min(total, current + 2);
 
-      // Ajuster si on est près du début ou de la fin
       if (end - start < 4) {
         if (start === 1) {
           end = Math.min(total, start + 4);
@@ -814,9 +861,7 @@ export default {
         }
       }
 
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
+      for (let i = start; i <= end; i++) pages.push(i);
       return pages;
     },
   },
@@ -840,9 +885,17 @@ export default {
       this.isLoading = true;
       try {
         const response = await this.$axios.get(this.$routing.generate("study_class_list"));
+        // Assure-toi que l'API renvoie bien schoolYear et principalRoom (groupes de sérialisation côté backend)
         this.classes = response.data.studyClass || [];
         this.studentCountMap = response.data.studentCountMap || {};
         this.showAlert("Classes chargées avec succès", "success");
+
+        // Si l'année par défaut n'existe pas dans les données, on la laisse quand même,
+        // l'utilisateur verra 0 résultat jusqu'à ce qu'il sélectionne "Toutes" ou une autre année.
+        // Sinon, décommente ci-dessous pour fallback auto :
+        // if (this.selectedSchoolYear && !this.schoolYearOptions.includes(this.selectedSchoolYear)) {
+        //   this.selectedSchoolYear = "";
+        // }
       } catch (error) {
         console.error('Erreur lors du chargement des classes:', error);
         this.showAlert("Erreur lors du chargement des classes", "danger");
@@ -853,14 +906,11 @@ export default {
 
     // studentCountMap peut être null
     studentCount(id) {
-      // les clés du map peuvent être des strings -> on gère les deux
       if (!this.studentCountMap) return 0;
-      return this.studentCountMap[id] ??
-          this.studentCountMap[String(id)] ??
-          0;
+      return this.studentCountMap[id] ?? this.studentCountMap[String(id)] ?? 0;
     },
 
-    // Fonction utilitaire pour obtenir la valeur de tri
+    // valeurs de tri
     getSortValue(item, field) {
       switch (field) {
         case 'name':
@@ -877,12 +927,16 @@ export default {
           return this.parseTime(item.startHour);
         case 'students':
           return this.studentCount(item.id);
+        case 'schoolYear':
+          return item.schoolYear || '';
+        case 'principalRoom':
+          return (item.principalRoom?.name || '') || '';
         default:
           return item[field] || '';
       }
     },
 
-    // Tri générique amélioré
+    // Tri générique
     sortBy(field) {
       if (this.sortField === field) {
         this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
@@ -892,7 +946,7 @@ export default {
       }
     },
 
-    // Pagination améliorée
+    // Pagination
     setPage(page) {
       const targetPage = Math.min(Math.max(1, page), this.totalPages || 1);
       if (targetPage !== this.currentPage) {
@@ -919,11 +973,10 @@ export default {
       try {
         const date = new Date(isoString);
         if (isNaN(date.getTime())) return "";
-
         const hours = String(date.getHours()).padStart(2, "0");
         const minutes = String(date.getMinutes()).padStart(2, "0");
         return `${hours}:${minutes}`;
-      } catch (error) {
+      } catch {
         return "";
       }
     },
@@ -934,7 +987,7 @@ export default {
         const date = new Date(isoString);
         if (isNaN(date.getTime())) return null;
         return date.getHours() * 60 + date.getMinutes();
-      } catch (error) {
+      } catch {
         return null;
       }
     },
@@ -942,21 +995,24 @@ export default {
     timeSlot(isoString) {
       const minutes = this.parseTime(isoString);
       if (minutes === null) return "none";
-
-      if (minutes < 12 * 60) return "morning";    // 00:00 - 11:59
-      if (minutes < 18 * 60) return "afternoon";  // 12:00 - 17:59
-      return "evening";                           // 18:00 - 23:59
+      if (minutes < 12 * 60) return "morning";
+      if (minutes < 18 * 60) return "afternoon";
+      return "evening";
     },
 
-    // Formatage du nom du professeur
+    // Formatage noms
     formatTeacherName(teacher) {
       if (!teacher) return "";
       const firstName = teacher.firstName || "";
       const lastName = teacher.lastName || "";
       return `${firstName} ${lastName}`.trim() || "Nom non défini";
     },
+    formatRoomName(room) {
+      if (!room) return '';
+      return room.name || `Salle #${room.id ?? ''}`.trim();
+    },
 
-    // Gestion des filtres
+    // Filtres
     clearAllFilters() {
       this.searchTerm = "";
       this.selectedDay = "";
@@ -966,6 +1022,8 @@ export default {
       this.selectedTeacher = "";
       this.selectedTeacherId = "";
       this.selectedSlot = "";
+      this.selectedSchoolYear = "2025/2026"; // on remet le défaut demandé
+      this.selectedRoomId = "";
       this.showAlert("Filtres effacés", "info");
     },
 
@@ -975,21 +1033,19 @@ export default {
 
     debounceSearch() {
       clearTimeout(this.searchTimeout);
-      this.searchTimeout = setTimeout(() => {
-        // La recherche se fait automatiquement via le computed
-      }, 300);
+      this.searchTimeout = setTimeout(() => {}, 300);
     },
 
-    // Actions sur les classes
+    // Actions CRUD
     confirmDelete(classItem) {
       this.classToDelete = classItem;
-      this.deleteError = null
+      this.deleteError = null;
     },
 
     cancelDelete() {
       this.classToDelete = null;
       this.isDeleting = null;
-      this.deleteError = null
+      this.deleteError = null;
     },
 
     async deleteClass() {
@@ -1003,37 +1059,23 @@ export default {
             { headers: { Accept: "application/json" } }
         );
 
-        // maj locale
         this.classes = this.classes.filter(c => c.id !== this.classToDelete.id);
 
-        // succès (message backend prioritaire)
         const successMsg = res?.data?.message || `Classe "${this.classToDelete.name}" supprimée avec succès`;
         this.showAlert(successMsg, "success");
 
-        // ferme le modal
         this.cancelDelete();
 
-        // réajuste pagination
         if (this.paginatedClasses.length === 0 && this.currentPage > 1) {
           this.setPage(this.currentPage - 1);
         }
       } catch (error) {
-        console.log(error)
-        // récupère le message backend
         const msg = this.extractBackendMessage(
             error,
             "Impossible de supprimer la classe. Réessayez plus tard."
         );
-
-        // 1) montre-le dans le modal (visible immédiatement)
         this.deleteError = msg;
-
-        // 2) et/ou alerte globale (facultatif)
         this.showAlert(msg, "danger");
-
-        // Option : si tu préfères FERMER le modal même en erreur et scroller vers l’alerte :
-        // this.cancelDelete();
-        // this.$nextTick(() => window.scrollTo({ top: 0, behavior: "smooth" }));
       } finally {
         this.isDeleting = null;
       }
@@ -1052,12 +1094,13 @@ export default {
       if (typeof data?.title === "string" && data.title.trim()) return data.title;
       return fallback;
     },
+
     // Export CSV
     exportToCSV() {
       try {
         const headers = [
           'Nom', 'Spécialité', 'Jour', 'Heure début', 'Heure fin',
-          'Niveau', 'Type', 'Professeur'
+          'Niveau', 'Type', 'Année scolaire', 'Salle', 'Professeur', 'Élèves'
         ];
 
         const csvContent = [
@@ -1070,8 +1113,10 @@ export default {
             `"${this.formatTime(c.endHour)}"`,
             `"${(c.levelClass || c.level || '').replace(/"/g, '""')}"`,
             `"${(c.classType || '').replace(/"/g, '""')}"`,
+            `"${(c.schoolYear || '').replace(/"/g, '""')}"`,
+            `"${this.formatRoomName(c.principalRoom).replace(/"/g, '""')}"`,
             `"${this.formatTeacherName(c.principalTeacher).replace(/"/g, '""')}"`,
-            this.studentCount(c.id)
+            `${this.studentCount(c.id)}`
           ].join(','))
         ].join('\n');
 
@@ -1088,12 +1133,10 @@ export default {
       }
     },
 
-    // Gestion des alertes
+    // Alertes
     showAlert(message, type) {
       this.messageAlert = message;
       this.typeAlert = type;
-
-      // Auto-masquer après 5 secondes
       setTimeout(() => {
         this.messageAlert = null;
         this.typeAlert = null;
@@ -1103,13 +1146,11 @@ export default {
 
   mounted() {
     this.fetchClasses();
-
-    // Gestion du redimensionnement pour la vue responsive
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('resize', this.handleResize || (() => {}));
   },
 
   beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('resize', this.handleResize || (() => {}));
     clearTimeout(this.searchTimeout);
   },
 };
@@ -1157,11 +1198,7 @@ export default {
   box-shadow: var(--shadow-medium);
   transition: transform 0.2s ease;
 }
-
-.stat-card:hover {
-  transform: translateY(-2px);
-}
-
+.stat-card:hover { transform: translateY(-2px); }
 .stat-card .stat-icon {
   position: absolute;
   top: 1rem;
@@ -1169,24 +1206,13 @@ export default {
   opacity: 0.25;
   font-size: 1.75rem;
 }
-
-.stat-number {
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.stat-label {
-  margin: 0;
-  opacity: 0.9;
-  font-size: 0.875rem;
-}
-
+.stat-number { font-size: 2rem; font-weight: 700; margin: 0; }
+.stat-label { margin: 0; opacity: 0.9; font-size: 0.875rem; }
 .stat-card.bg-success { background: var(--success-gradient); }
 .stat-card.bg-info { background: var(--info-gradient); }
 .stat-card.bg-warning { background: var(--warning-gradient); }
 
-/* Cartes */
+/* Cartes + tableaux */
 .filters-card .card,
 .table-container .card,
 .cards-container .card {
@@ -1194,57 +1220,21 @@ export default {
   box-shadow: var(--shadow-soft);
 }
 
-.class-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.class-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-medium);
-}
-
-.class-card .card-header {
-  background: var(--primary-gradient);
-  color: #fff;
-}
+.class-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.class-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-medium); }
+.class-card .card-header { background: var(--primary-gradient); color: #fff; }
 
 /* Table */
-.table th.sortable {
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s ease;
-}
-
-.table th.sortable:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.table th.sortable.active {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-}
-
-.table-responsive {
-  border-radius: 0.5rem;
-}
+.table th.sortable { cursor: pointer; user-select: none; transition: background-color 0.2s ease; }
+.table th.sortable:hover { background-color: rgba(255, 255, 255, 0.1) !important; }
+.table th.sortable.active { background-color: rgba(255, 255, 255, 0.15) !important; }
+.table-responsive { border-radius: 0.5rem; }
 
 /* Badges */
-.badge.rounded-pill {
-  border-radius: 50rem !important;
-  font-weight: 500;
-}
-
-.badge.bg-primary {
-  background: linear-gradient(45deg, #667eea, #764ba2) !important;
-}
-
-.badge.bg-warning {
-  background: linear-gradient(45deg, #fa709a, #fee140) !important;
-  color: #212529 !important;
-}
-
-.badge.bg-secondary {
-  background: linear-gradient(45deg, #6c757d, #adb5bd) !important;
-}
+.badge.rounded-pill { border-radius: 50rem !important; font-weight: 500; }
+.badge.bg-primary { background: linear-gradient(45deg, #667eea, #764ba2) !important; }
+.badge.bg-warning { background: linear-gradient(45deg, #fa709a, #fee140) !important; color: #212529 !important; }
+.badge.bg-secondary { background: linear-gradient(45deg, #6c757d, #adb5bd) !important; }
 
 /* Pagination */
 .pagination .page-link {
@@ -1254,122 +1244,46 @@ export default {
   border: 1px solid #dee2e6;
   transition: all 0.2s ease;
 }
+.pagination .page-link:hover { background-color: #667eea; border-color: #667eea; color: white; }
+.pagination .page-item.active .page-link { background: var(--primary-gradient); border-color: transparent; color: white; }
+.pagination .page-item.disabled .page-link { opacity: 0.5; }
 
-.pagination .page-link:hover {
-  background-color: #667eea;
-  border-color: #667eea;
-  color: white;
-}
-
-.pagination .page-item.active .page-link {
-  background: var(--primary-gradient);
-  border-color: transparent;
-  color: white;
-}
-
-.pagination .page-item.disabled .page-link {
-  opacity: 0.5;
-}
-
-/* Spinner de chargement */
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
-}
+/* Spinner */
+.spinner-border { width: 3rem; height: 3rem; }
 
 /* Boutons */
-.btn {
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-}
-
-.btn-group .btn-check:checked + .btn {
-  background: var(--primary-gradient);
-  border-color: transparent;
-}
+.btn { transition: all 0.2s ease; }
+.btn:hover { transform: translateY(-1px); }
+.btn-group .btn-check:checked + .btn { background: var(--primary-gradient); border-color: transparent; }
 
 /* Formulaires */
 .form-control:focus,
-.form-select:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+.form-select:focus { border-color: #667eea; box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25); }
+.input-group .form-control:focus { z-index: 3; }
+
+/* Modals */
+.modal.show { animation: fadeIn 0.15s ease-in; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-content { border: none; border-radius: 1rem; box-shadow: var(--shadow-medium); }
+
+/* Divers */
+.text-center .fa-3x { opacity: 0.3; }
+.filters-card .form-select,
+.filters-card .form-control,
+.filters-card .btn,
+.filters-card .input-group-text { height: 42px; }
+.filters-card .btn i { line-height: 1; }
+.filters-actions { align-items: end; }
+@media (max-width: 991.98px) {
+  .filters-actions { justify-content: flex-start; flex-wrap: wrap; gap: .5rem; }
 }
-
-.input-group .form-control:focus {
-  z-index: 3;
-}
-
-/* Messages d'état vide */
-.text-center .fa-3x {
-  opacity: 0.3;
-}
-
-/* Modal */
-.modal.show {
-  animation: fadeIn 0.15s ease-in;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
-  border: none;
-  border-radius: 1rem;
-  box-shadow: var(--shadow-medium);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .header-section {
-    text-align: center;
-  }
-
-  .header-section .d-flex {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .filters-card .row > * {
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-card {
-    margin-bottom: 1rem;
-  }
-
-  .table-responsive {
-    font-size: 0.875rem;
-  }
-
-  .btn-group {
-    display: flex;
-    flex-wrap: wrap;
-  }
-}
-
-/* Animations */
-@media (prefers-reduced-motion: no-preference) {
-  .class-card,
-  .stat-card,
-  .btn {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-}
+.filters-card .card-header { border-radius: 1rem 1rem 0 0; }
+.filters-card .card { border-radius: 1rem; }
 
 /* Accessibilité */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
-  }
+  * { transition: none !important; animation: none !important; }
 }
-
-/* Focus visible pour l'accessibilité */
 .btn:focus-visible,
 .form-control:focus-visible,
 .form-select:focus-visible,
@@ -1377,36 +1291,4 @@ export default {
   outline: 2px solid #667eea;
   outline-offset: 2px;
 }
-
-/* même hauteur & bons espacements */
-.filters-card .form-select,
-.filters-card .form-control,
-.filters-card .btn,
-.filters-card .input-group-text {
-  height: 42px;
-}
-
-.filters-card .btn i { line-height: 1; }
-
-/* conteneur actions : colle le bas des contrôles, même en responsive */
-.filters-actions {
-  align-items: end;             /* aligne en bas */
-}
-
-@media (max-width: 991.98px) {
-  .filters-actions {
-    justify-content: flex-start; /* à gauche sur mobile */
-    flex-wrap: wrap;
-    gap: .5rem;
-  }
-}
-
-/* petits polish */
-.filters-card .card-header {
-  border-radius: 1rem 1rem 0 0;
-}
-.filters-card .card {
-  border-radius: 1rem;
-}
-
 </style>

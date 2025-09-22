@@ -11,10 +11,11 @@ class Room
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['read_room','read_study_class'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_session'])]
+    #[Groups(['read_session','read_room','read_study_class'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'integer')]

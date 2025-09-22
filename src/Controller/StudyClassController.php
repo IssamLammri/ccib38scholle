@@ -8,6 +8,7 @@ use App\Entity\StudyClass;
 use App\Form\StudyClassType;
 use App\Model\ApiResponseTrait;
 use App\Repository\PaymentRepository;
+use App\Repository\RoomRepository;
 use App\Repository\SessionRepository;
 use App\Repository\SessionStudyClassPresenceRepository;
 use App\Repository\StudentClassRegisteredRepository;
@@ -40,7 +41,8 @@ class StudyClassController extends AbstractController
         private SessionStudyClassPresenceRepository $sessionStudyClassPresenceRepository,
         private StudyClassRepository $studyClassRepository,
         private SessionRepository $sessionRepository,
-        private TeacherRepository $teacherRepository
+        private TeacherRepository $teacherRepository,
+        private RoomRepository $roomRepository
     ) {
     }
 
@@ -101,23 +103,14 @@ class StudyClassController extends AbstractController
     #[Route('/new', name: 'app_study_class_new', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $studyClass = new StudyClass();
-        $form = $this->createForm(StudyClassType::class, $studyClass);
-        $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $studyClass->setStartHour( new \DateTime() );
-            $studyClass->setEndHour( new \DateTime() );
-            $studyClass->setClassType(StudyClass::CLASS_TYPE_ARABE);
-            $entityManager->persist($studyClass);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_study_class_index', [], Response::HTTP_SEE_OTHER);
-        }
+        $allTeachers = $this->teacherRepository->findAll();
+        $rooms = $this->roomRepository->findAll();
 
         return $this->render('study_class/new.html.twig', [
-            'study_class' => $studyClass,
-            'form' => $form,
+            'allTeachers' => $allTeachers,
+            'rooms' => $rooms,
+            'userCurrent' => $this->getUser(),
         ]);
     }
 
@@ -188,9 +181,11 @@ class StudyClassController extends AbstractController
     public function edit(Request $request, StudyClass $studyClass, EntityManagerInterface $entityManager): Response
     {
         $allTeachers = $this->teacherRepository->findAll();
+        $rooms = $this->roomRepository->findAll();
         return $this->render('study_class/edit.html.twig', [
             'studyClass' => $studyClass,
             'allTeachers' => $allTeachers,
+            'rooms' => $rooms,
             'userCurrent' => $this->getUser(),
         ]);
     }
@@ -272,5 +267,36 @@ class StudyClassController extends AbstractController
 
         // 3. Répondre avec l’entité mise à jour
         return $this->apiResponse($studyClass);
+    }
+
+    #[Route('/save-data-create/', name: 'create_study_class', options: ['expose' => true], methods: ['POST'])]
+    public function saveDataForCreate(
+        Request $request,
+        StudyClassService $studyClassService,
+        EntityManagerInterface $em
+    ): Response {
+        $studyClass = new StudyClass();
+
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (NotEncodableValueException $e) {
+            return $this->apiErrorResponse('JSON invalide.', Response::HTTP_BAD_REQUEST);
+        }
+
+        // Déléguer au service pour setter les données
+        $errors = $studyClassService->updateFromArray($studyClass, $data);
+        if (null !== $errors) {
+            return $this->apiErrorResponse((string)$errors, Response::HTTP_BAD_REQUEST);
+        }
+
+        // 🔹 Persister + flush pour générer l’ID
+        $em->persist($studyClass);
+        $em->flush();
+
+        // 🔹 Retourner une réponse JSON avec l’ID
+        return $this->json([
+            'id' => $studyClass->getId(),
+            'message' => 'Classe créée avec succès'
+        ], Response::HTTP_CREATED);
     }
 }

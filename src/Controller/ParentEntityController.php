@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/parent')]
 class ParentEntityController extends AbstractController
 {
-    #[Route('/', name: 'app_parent_entity_index', methods: ['GET'])]
+    #[Route('/', name: 'app_parent_entity_index', options: ['expose' => true], methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
         $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
@@ -52,7 +52,7 @@ class ParentEntityController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_parent_entity_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'app_parent_entity_new', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $parentEntity = new ParentEntity();
@@ -72,17 +72,17 @@ class ParentEntityController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_parent_entity_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_parent_entity_show', options: ['expose' => true], methods: ['GET'])]
     public function show(ParentEntity $parentEntity): Response
     {
         $students = $parentEntity->getStudents();
         return $this->render('parent_entity/show.html.twig', [
-            'parent_entity' => $parentEntity,
+            'parentEntity' => $parentEntity,
             'students' => $students,
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_parent_entity_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'app_parent_entity_edit', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function edit(Request $request, ParentEntity $parentEntity, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ParentEntityType::class, $parentEntity);
@@ -100,7 +100,7 @@ class ParentEntityController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_parent_entity_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_parent_entity_delete', options: ['expose' => true], methods: ['POST'])]
     public function delete(Request $request, ParentEntity $parentEntity, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$parentEntity->getId(), $request->getPayload()->getString('_token'))) {
