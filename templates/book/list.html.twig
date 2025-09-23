@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des livres{% endblock %}
+
+{% block body %}
+    <div id="app">
+        <book-list
+                :book-list="{{ bookList|serialize('json', {'groups': 'read_book'}) }}"
+        ></book-list>
+    </div>
+{% endblock %}

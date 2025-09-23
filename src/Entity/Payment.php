@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -62,6 +64,15 @@ class Payment
     #[ORM\Column(type: 'text', length: 255, nullable: true)]
     #[Groups(['read_payment','read_invoice'])]
     private ?string $comment= null;
+
+    #[ORM\OneToMany(mappedBy: 'payment', targetEntity: PaymentBookItem::class, cascade: ['persist','remove'], orphanRemoval: true)]
+    #[Groups(['read_payment','read_invoice'])]
+    private Collection $bookItems;
+
+    public function __construct()
+    {
+        $this->bookItems = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -185,6 +196,28 @@ class Payment
     public function setYear(int $year): self
     {
         $this->year = $year;
+        return $this;
+    }
+
+    public function getBookItems(): Collection
+    {
+        return $this->bookItems;
+    }
+
+    public function addBookItem(PaymentBookItem $item): self
+    {
+        if (!$this->bookItems->contains($item)) {
+            $this->bookItems->add($item);
+            $item->setPayment($this);
+        }
+        return $this;
+    }
+
+    public function removeBookItem(PaymentBookItem $item): self
+    {
+        if ($this->bookItems->removeElement($item) && $item->getPayment() === $this) {
+            $item->setPayment(null);
+        }
         return $this;
     }
 }

@@ -21,6 +21,9 @@ import NewStudyClass from './pages/studyClass/NewStudyClass.vue';
 import PlanningStudyClass from './pages/studyClass/PlanningStudyClass.vue';
 import SessionShow from './pages/session/SessionShow.vue';
 import SessionList from './pages/session/SessionList.vue';
+import BookEdit from './pages/book/BookEdit.vue';
+import BookList from './pages/book/BookList.vue';
+import BookNew from './pages/book/BookNew.vue';
 import RegistrationPageAcademicSupport from './pages/RegistrationPageAcademicSupport.vue';
 import RegistrationPageArabicCourse from './pages/RegistrationPageArabicCourse.vue';
 import RegistrationPageArabicCourseShow from './pages/RegistrationPageArabicCourseShow.vue';
@@ -69,6 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('RegistrationPageArabicCourse', RegistrationPageArabicCourse);
     app.component('RegistrationPageArabicCourseShow', RegistrationPageArabicCourseShow);
     app.component('FooterComponent', FooterComponent);
+    app.component('BookNew', BookNew);
+    app.component('BookList', BookList);
+    app.component('BookEdit', BookEdit);
 
     if (document.querySelector('#app')) {
         app.mount('#app');

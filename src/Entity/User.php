@@ -22,12 +22,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Groups(['read_user'])]
     private ?string $email = null;
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Groups(['read_user'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Groups(['read_user'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
@@ -37,7 +40,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(['read_study_class'])]
+    #[Groups(['read_study_class','read_user'])]
     private array $roles = [];
 
     /**

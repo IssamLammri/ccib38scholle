@@ -41,7 +41,7 @@ final class InvoiceController extends AbstractController
     #[Route('/all', name: 'all_invoices', options: ['expose' => true], methods: ['GET'])]
     public function getAllInvoices(): JsonResponse
     {
-        $allInvoices = $this->invoiceRepository->findAll();
+        $allInvoices = $this->invoiceRepository->findBy([], ['invoiceDate' => 'DESC']);
         return $this->json([
             'allInvoices' => $allInvoices,
         ], 200, [], ['groups' => 'read_invoice']);

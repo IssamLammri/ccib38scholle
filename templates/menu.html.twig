@@ -1,95 +1,493 @@
-<!-- menu.html.twig -->
-<div class="sidebar">
-    <div class="sidebar-header">
-        <img src="{{ asset('static/icons/logoccib38.webp') }}" alt="Logo">
-    </div>
-    <div class="sidebar-menu">
-        <ul class="list-unstyled" style="font-size: 16px">
-            {% if(is_granted('ROLE_ADMIN')) %}
-                <li>
-                    <a href="{{ path('user_index') }}">
-                        <i class="fas fa-chalkboard-teacher m-3"></i> {{ 'Utilisateurs'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_dashboard') }}">
-                        <i class="fa-solid fa-sliders m-3"></i> {{ 'Tableau de board'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_registers_academic_support') }}">
-                        <i class="fa-solid fa-users m-3"></i>{{ 'Les inscrits ( Soutient scolaire )'|trans }}
-                    </a>
-                </li>
-            {% endif %}
-            {% if(is_granted('ROLE_MANAGER')) %}
-                <li>
-                    <a href="{{ path('app_registers') }}">
-                        <i class="fa-solid fa-users m-3"></i>{{ 'Les inscrits ( Arabe )'|trans }}
-                    </a>
-                </li>
-            <!--<li>
-                    <a href="{{ path('app_planning_study_class') }}">
-                        <i class="fa-solid fa-users m-3"></i>{{ 'Planification'|trans }}
-                    </a>
-                </li>-->
-                <li>
-                    <a href="{{ path('app_teacher_index') }}">
-                        <i class="far fa-id-card m-3"></i> {{ 'Enseignants'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_room_index') }}">
-                        <i class="fas fa-door-open m-3"></i> {{ 'Salles'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_student_index') }}">
-                        <i class="fas fa-user-graduate m-3"></i> {{ 'Élèves'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_parent_entity_index') }}">
-                        <i class="fas fa-user-friends m-3"></i> {{ 'Parents'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_study_class_index') }}">
-                        <i class="fas fa-school m-3"></i> {{ 'Classes'|trans }}
-                    </a>
-                </li>
-            {% endif %}
-            {% if(is_granted('ROLE_TEACHER')) %}
+{# templates/_partials/menu.html.twig (version moderne & aérée) #}
 
-                <li>
-                    <a href="{{ path('app_session_index') }}">
-                        <i class="fas fa-chalkboard-teacher m-3"></i> {{ 'Sessions'|trans }}
-                    </a>
-                </li>
-            {% endif %}
-            {% if(is_granted('ROLE_MANAGER')) %}
-                <li>
-                    <a href="{{ path('payments_list') }}">
-                        <i class="fa-solid fa-dollar-sign m-3"></i> {{ 'Paymenets'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_invoice_index') }}">
-                        <i class="fa-solid fa-file-invoice m-3"></i> {{ 'Factures'|trans }}
-                    </a>
-                </li>
-            {% endif %}
-        </ul>
-    </div>
-    {% if(is_granted('ROLE_PARENT')) %}
-        <div class="sidebar-menu">
-            <ul class="list-unstyled" style="font-size: 16px">
-                    <li>
-                        <a href="{{ path('app_dashboard_parent') }}">
-                            <i class="fa-solid fa-sliders m-3"></i> {{ 'Tableau de board'|trans }}
-                        </a>
-                    </li>
-            </ul>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        /* Palette moderne et cohérente */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --bg-hover: #f1f5f9;
+        --bg-active: #e2e8f0;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --accent: #f6f6f6;
+        --accent-light: #85b7f4;
+        --border: #e2e8f0;
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --radius: 8px;
+        --radius-lg: 12px;
+    }
+
+    .modern-sidebar {
+        width: 250px;
+        height: 100vh;
+        background: var(--bg-primary);
+        border-right: 1px solid var(--border);
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header */
+    .sidebar-header {
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(135deg, var(--accent) 0%, #ccf1d5 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sidebar-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="white" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="white" opacity="0.1"/><circle cx="40" cy="80" r="1.5" fill="white" opacity="0.1"/></svg>');
+    }
+
+    .sidebar-header .logo-container {
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .sidebar-header .logo {
+        width: 90px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+    }
+
+    .sidebar-header .logo img {
+        max-width: 100px;
+        max-height: 100px;
+        object-fit: contain;
+    }
+
+    .sidebar-header .brand-info h3 {
+        color: black;
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    /* Menu */
+    .sidebar-menu {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 0;
+        list-style: none;
+    }
+
+    .sidebar-menu::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .sidebar-menu::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sidebar-menu::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+    }
+
+    .sidebar-menu::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+
+    .menu-header {
+        padding: 8px 24px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-top: 16px;
+    }
+
+    .menu-header:first-child {
+        margin-top: 0;
+    }
+
+    .sidebar-menu > li {
+        margin: 0 12px 4px;
+    }
+
+    .menu-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .menu-link:hover {
+        background: var(--bg-hover);
+        color: var(--accent);
+        transform: translateX(2px);
+    }
+
+    .menu-link.active {
+        background: var(--accent-light);
+        color: var(--accent);
+        font-weight: 600;
+    }
+
+    .menu-link.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 20px;
+        background: var(--accent);
+        border-radius: 0 2px 2px 0;
+    }
+
+    .menu-link i:first-child {
+        width: 20px;
+        height: 20px;
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: var(--text-secondary);
+        transition: color 0.2s ease;
+    }
+
+    .menu-link:hover i:first-child,
+    .menu-link.active i:first-child {
+        color: var(--accent);
+    }
+
+    /* Sous-menus */
+    .has-submenu .submenu-toggle {
+        position: relative;
+    }
+
+    .has-submenu .submenu-toggle .toggle-icon {
+        margin-left: auto;
+        font-size: 12px;
+        color: var(--text-muted);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .has-submenu.open > .submenu-toggle .toggle-icon {
+        transform: rotate(180deg);
+        color: var(--accent);
+    }
+
+    .submenu {
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin: 4px 0 8px 0;
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .has-submenu.open .submenu {
+        max-height: 400px;
+    }
+
+    .submenu li {
+        margin: 0 12px 2px;
+    }
+
+    .submenu a {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px 8px 48px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: var(--radius);
+        font-size: 13px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .submenu a:hover {
+        background: var(--bg-hover);
+        color: var(--accent);
+        padding-left: 50px;
+    }
+
+    .submenu a.active {
+        background: var(--accent-light);
+        color: var(--accent);
+        font-weight: 500;
+    }
+
+    .submenu a::before {
+        content: '';
+        position: absolute;
+        left: 32px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 4px;
+        background: var(--text-muted);
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+
+    .submenu a:hover::before,
+    .submenu a.active::before {
+        background: var(--accent);
+        transform: translateY(-50%) scale(1.2);
+    }
+
+    /* Animation d'entrée */
+    .sidebar-menu > li {
+        animation: slideInLeft 0.3s ease forwards;
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    .sidebar-menu > li:nth-child(1) { animation-delay: 0.1s; }
+    .sidebar-menu > li:nth-child(2) { animation-delay: 0.2s; }
+    .sidebar-menu > li:nth-child(3) { animation-delay: 0.3s; }
+    .sidebar-menu > li:nth-child(4) { animation-delay: 0.4s; }
+    .sidebar-menu > li:nth-child(5) { animation-delay: 0.5s; }
+    .sidebar-menu > li:nth-child(6) { animation-delay: 0.6s; }
+    .sidebar-menu > li:nth-child(7) { animation-delay: 0.7s; }
+    .sidebar-menu > li:nth-child(8) { animation-delay: 0.8s; }
+
+    @keyframes slideInLeft {
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* État de focus pour l'accessibilité */
+    .menu-link:focus,
+    .submenu a:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .modern-sidebar {
+            transform: translateX(-100%);
+        }
+
+        .modern-sidebar.mobile-open {
+            transform: translateX(0);
+        }
+    }
+</style>
+
+<nav class="sidebar modern-sidebar" role="navigation" aria-label="Menu principal">
+    <div class="sidebar-header">
+        <div class="logo-container">
+            <div class="logo">
+                <img src="{{ asset('static/icons/logoccib38.webp') }}" alt="Logo">
+            </div>
+            <div class="brand-info">
+                <h3>{{ 'Gestion Scolaire'|trans }}</h3>
+            </div>
         </div>
-    {% endif %}
-</div>
+    </div>
+
+    <ul class="sidebar-menu list-unstyled">
+
+        {# ======== DASHBOARD (Visible par presque tous) ======== #}
+        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') %}
+            <li>
+                <a href="{{ path('app_dashboard') }}" class="menu-link">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>{{ 'Tableau de bord'|trans }}</span>
+                </a>
+            </li>
+        {% elseif is_granted('ROLE_PARENT') %}
+            <li>
+                <a href="{{ path('app_dashboard_parent') }}" class="menu-link">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>{{ 'Tableau de bord'|trans }}</span>
+                </a>
+            </li>
+        {% endif %}
+
+
+        {# ======== SECTION ADMIN ======== #}
+        {% if is_granted('ROLE_ADMIN') %}
+            <li class="menu-header"><span>{{ 'Administration'|trans }}</span></li>
+            <li>
+                <a href="{{ path('user_index') }}" class="menu-link">
+                    <i class="fa-solid fa-users-cog"></i>
+                    <span>{{ 'Utilisateurs'|trans }}</span>
+                </a>
+            </li>
+        {% endif %}
+
+
+        {# ======== SECTION MANAGER (et un peu ADMIN) ======== #}
+        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_MANAGER') %}
+
+            <li class="menu-header"><span>{{ 'Gestion'|trans }}</span></li>
+
+            {# --- Sous-menu Inscriptions --- #}
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle menu-link">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>{{ 'Inscriptions'|trans }}</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </a>
+                <ul class="submenu list-unstyled">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li><a href="{{ path('app_registers_academic_support') }}">{{ 'Soutien scolaire'|trans }}</a></li>
+                    {% endif %}
+                    {% if is_granted('ROLE_MANAGER') %}
+                        <li><a href="{{ path('app_registers') }}">{{ 'Langue arabe'|trans }}</a></li>
+                    {% endif %}
+                </ul>
+            </li>
+
+            {# --- Sous-menu Pédagogie --- #}
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle menu-link">
+                    <i class="fa-solid fa-chalkboard-teacher"></i>
+                    <span>{{ 'Pédagogie'|trans }}</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </a>
+                <ul class="submenu list-unstyled">
+                    <li><a href="{{ path('app_teacher_index') }}">{{ 'Enseignants'|trans }}</a></li>
+                    <li><a href="{{ path('app_student_index') }}">{{ 'Élèves'|trans }}</a></li>
+                    <li><a href="{{ path('app_parent_entity_index') }}">{{ 'Parents'|trans }}</a></li>
+                    <li><a href="{{ path('app_study_class_index') }}">{{ 'Classes'|trans }}</a></li>
+                    <li><a href="{{ path('app_room_index') }}">{{ 'Salles'|trans }}</a></li>
+                    <li><a href="{{ path('app_book_list') }}">{{ 'Livres'|trans }}</a></li>
+                </ul>
+            </li>
+
+            {# --- Sous-menu Finances --- #}
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle menu-link">
+                    <i class="fa-solid fa-euro-sign"></i>
+                    <span>{{ 'Finances'|trans }}</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </a>
+                <ul class="submenu list-unstyled">
+                    <li><a href="{{ path('payments_list') }}">{{ 'Paiements'|trans }}</a></li>
+                    <li><a href="{{ path('app_invoice_index') }}">{{ 'Factures'|trans }}</a></li>
+                </ul>
+            </li>
+        {% endif %}
+
+
+        {# ======== SECTION ENSEIGNANT ======== #}
+        {% if is_granted('ROLE_TEACHER') %}
+            <li class="menu-header"><span>{{ 'Mon Espace'|trans }}</span></li>
+            <li>
+                <a href="{{ path('app_session_index') }}" class="menu-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>{{ 'Mes Sessions'|trans }}</span>
+                </a>
+            </li>
+        {% endif %}
+
+        {# ======== SECTION PARENT ======== #}
+        {% if is_granted('ROLE_PARENT') %}
+            <li class="menu-header"><span>{{ 'Mon Espace Parent'|trans }}</span></li>
+            <li>
+                <a href="{{ path('app_dashboard_parent') }}" class="menu-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>{{ 'Tableau de board'|trans }}</span>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const submenuToggles = document.querySelectorAll('.modern-sidebar .submenu-toggle');
+
+        submenuToggles.forEach(toggle => {
+            toggle.addEventListener('click', function (event) {
+                event.preventDefault(); // Empêche la navigation pour le lien parent
+
+                // Le <li> parent
+                const parentLi = this.parentElement;
+
+                // Le <ul> du sous-menu
+                const submenu = this.nextElementSibling;
+
+                // Fermer les autres sous-menus ouverts
+                document.querySelectorAll('.modern-sidebar .has-submenu.open').forEach(openSubmenu => {
+                    if (openSubmenu !== parentLi) {
+                        openSubmenu.classList.remove('open');
+                    }
+                });
+
+                // Ouvrir ou fermer le sous-menu cliqué
+                parentLi.classList.toggle('open');
+            });
+        });
+
+        // Gestion du lien actif en fonction de l'URL actuelle
+        const currentPath = window.location.pathname;
+        const menuLinks = document.querySelectorAll('.modern-sidebar a[href]');
+
+        menuLinks.forEach(link => {
+            const href = link.getAttribute('href');
+
+            // Vérifier si le href correspond au chemin actuel
+            if (href && href !== '#' && currentPath.includes(href.replace(window.location.origin, ''))) {
+                link.classList.add('active');
+
+                // Si c'est un lien de sous-menu, ouvrir le parent
+                const parentSubmenu = link.closest('.submenu');
+                if (parentSubmenu) {
+                    const parentLi = parentSubmenu.parentElement;
+                    parentLi.classList.add('open');
+                    // Activer aussi le lien parent
+                    parentLi.querySelector('.submenu-toggle').classList.add('active');
+                }
+            }
+        });
+
+        // Amélioration de l'accessibilité clavier
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                const focusedElement = document.activeElement;
+                if (focusedElement && focusedElement.classList.contains('submenu-toggle')) {
+                    event.preventDefault();
+                    focusedElement.click();
+                }
+            }
+        });
+    });
+</script>

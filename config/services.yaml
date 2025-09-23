@@ -2,6 +2,7 @@
 
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
+    book_images_dir: '%kernel.project_dir%/public/uploads/books'
 
 services:
     _defaults:
