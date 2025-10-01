@@ -38,7 +38,7 @@ class DashboardParentController extends AbstractController
     ){
     }
 
-    #[Route('/dashboard', name: 'app_dashboard_parent')]
+    #[Route('/dashboard', name: 'app_dashboard_parent', options: ['expose' => true] )]
     public function dashboard(): Response
     {
         return $this->render('parentsAccess/dashboard.html.twig', [

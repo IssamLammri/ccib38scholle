@@ -277,8 +277,8 @@ export default {
 
       this.isUpdatingId = reg.id;
       const url =
-          this.$routing?.generate?.('app_registration_academic_support_update_status', { id: reg.id }) ??
-          `/api/inscription-requests/${reg.id}/status`;
+          this.$routing?.generate?.('app_registers_academic_support_update_status', { id: reg.id }) ??
+          `/soutien-scolaire/registers/${reg.id}/status`;
 
       this.axios
           .patch(url, { status: newCode })

@@ -179,11 +179,13 @@
     <alert v-if="messageAlert" :text="messageAlert" :type="typeAlert" />
 
     <!-- Actions -->
+    <!-- Actions -->
     <div class="invoice-actions">
-      <div @click="generatePDF" class="d-flex align-items-center btn btn-primary" role="button">
-        <img src="/static/icons/downloads.webp" alt="" />
-        <span class="d-sm-none d-md-block ms-2">Télécharger PDF</span>
+      <div @click="printInvoice" class="d-flex align-items-center btn btn-primary" role="button">
+        <img src="/static/icons/printer.webp" alt="" />
+        <span class="d-sm-none d-md-block ms-2">Imprimer</span>
       </div>
+
       <div class="d-flex align-items-center btn btn-primary" role="button"
            data-bs-toggle="modal" data-bs-target="#sendInvoiceModal">
         <img src="/static/icons/email.webp" alt="" />
@@ -246,6 +248,36 @@ export default {
     },
   },
   methods: {
+    printInvoice() {
+      const el = document.getElementById("invoice-content");
+      if (!el) return;
+
+      // Récupère les liens et styles de la page
+      const styles = Array.from(document.querySelectorAll("link[rel=stylesheet], style"))
+          .map(node => node.outerHTML)
+          .join("\n");
+
+      const w = window.open("", "_blank");
+      w.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Facture ${this.invoice?.id ?? ""}</title>
+        ${styles}
+      </head>
+      <body>
+        ${el.outerHTML}
+      </body>
+    </html>
+  `);
+      w.document.close();
+      w.onload = () => {
+        w.focus();
+        w.print();
+        w.close();
+      };
+    },
     hasSubtotals(k) {
       return Number(this.subtotals[k] || 0) > 0;
     },
@@ -366,4 +398,8 @@ export default {
 
 .arab-service { background-color:#e8f8f5; }
 .soutien-service { background-color:#fbe9e7; }
+@media print {
+  .invoice-actions, .modern-alert, .alert, [role="button"] { display: none !important; }
+  .invoice-container { box-shadow: none !important; border: 0 !important; }
+}
 </style>

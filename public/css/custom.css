@@ -193,3 +193,64 @@
     word-wrap: break-word;
     white-space: nowrap;
 }
+/* largeur de la sidebar (à adapter) */
+:root {
+    --sidebar-width: 400px;
+}
+
+/* Assure une mise en page fluide */
+html, body {
+    height: 100%;
+}
+#app {
+    min-height: 100vh;
+}
+
+/* Le composant sidebar à gauche */
+menu-list {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;           /* occupe toute la hauteur */
+    width: var(--sidebar-width);
+    z-index: 1000;       /* au-dessus du fond, sous les modales */
+}
+
+/* Contenu principal — mobile d'abord: prend 100% */
+.content {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding: 16px;
+    box-sizing: border-box;
+    min-height: 100vh;   /* plein écran en hauteur */
+}
+
+/* Desktop: réserve l'espace de la sidebar */
+@media (min-width: 1024px) {
+    .content {
+        margin-left: var(--sidebar-width) !important;
+        width: calc(100% - var(--sidebar-width)) !important;
+        padding: 32px;
+    }
+    .main-content {
+        margin-top: 50px;  /* si tu veux garder ce décalage */
+        padding: 0;
+    }
+}
+
+/* (Optionnel) si ta sidebar est repliable à une largeur plus petite */
+.sidebar-collapsed menu-list {
+    width: 72px;
+}
+.sidebar-collapsed .content {
+    margin-left: 72px !important;
+    width: calc(100% - 72px) !important;
+}
+
+/* (Optionnel) éviter le scroll horizontal si tu as beaucoup de nowrap dans les tableaux */
+@media (max-width: 1023px) {
+    .table-responsive {
+        overflow-x: auto;
+    }
+}
+

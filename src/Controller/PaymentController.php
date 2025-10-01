@@ -37,7 +37,7 @@ class PaymentController extends AbstractController
     ){
     }
 
-    #[Route('/list', name: 'payments_list')]
+    #[Route('/list', name: 'payments_list', options: ['expose' => true])]
     public function allPayment(Request $request): Response
     {
         $allPayments = $this->paymentRepository->findAll();
@@ -97,6 +97,7 @@ class PaymentController extends AbstractController
                     $payment->setServiceType($serviceType);
                     $payment->setComment($data['comment'] ?? null);
                     $payment->setInvoice($invoice);
+                    $payment->setProcessedBy($this->getUser());
 
                     $this->entityManager->persist($payment);
                 }
@@ -144,6 +145,7 @@ class PaymentController extends AbstractController
                             $payment->setYear($selectedYear);
                             $payment->setComment($data['comment'] ?? null);
                             $payment->setInvoice($invoice);
+                            $payment->setProcessedBy($this->getUser());
 
                             $this->entityManager->persist($payment);
                         }
@@ -185,6 +187,7 @@ class PaymentController extends AbstractController
                     $item->setUnitPrice(number_format($unit, 2, '.', ''));
                     $item->setLineTotal(number_format($total, 2, '.', ''));
                     $payment->addBookItem($item);
+                    $payment->setProcessedBy($this->getUser());
 
                     $sum += $total;
                 }

@@ -70,6 +70,11 @@
         </div>
 
         <div class="col-md-2">
+          <label class="form-label">Agent (caissier)</label>
+          <input type="text" class="form-control" v-model.trim="agentFilter" placeholder="Nom de l'agent" />
+        </div>
+
+        <div class="col-md-2">
           <label class="form-label">Méthode</label>
           <select v-model="methodFilter" class="form-select">
             <option value="all">Toutes</option>
@@ -158,6 +163,7 @@
             <th>Élève</th>
             <th>Classe</th>
             <th>Méthode</th>
+            <th>Agent</th> <!-- ⬅️ -->
             <th>Mois</th>
             <th></th>
           </tr>
@@ -177,6 +183,7 @@
               <span v-else>—</span>
             </td>
             <td>{{ p.paymentType }}</td>
+            <td>{{ p.processedBy?.fullName || (p.processedBy ? (p.processedBy.firstName + ' ' + p.processedBy.lastName) : '—') }}</td> <!-- ⬅️ -->
             <td>{{ p.month || '—' }}</td>
             <td class="text-end">
               <button v-if="isAdmin" class="btn btn-sm btn-outline-danger" @click="deletePayment(p)">Supprimer</button>
@@ -199,24 +206,20 @@
             <th>Montant</th>
             <th>Parent</th>
             <th>Élève</th>
-            <th>Classe</th>
-            <th>Spécialité</th>
             <th>Méthode</th>
-            <th>Mois</th>
+            <th>Agent</th> <!-- ⬅️ -->
             <th></th>
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(p, i) in filteredPayments.filter(p => p.serviceType==='soutien')" :key="p.id || i" class="row-soutien">
+          <tr v-for="(p, i) in filteredPayments.filter(p => p.serviceType==='arabe')" :key="p.id || i" class="row-arabe">
             <td>{{ i + 1 }}</td>
             <td>{{ d(p.paymentDate) }}</td>
             <td>{{ money(p.amountPaid) }}</td>
             <td>{{ p.parent?.fullNameParent }}</td>
             <td>{{ p.student?.firstName }} {{ p.student?.lastName }}</td>
-            <td>{{ p.studyClass?.name || '—' }}</td>
-            <td>{{ p.studyClass?.speciality || '—' }}</td>
             <td>{{ p.paymentType }}</td>
-            <td>{{ p.month || '—' }}</td>
+            <td>{{ p.processedBy?.fullName || (p.processedBy ? (p.processedBy.firstName + ' ' + p.processedBy.lastName) : '—') }}</td> <!-- ⬅️ -->
             <td class="text-end">
               <button class="btn btn-sm btn-outline-danger" @click="deletePayment(p)">Supprimer</button>
             </td>
@@ -232,21 +235,32 @@
           <tr>
             <th>#</th>
             <th>Date</th>
-            <th>Montant</th>
             <th>Parent</th>
             <th>Élève</th>
             <th>Méthode</th>
+            <th>Agent</th> <!-- ⬅️ -->
+            <th>Montant</th>
+            <th>Articles</th>
             <th></th>
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(p, i) in filteredPayments.filter(p => p.serviceType==='arabe')" :key="p.id || i" class="row-arabe">
+          <tr v-for="(p, i) in filteredPayments.filter(p => p.serviceType==='livres')" :key="p.id || i" class="row-livres">
             <td>{{ i + 1 }}</td>
             <td>{{ d(p.paymentDate) }}</td>
-            <td>{{ money(p.amountPaid) }}</td>
             <td>{{ p.parent?.fullNameParent }}</td>
             <td>{{ p.student?.firstName }} {{ p.student?.lastName }}</td>
             <td>{{ p.paymentType }}</td>
+            <td>{{ p.processedBy?.fullName || (p.processedBy ? (p.processedBy.firstName + ' ' + p.processedBy.lastName) : '—') }}</td> <!-- ⬅️ -->
+            <td>{{ money(p.amountPaid) }}</td>
+            <td>
+              <div v-if="(p.bookItems || []).length">
+                <div v-for="(bi, j) in p.bookItems" :key="`bi-${i}-${j}`" class="small">
+                  • {{ bi.book?.name || 'Livre' }} × {{ bi.quantity }} — {{ money(bi.lineTotal) }}
+                </div>
+              </div>
+              <span v-else class="text-muted">—</span>
+            </td>
             <td class="text-end">
               <button class="btn btn-sm btn-outline-danger" @click="deletePayment(p)">Supprimer</button>
             </td>
@@ -335,6 +349,7 @@ export default {
       methodFilter: "all",
       monthFilter: "all",
       yearFilter: "all",
+      agentFilter: "",
       minAmount: null,
       maxAmount: null,
 
@@ -365,15 +380,36 @@ export default {
     },
     filteredPayments() {
       const s = this.q.toLowerCase();
+      const agentS = this.agentFilter.toLowerCase();
+
       return this.payments.filter(p => {
-        // texte libre
+        // texte libre (inclut maintenant l'agent)
         const hay = [
           p.parent?.fullNameParent,
           p.paymentType,
           p.student?.firstName, p.student?.lastName,
-          p.studyClass?.name, p.studyClass?.speciality
-        ].map(x => (x || "").toString().toLowerCase()).join(" ");
+          p.studyClass?.name, p.studyClass?.speciality,
+          // ⬇️ agent
+          p.processedBy?.fullName,
+          p.processedBy?.firstName,
+          p.processedBy?.lastName,
+        ]
+            .map(x => (x || "").toString().toLowerCase())
+            .join(" ");
+
         if (s && !hay.includes(s)) return false;
+
+        // ⬇️ filtre dédié agent (si renseigné)
+        if (agentS) {
+          const agentHay = [
+            p.processedBy?.fullName,
+            p.processedBy?.firstName,
+            p.processedBy?.lastName,
+          ]
+              .map(x => (x || "").toString().toLowerCase())
+              .join(" ");
+          if (!agentHay.includes(agentS)) return false;
+        }
 
         // type
         if (this.typeFilter !== "all" && p.serviceType !== this.typeFilter) return false;
@@ -385,18 +421,18 @@ export default {
         const y = this.safeYear(p.paymentDate);
         if (this.yearFilter !== "all" && y !== this.yearFilter) return false;
 
-        // mois (uniquement utile surtout pour soutien, mais on laisse générique)
+        // mois
         if (this.monthFilter !== "all") {
-          const m = p.month || this.months[(new Date(p.paymentDate).getMonth())] || null;
+          const m = p.month || this.months[new Date(p.paymentDate).getMonth()] || null;
           if (m !== this.monthFilter) return false;
         }
 
         // montant
         const amt = Number(p.amountPaid || 0);
         if (this.minAmount != null && amt < this.minAmount) return false;
-        return !(this.maxAmount != null && amt > this.maxAmount);
+        if (this.maxAmount != null && amt > this.maxAmount) return false;
 
-
+        return true;
       });
     },
     topTypeLabel() {
@@ -541,9 +577,13 @@ export default {
     },
     exportCsv() {
       const rows = [
-        ["Date","Type","Montant","Parent","Élève","Classe","Spécialité","Méthode","Mois","Année"]
+        ["Date","Type","Montant","Parent","Élève","Classe","Spécialité","Méthode","Agent","Mois","Année"] // ⬅️ Agent ajouté
       ];
       this.filteredPayments.forEach(p => {
+        const agentName = p.processedBy?.fullName
+            || [p.processedBy?.firstName, p.processedBy?.lastName].filter(Boolean).join(" ")
+            || "";
+
         rows.push([
           this.d(p.paymentDate),
           this.labelType(p.serviceType),
@@ -553,6 +593,7 @@ export default {
           p.studyClass?.name || "",
           p.studyClass?.speciality || "",
           p.paymentType || "",
+          agentName, // ⬅️
           p.month || "",
           this.safeYear(p.paymentDate) || ""
         ]);

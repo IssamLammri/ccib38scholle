@@ -24,7 +24,7 @@ class UserController extends AbstractController
     {
     }
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/', name: 'user_index', methods: ['GET'])]
+    #[Route('/', name: 'user_index', options: ['expose' => true], methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
         $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
@@ -60,7 +60,7 @@ class UserController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/user/send-email/{id}', name: 'user_send_email', methods: ['GET'])]
+    #[Route('/user/send-email/{id}', name: 'user_send_email', options: ['expose' => true], methods: ['GET'])]
     public function sendEmail(int $id, EntityManagerInterface $entityManager, MailService $mailService): Response
     {
         $user = $entityManager->getRepository(User::class)->find($id);
@@ -90,7 +90,7 @@ class UserController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/edit/{id}', name: 'user_edit', methods: ['GET', 'POST'])]
+    #[Route('/edit/{id}', name: 'user_edit', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function edit(Request $request, User $user, UserPasswordHasherInterface $passwordHashed, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(UserEditFormType::class, $user);
@@ -124,7 +124,7 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/verify-account', name: 'verify_account', methods: ['GET'])]
+    #[Route('/verify-account', name: 'verify_account', options: ['expose' => true], methods: ['GET'])]
     public function verifyAccount(Request $request, EntityManagerInterface $entityManager): Response
     {
         $token = $request->query->get('token');
@@ -147,7 +147,7 @@ class UserController extends AbstractController
         return $this->redirectToRoute('reset_password', ['id' => $user->getId(), 'token' => $token]);
     }
 
-    #[Route('/reset-password/{token}', name: 'reset_password', methods: ['GET', 'POST'])]
+    #[Route('/reset-password/{token}', name: 'reset_password', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function resetPassword(string $token, Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $user = $entityManager->getRepository(User::class)->findOneBy(['verificationToken' => $token]);
@@ -184,7 +184,7 @@ class UserController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/delete/{id}', name: 'user_delete', methods: ['POST'])]
+    #[Route('/delete/{id}', name: 'user_delete', options: ['expose' => true], methods: ['POST'])]
     public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
@@ -201,7 +201,7 @@ class UserController extends AbstractController
         return $this->redirectToRoute('user_index');
     }
 
-    #[Route('/forgot-password', name: 'forgot_password', methods: ['GET', 'POST'])]
+    #[Route('/forgot-password', name: 'forgot_password', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function forgotPassword(
         Request $request,
         EntityManagerInterface $entityManager,

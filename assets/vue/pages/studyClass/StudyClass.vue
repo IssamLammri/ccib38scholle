@@ -1,5 +1,6 @@
 <template>
   <div class="modern-container">
+
     <!-- Navigation flottante -->
     <div class="floating-nav">
       <a :href="$routing.generate('app_study_class_index')" class="nav-btn back-btn">
@@ -8,6 +9,10 @@
       </a>
 
       <div class="action-buttons">
+        <button @click="printBooksReport" class="nav-btn print-btn">
+          <i class="fas fa-print"></i>
+          <span>Imprimer Livres</span>
+        </button>
         <button @click="printClassReport" class="nav-btn print-btn">
           <i class="fas fa-print"></i>
           <span>Imprimer</span>
@@ -176,6 +181,8 @@
               <th><i class="fas fa-user-circle"></i> Prénom</th>
               <th><i class="fas fa-birthday-cake"></i> Naissance</th>
               <th><i class="fas fa-layer-group"></i> Niveau</th>
+              <th><i class="fas fa-book"></i> Livres</th>
+
               <th><i class="fas fa-toggle-on"></i> Statut</th>
               <th><i class="fas fa-cog"></i> Actions</th>
             </tr>
@@ -185,6 +192,7 @@
                 :key="studentClassRegistered.id"
                 class="student-row"
                 :class="{ 'inactive-student': !studentClassRegistered.active }">
+
               <td class="id-cell">{{ studentClassRegistered.student.id }}</td>
               <td class="name-cell">
                 <div class="student-avatar">
@@ -195,6 +203,21 @@
               <td>{{ studentClassRegistered.student.firstName }}</td>
               <td>{{ new Date(studentClassRegistered.student.birthDate).toLocaleDateString('fr-FR') }}</td>
               <td><span class="level-badge">{{ studentClassRegistered.student.levelClass }}</span></td>
+
+              <!-- ⬇️ AJOUT -->
+              <td>
+                <span class="books-badge tooltip-badge">
+                  {{ booksIndex[studentClassRegistered.id]?.count ?? 0 }}
+                  <span class="tooltip-content" v-if="booksIndex[studentClassRegistered.id]?.count">
+                    <strong>Livres :</strong><br>
+                    <span v-for="(t, i) in booksIndex[studentClassRegistered.id].list" :key="i">
+                      • {{ t }}<br>
+                    </span>
+                  </span>
+                </span>
+              </td>
+              <!-- ⬆️ AJOUT -->
+
               <td>
                 <label class="status-switch">
                   <input type="checkbox"
@@ -213,6 +236,7 @@
                 </button>
               </td>
             </tr>
+
 
             <tr v-if="!filteredStudents.length" class="empty-state">
               <td colspan="7">
@@ -302,8 +326,8 @@ export default {
   components: { Alert, NewStudentToClassModal },
   props: {
     studyClass: { type: Object, required: true },
-    studentsInStudyClass: { type: Object, required: true },
-    studentsNotInStudyClass: { type: Object, required: true }
+    studentsInStudyClass: { type: Array, required: true },        // ⬅️ Array
+    studentsNotInStudyClass: { type: Array, required: true }       // ⬅️ Array
   },
   data() {
     return {
@@ -318,9 +342,124 @@ export default {
   computed: {
     filteredStudents() {
       return this.localStudentsInStudyClass.filter(s => s.active === this.filterActive);
+    },
+    booksIndex() {
+      // indexe { registrationId: { count, list } } pour tooltip + impression
+      const idx = {};
+      for (const r of this.localStudentsInStudyClass) {
+        const payments = r?.student?.payments || [];
+        const names = payments
+            .filter(p => p && p.serviceType === 'livres')
+            .flatMap(p => Array.isArray(p.bookItems) ? p.bookItems : [])
+            .map(bi => bi?.book?.name)
+            .filter(Boolean);
+        idx[r.id] = { count: names.length, list: names };
+      }
+      return idx;
     }
   },
   methods: {
+    printBooksReport() {
+      const html = this.generateBooksPrintContent();
+      const w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
+      w.onload = function () {
+        w.print();
+        w.close();
+      };
+    },
+
+    generateBooksPrintContent() {
+      const currentDate = new Date().toLocaleDateString('fr-FR');
+
+      // On prend tous les élèves (actifs/inactifs) pour l’attribution ? -> ici: tous
+      const registrations = this.localStudentsInStudyClass;
+
+      const rows = registrations.map(r => {
+        const names = (r?.student?.payments || [])
+            .filter(p => p && p.serviceType === 'livres')
+            .flatMap(p => Array.isArray(p.bookItems) ? p.bookItems : [])
+            .map(bi => bi?.book?.name)
+            .filter(Boolean);
+
+        return `
+        <tr>
+          <td>${r.student.lastName?.toUpperCase() || ''}</td>
+          <td>${r.student.firstName || ''}</td>
+          <td>${names.length}</td>
+          <td>${names.length ? names.join(' | ') : '—'}</td>
+        </tr>
+      `;
+      }).join('');
+
+      return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Livres à attribuer - ${this.studyClass?.name || ''}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; color: #333; }
+          h1 { margin: 0 0 4px; color: #333; }
+          .sub { color: #666; margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+          th { background: #f6f7ff; }
+          tr:nth-child(even){ background:#fafbff; }
+          .footer { margin-top: 24px; font-size:12px; color:#888; text-align:center; }
+          @media print {
+            body { margin: 8mm; }
+            th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Livres à attribuer</h1>
+        <div class="sub">
+          Classe: <strong>${this.studyClass?.name || ''}</strong>
+          &nbsp;•&nbsp; Spécialité: ${this.studyClass?.speciality || ''}
+          &nbsp;•&nbsp; Généré le ${currentDate}
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Prénom</th>
+              <th>Nb</th>
+              <th>Titres</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+
+        <div class="footer">Document livres — ${currentDate}</div>
+      </body>
+      </html>
+    `;
+    },
+    extractBookNames(payments = []) {
+      // récupère tous les noms de livres depuis les paiements de type "livres"
+      return payments
+          .filter(p => p && p.serviceType === 'livres')
+          .flatMap(p => Array.isArray(p.bookItems) ? p.bookItems : [])
+          .map(bi => bi?.book?.name)
+          .filter(Boolean);
+    },
+
+    countBooks(studentClassRegistered) {
+      const payments = studentClassRegistered?.student?.payments || [];
+      return this.extractBookNames(payments).length;
+    },
+
+    listBooks(studentClassRegistered) {
+      const payments = studentClassRegistered?.student?.payments || [];
+      const names = this.extractBookNames(payments);
+      return names.length ? names.join(', ') : '—';
+    },
     formatTime(timeString) {
       if (!timeString) return '';
       const date = new Date(timeString);
@@ -1340,4 +1479,80 @@ input:checked + .switch-slider:before {
     padding: 1.5rem;
   }
 }
+.books-badge {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--success-gradient);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(17, 153, 142, 0.25);
+}
+
+.books-cell {
+  max-width: 340px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Badge nombre + tooltip */
+.tooltip-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(58, 123, 213, 0.25);
+  cursor: default;
+}
+
+/* Contenu du tooltip (caché par défaut) */
+.tooltip-badge .tooltip-content {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  bottom: calc(100% + 10px);
+  min-width: 260px;
+  max-width: 420px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #111827;
+  color: #f9fafb;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s ease, transform .2s ease, visibility .2s;
+  white-space: normal;
+  z-index: 20;
+}
+
+/* Petite flèche */
+.tooltip-badge .tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: #111827 transparent transparent transparent;
+}
+
+/* Affichage au survol */
+.tooltip-badge:hover .tooltip-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
 </style>

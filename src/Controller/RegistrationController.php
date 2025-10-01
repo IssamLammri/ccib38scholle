@@ -32,7 +32,7 @@ class RegistrationController extends AbstractController
     ){
     }
 
-    #[Route('/register', name: 'app_register')]
+    #[Route('/register', name: 'app_register', options: ['expose' => true])]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager): Response
     {
         $user = new User();
@@ -66,7 +66,7 @@ class RegistrationController extends AbstractController
         ]);
     }
 
-    #[Route('/verify/email', name: 'app_verify_email')]
+    #[Route('/verify/email', name: 'app_verify_email', options: ['expose' => true])]
     public function verifyUserEmail(Request $request, TranslatorInterface $translator): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
@@ -86,7 +86,7 @@ class RegistrationController extends AbstractController
         return $this->redirectToRoute('app_register');
     }
 
-    #[Route('/registers', name: 'app_registers')]
+    #[Route('/registers', name: 'app_registers', options: ['expose' => true])]
     public function registers(): Response
     {
         return $this->render('registration/list.html.twig', [

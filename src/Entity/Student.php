@@ -62,6 +62,7 @@ class Student
     private ?ParentEntity $parent = null;
 
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'student')]
+    #[Groups(['read_student_class_registered'])]
     private Collection $payments;
 
     #[ORM\OneToMany(targetEntity: StudentClassRegistered::class, mappedBy: 'student')]

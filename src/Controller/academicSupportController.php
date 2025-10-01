@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\AcademicSupportRegistration;
 use App\Model\ApiResponseTrait;
 use App\Repository\AcademicSupportRegistrationRepository;
 use App\Service\AcademicSupportRegistrationService;
@@ -113,5 +114,44 @@ class academicSupportController extends AbstractController
             [],
             ['groups' => ['read_list_registration_academic_support']]
         );
+    }
+
+    #[Route('/registers/{id}/status', name: 'app_registers_academic_support_update_status', options: ['expose' => true], methods: ['PATCH', 'POST'])]
+    public function updateRegistrationStatus(int $id, Request $request): JsonResponse
+    {
+        $registration = $this->academicSupportRegistrationRepository->find($id);
+        if (!$registration) {
+            return $this->json([
+                'success' => false,
+                'error'   => 'NOT_FOUND',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $status  = $payload['status'] ?? null;
+
+        $allowedStatuses = [
+            AcademicSupportRegistration::EN_COURS,
+            AcademicSupportRegistration::INSCRIT,
+            AcademicSupportRegistration::ANNULE,
+        ];
+
+        if (!\in_array($status, $allowedStatuses, true)) {
+            return $this->json([
+                'success' => false,
+                'error'   => 'INVALID_STATUS',
+                'allowed' => $allowedStatuses,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $registration->setStatus($status);
+        $registration->setUpdatedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'id'      => $registration->getId(),
+            'status'  => $registration->getStatus(),
+        ], Response::HTTP_OK);
     }
 }

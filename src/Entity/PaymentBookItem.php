@@ -12,7 +12,7 @@ class PaymentBookItem
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment','read_invoice','read_student_class_registered'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Payment::class, inversedBy: 'bookItems')]
@@ -21,7 +21,7 @@ class PaymentBookItem
 
     #[ORM\ManyToOne(targetEntity: Book::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment','read_invoice','read_student_class_registered'])]
     private ?Book $book = null;
 
     // quantité achetée

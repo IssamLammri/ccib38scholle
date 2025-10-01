@@ -22,6 +22,7 @@ import PlanningStudyClass from './pages/studyClass/PlanningStudyClass.vue';
 import SessionShow from './pages/session/SessionShow.vue';
 import SessionList from './pages/session/SessionList.vue';
 import BookEdit from './pages/book/BookEdit.vue';
+import MenuList from './pages/MenuList.vue';
 import BookList from './pages/book/BookList.vue';
 import BookNew from './pages/book/BookNew.vue';
 import RegistrationPageAcademicSupport from './pages/RegistrationPageAcademicSupport.vue';
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('ListPayments', ListPayments);
     app.component('ListInvoice', ListInvoice);
     app.component('NewSession', NewSession);
+    app.component('MenuList', MenuList);
     app.component('DashboardParent', DashboardParent);
     app.component('Dashboard', Dashboard);
     app.component('RegistrationList', RegistrationList);

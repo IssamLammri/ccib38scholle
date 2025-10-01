@@ -34,14 +34,14 @@ class HomeController extends AbstractController
         private SmsService $smsService,
     ){
     }
-    #[Route('/', name: 'app_home')]
+    #[Route('/', name: 'app_home', options: ['expose' => true])]
     public function index(): Response
     {
         return $this->redirectToRoute('app_login');
     }
 
 
-    #[Route('/dashboard', name: 'app_dashboard')]
+    #[Route('/dashboard', name: 'app_dashboard', options: ['expose' => true])]
     public function dashboard(): Response
     {
         return $this->render('home/index.html.twig', [
@@ -222,7 +222,7 @@ class HomeController extends AbstractController
 
 
 
-    #[Route('/new', name: 'app_new_page')]
+    #[Route('/new', name: 'app_new_page', options: ['expose' => true])]
     public function newPage(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');

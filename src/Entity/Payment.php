@@ -13,7 +13,7 @@ class Payment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_payment'])]
+    #[Groups(['read_payment','read_student_class_registered'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: ParentEntity::class)]
@@ -36,7 +36,7 @@ class Payment
     private ?string $amountPaid = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard','read_student_class_registered'])]
     private ?string $serviceType = null;
 
     #[ORM\Column(type: 'date')]
@@ -65,9 +65,15 @@ class Payment
     #[Groups(['read_payment','read_invoice'])]
     private ?string $comment= null;
 
-    #[ORM\OneToMany(mappedBy: 'payment', targetEntity: PaymentBookItem::class, cascade: ['persist','remove'], orphanRemoval: true)]
-    #[Groups(['read_payment','read_invoice'])]
+    #[ORM\OneToMany(targetEntity: PaymentBookItem::class, mappedBy: 'payment', cascade: ['persist','remove'], orphanRemoval: true)]
+    #[Groups(['read_payment','read_invoice','read_student_class_registered'])]
     private Collection $bookItems;
+
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard','read_student_class_registered'])]
+    private ?User $processedBy = null;
 
     public function __construct()
     {
@@ -218,6 +224,17 @@ class Payment
         if ($this->bookItems->removeElement($item) && $item->getPayment() === $this) {
             $item->setPayment(null);
         }
+        return $this;
+    }
+
+    public function getProcessedBy(): ?User
+    {
+        return $this->processedBy;
+    }
+
+    public function setProcessedBy(?User $user): self
+    {
+        $this->processedBy = $user;
         return $this;
     }
 }

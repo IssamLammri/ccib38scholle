@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/room')]
 class RoomController extends AbstractController
 {
-    #[Route('/', name: 'app_room_index', methods: ['GET'])]
+    #[Route('/', name: 'app_room_index', options: ['expose' => true], methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
         $page = $request->query->getInt('page', 1); // Current page, default is 1
@@ -49,7 +49,7 @@ class RoomController extends AbstractController
     }
 
 
-    #[Route('/new', name: 'app_room_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'app_room_new', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $room = new Room();
@@ -69,7 +69,7 @@ class RoomController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_room_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_room_show', options: ['expose' => true], methods: ['GET'])]
     public function show(Room $room): Response
     {
         return $this->render('room/show.html.twig', [
@@ -77,7 +77,7 @@ class RoomController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_room_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'app_room_edit', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function edit(Request $request, Room $room, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(RoomType::class, $room);
@@ -95,7 +95,7 @@ class RoomController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_room_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_room_delete', options: ['expose' => true], methods: ['POST'])]
     public function delete(Request $request, Room $room, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$room->getId(), $request->getPayload()->getString('_token'))) {
