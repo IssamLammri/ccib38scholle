@@ -138,20 +138,95 @@ class SendAcademicSupportNewsletterCommand extends Command
             }
 
             // Le template gère l’URL d’inscription par défaut, on ne passe rien ici.
+            $slots = [
+                [
+                    'name'       => 'Collège Anglais',
+                    'speciality' => 'Anglais',
+                    'day'        => 'Mercredi',
+                    'start'      => '14:00',
+                    'end'        => '15:30',
+                ],
+                [
+                    'name'       => 'Collège Math',
+                    'speciality' => 'Math',
+                    'day'        => 'Dimanche',
+                    'start'      => '13:30',
+                    'end'        => '15:00',
+                ],
+                [
+                    'name'       => 'Collège Français',
+                    'speciality' => 'Français',
+                    'day'        => 'Dimanche',
+                    'start'      => '15:00',
+                    'end'        => '16:30',
+                ],
+                [
+                    'name'       => 'Lycéens Math',
+                    'speciality' => 'Math',
+                    'day'        => 'Samedi',
+                    'start'      => '13:30',
+                    'end'        => '15:00',
+                ],
+                [
+                    'name'       => 'Lycéens Français',
+                    'speciality' => 'Français',
+                    'day'        => 'Samedi',
+                    'start'      => '15:00',
+                    'end'        => '16:30',
+                ],
+                [
+                    'name'       => 'Primaire Français',
+                    'speciality' => 'Français',
+                    'day'        => 'Dimanche',
+                    'start'      => '13:30',
+                    'end'        => '15:00',
+                ],
+                [
+                    'name'       => 'Primaire Math',
+                    'speciality' => 'Math',
+                    'day'        => 'Dimanche',
+                    'start'      => '15:00',
+                    'end'        => '16:30',
+                ],
+                [
+                    'name'       => 'SVT Lycée',
+                    'speciality' => 'SVT',
+                    'day'        => 'Samedi',
+                    'start'      => '09:00',
+                    'end'        => '10:30',
+                ],
+                [
+                    'name'       => 'Terminal Math',
+                    'speciality' => 'Math',
+                    'day'        => 'Jeudi',
+                    'start'      => '18:30',
+                    'end'        => '20:00',
+                ],
+                [
+                    'name'       => 'Primaire Anglais',
+                    'speciality' => 'Anglais',
+                    'day'        => 'Mercredi',
+                    'start'      => '15:30',
+                    'end'        => '17:00',
+                ],
+            ];
             $context = [
                 'contact'        => $contact,
                 'fullName'       => $contact->getFullName() ?: $to,
                 'unsubscribeUrl' => $unsubscribeUrl,
+                'slots'          => $slots,
             ];
 
             if ($dryRun) {
                 $io->text(sprintf('[DRY RUN] À: %s | Sujet: %s', $to, $subject));
             } else {
+
                 $this->mailService->sendEmail(
                     to: $to,
                     subject: $subject,
                     // utilise le template “bulletproof” proposé
-                    template: 'email/company/academic_support_open_modern.html.twig',
+                    //template: 'email/company/academic_support_open_modern.html.twig',
+                    template: 'email/company/second_academic_support_open_modern.html.twig',
                     context: $context,
                     sender: 'contact@ccib38.fr'
                 );

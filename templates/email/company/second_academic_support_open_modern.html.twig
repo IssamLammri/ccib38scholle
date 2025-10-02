@@ -1,0 +1,177 @@
+{# templates/email/newsletters/academic_support_followup_modern.html.twig #}
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject|default('Soutien scolaire 2025/2026 — votre créneau ?') }}</title>
+    <style>
+        @media (max-width:600px){
+            .container{width:100%!important;}
+            .px-24{padding-left:16px!important;padding-right:16px!important;}
+            .btn{width:100%!important;}
+            .table-wrap{overflow-x:auto!important;}
+        }
+        a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important;}
+    </style>
+</head>
+<body style="margin:0;padding:0;background:#f4f5f7;">
+
+{# PREHEADER discret #}
+<div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0;">
+    Récapitulatif des créneaux de soutien scolaire {{ yearLabel|default('2025/2026') }} (Math, Français, Anglais, SVT).
+</div>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f5f7;">
+    <tr>
+        <td align="center" style="padding:24px 12px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container" style="width:600px;max-width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
+                <!-- En-tête -->
+                <tr>
+                    <td style="background:#111827;padding:20px 24px;text-align:center;">
+                        <div style="font:600 18px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;">
+                            {{ siteName|default('CCIB38') }}
+                        </div>
+                        <div style="font:400 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#cbd5e1;margin-top:4px;">
+                            Centre Culturel Ibn Badis – Grenoble
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Intro (Variante 2) -->
+                <tr>
+                    <td class="px-24" style="padding:24px;">
+                        <div style="font:700 20px/1.35 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;">
+                            Soutien scolaire {{ yearLabel|default('2025/2026') }} — réservez votre créneau
+                        </div>
+                        <div style="font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#374151;margin-top:10px;">
+                            Bonjour {{ fullName|default('cher parent') }},<br>
+                            Parce que la réussite scolaire de vos enfants est une priorité, le <strong>soutien scolaire</strong> que nous proposons leur offre un <strong>cadre bienveillant et structuré</strong>, animé par des <strong>enseignants expérimentés et à l’écoute</strong>.
+                        </div>
+                        <ul style="margin:10px 0 0 18px;padding:0;font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#374151;">
+                            <li><strong>Consolidation des acquis</strong> et méthodologie claire</li>
+                            <li><strong>Groupes à taille humaine</strong>, organisés par niveau et par matière</li>
+                            <li><strong>Suivi régulier</strong> et accompagnement personnalisé</li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <!-- CTA principal -->
+                <tr>
+                    <td align="center" style="padding:8px 24px 16px;">
+                        {% set ctaUrl = registrationUrl|default('https://ecole.ccib38.fr/soutien-scolaire/inscription') %}
+                        <a href="{{ ctaUrl }}" class="btn"
+                           style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;
+                      font:700 15px/48px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+                      padding:0 24px;border-radius:10px;min-width:240px;text-align:center;">
+                            Faire la demande d'inscription
+                        </a>
+                        <div style="font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6b7280;margin-top:8px;">
+                            Problème avec le bouton ? Ouvrez : <a href="{{ ctaUrl }}" style="color:#4f46e5;text-decoration:underline;">{{ ctaUrl }}</a>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Planning complet -->
+                <tr>
+                    <td class="px-24" style="padding:16px 24px 8px 24px;">
+                        <div style="font:600 16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;margin-bottom:8px;">
+                            Planning des soutiens scolaires — {{ yearLabel|default('2025/2026') }}
+                        </div>
+
+                        <div class="table-wrap" style="overflow-x:auto;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                                   style="border-collapse:collapse;width:100%;">
+                                <thead>
+                                <tr>
+                                    <th align="left" style="font:600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;border-bottom:2px solid #111827;padding:8px;">Nom</th>
+                                    <th align="left" style="font:600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;border-bottom:2px solid #111827;padding:8px;">Spécialité</th>
+                                    <th align="left" style="font:600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;border-bottom:2px solid #111827;padding:8px;">Jour</th>
+                                    <th align="left" style="font:600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;border-bottom:2px solid #111827;padding:8px;">Heures</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% if slots is defined and slots|length > 0 %}
+                                    {% for s in slots %}
+                                        <tr>
+                                            <td style="font:400 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;border-bottom:1px solid #e5e7eb;padding:8px;">
+                                                {{ s.name }}
+                                            </td>
+                                            <td style="font:400 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;border-bottom:1px solid #e5e7eb;padding:8px;">
+                                                {{ s.speciality }}
+                                            </td>
+                                            <td style="font:400 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;border-bottom:1px solid #e5e7eb;padding:8px;">
+                                                {{ s.day }}
+                                            </td>
+                                            <td style="font:400 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;border-bottom:1px solid #e5e7eb;padding:8px;white-space:nowrap;">
+                                                {{ s.start }} – {{ s.end }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" style="font:400 13px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#374151;padding:8px;">
+                                            Le planning détaillé est disponible sur notre site.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {# Option : image du planning #}
+                        {% if planningImageUrl is defined and planningImageUrl %}
+                            <div style="margin-top:10px;text-align:center;">
+                                <img src="{{ planningImageUrl }}" alt="Planning des soutiens scolaires" style="max-width:100%;border:1px solid #e5e7eb;border-radius:8px;">
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <!-- CTA secondaire -->
+                <tr>
+                    <td align="center" style="padding:16px 24px 16px;">
+                        <a href="{{ ctaUrl }}"
+                           style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;
+                      font:700 14px/44px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+                      padding:0 20px;border-radius:10px;min-width:220px;text-align:center;">
+                            Je choisis mon créneau
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- Signature -->
+                <tr>
+                    <td class="px-24" style="padding:8px 24px 0 24px;">
+                        <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#374151;">
+                            Merci pour votre retour,<br>
+                            <strong>{{ senderName|default('Équipe CCIB38') }}</strong>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Pied de page -->
+                <tr>
+                    <td style="padding:20px 24px 24px;background:#f9fafb;">
+                        <div style="font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6b7280;text-align:center;">
+                            Centre Culturel Ibn Badis • 18 Rue des Trembles, 38100 Grenoble<br>
+                            <a href="https://www.ccib38.fr" style="color:#4f46e5;text-decoration:underline;">www.ccib38.fr</a> •
+                            <a href="mailto:soutien.scolaire.ccib38@gmail.com" style="color:#4f46e5;text-decoration:underline;">soutien.scolaire.ccib38@gmail.com</a><br><br>
+{#                            {% if unsubscribeUrl is defined and unsubscribeUrl %}#}
+{#                                Vous ne souhaitez plus recevoir nos emails ?#}
+{#                                <a href="{{ unsubscribeUrl }}" style="color:#4f46e5;text-decoration:underline;">Se désabonner</a>.#}
+{#                            {% else %}#}
+                                Pour vous désabonner, répondez avec l’objet « DÉSABONNEMENT ».
+{#                            {% endif %}#}
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <div style="height:24px;line-height:24px;font-size:24px;">&nbsp;</div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
