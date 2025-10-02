@@ -37,7 +37,7 @@ class MailService
      * @throws SyntaxError Si le template contient une erreur de syntaxe.
      * @throws \Exception
      */
-    public function sendEmail(string $to, string $subject, string $template, array $context = [], ?string $attachmentPath = null, ?string $sender = null): void
+    public function sendEmail(string $to, string $subject, string $template, array $context = [], ?string $attachmentPath = null, ?string $sender = null,?string $senderName = null): void
     {
         try {
             // Rendu du contenu HTML à partir du template
@@ -51,9 +51,11 @@ class MailService
         }
         $senderMail = $sender ?? 'contact@ccib38.fr';
         //$senderMail = $sender ?? 'ecole@ccib38.com';
-
+        if ($senderName === null) {
+            $senderName = 'CCIB38';
+        }
         $email = (new Email())
-            ->from(new Address($senderMail, 'CCIB38'))
+            ->from(new Address($senderMail, $senderName))
             ->to($to)
             ->subject($subject)
             ->html($htmlContent);
