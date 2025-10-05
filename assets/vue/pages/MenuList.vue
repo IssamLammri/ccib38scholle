@@ -289,10 +289,10 @@ export default {
       return this.roles.includes('ROLE_MANAGER') || this.roles.includes('ROLE_ADMIN');
       },
     isTeacher() {
-      return this.roles.includes('ROLE_TEACHER') || this.roles.includes('ROLE_ADMIN');
+      return this.roles.includes('ROLE_TEACHER') || this.roles.includes('ROLE_ADMIN') || this.roles.includes('ROLE_MANAGER');
       },
     isParent()  {
-      return this.roles.includes('ROLE_PARENT') || this.roles.includes('ROLE_ADMIN');
+      return this.roles.includes('ROLE_PARENT') || this.roles.includes('ROLE_ADMIN') || this.roles.includes('ROLE_MANAGER');
     }
   },
   mounted() {
