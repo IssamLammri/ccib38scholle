@@ -124,7 +124,7 @@
                 <td class="id-cell">{{ c.id }}</td>
                 <td class="name-cell">{{ c.name }}</td>
                 <td class="actions-cell">
-                  <a class="btn btn-view" :href="$routing.generate('app_class_show', { id: c.id })">
+                  <a class="btn btn-view" :href="$routing.generate('app_study_class_show', { id: c.id })">
                     <i class="fas fa-eye"></i>
                     <span>Voir la classe</span>
                   </a>
