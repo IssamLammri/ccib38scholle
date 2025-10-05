@@ -13,6 +13,7 @@ import RegistrationList from './pages/registers/RegistrationList.vue';
 import NewSession from './pages/session/NewSession.vue';
 import ShowInvoice from './pages/invoice/ShowInvoice.vue';
 import ShowParent from './pages/parent/ShowParent.vue';
+import TeacherShow from './pages/teacher/TeacherShow.vue';
 import StudyClass from './pages/studyClass/StudyClass.vue';
 import StudyList from './pages/studyClass/StudyList.vue';
 import StudyClassList from './pages/studyClass/StudyClassList.vue';
@@ -59,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('DashboardParent', DashboardParent);
     app.component('Dashboard', Dashboard);
     app.component('RegistrationList', RegistrationList);
+    app.component('TeacherShow', TeacherShow);
     app.component('RegistrationAcademicSupportList', RegistrationAcademicSupportList);
     app.component('ShowInvoice', ShowInvoice);
     app.component('StudyClass', StudyClass);

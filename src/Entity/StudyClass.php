@@ -35,11 +35,11 @@ class StudyClass
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_payment','read_student','read_study_class'])]
+    #[Groups(['read_payment','read_student','read_study_class','read_teacher'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_student','read_study_class','read_session','read_invoice'])]
+    #[Groups(['read_payment','read_student','read_study_class','read_session','read_invoice','read_teacher'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'string')]

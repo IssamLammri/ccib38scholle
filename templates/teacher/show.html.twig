@@ -3,37 +3,7 @@
 {% block title %}Détails de l'Enseignant{% endblock %}
 
 {% block body %}
-    <div class="container mt-5">
-        <!-- Bouton retour -->
-        <div class="mb-3">
-            <a href="{{ path('app_teacher_index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour à la liste
-            </a>
-        </div>
-
-        <!-- Titre principal -->
-        <h1 class="text-center mb-5">Fiche Enseignant</h1>
-
-        <div class="card shadow p-4">
-            <!-- Informations sur l'enseignant -->
-            <h2 class="mb-4 text-primary">Informations de l'Enseignant</h2>
-            <div>
-                <p><strong>Identifiant :</strong> {{ teacher.id }}</p>
-                <p><strong>Nom :</strong> {{ teacher.lastName ?? 'Non disponible' }}</p>
-                <p><strong>Prénom :</strong> {{ teacher.firstName ?? 'Non disponible' }}</p>
-                <p><strong>Email :</strong> {{ teacher.email ?? 'Non disponible' }}</p>
-                <p><strong>Téléphone :</strong> {{ teacher.phoneNumber ?? 'Non disponible' }}</p>
-                <p><strong>Niveau d'Éducation :</strong> {{ teacher.educationLevel ?? 'Non disponible' }}</p>
-                <p><strong>Spécialités :</strong> {{ teacher.specialities ? teacher.specialities|join(', ') : 'Non disponible' }}</p>
-            </div>
-        </div>
-
-        <!-- Boutons Modifier et Supprimer -->
-        <div class="d-flex justify-content-end mt-5">
-            <a href="{{ path('app_teacher_edit', {'id': teacher.id}) }}" class="btn btn-warning mr-2">
-                <i class="fas fa-edit"></i> Modifier
-            </a>
-            {{ include('teacher/_delete_form.html.twig', {'button_label': 'Supprimer', 'class': 'btn btn-danger'}) }}
-        </div>
-    </div>
+    <teacher-show
+            :teacher="{{ teacher|serialize('json', {'groups': 'read_teacher'}) }}"
+    ></teacher-show>
 {% endblock %}

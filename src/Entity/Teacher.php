@@ -13,27 +13,31 @@ class Teacher
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_study_class'])]
+    #[Groups(['read_study_class','read_teacher'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_session','read_study_class'])]
+    #[Groups(['read_session','read_study_class','read_teacher'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_session','read_study_class'])]
+    #[Groups(['read_session','read_study_class','read_teacher'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_teacher'])]
     private ?string $email = null;
 
     #[ORM\Column(type: 'string', length: 20)]
+    #[Groups(['read_teacher'])]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['read_teacher'])]
     private ?string $educationLevel = null;
 
     #[ORM\Column(type: 'array')]
+    #[Groups(['read_teacher'])]
     private array $specialities = [];
 
     #[ORM\OneToOne(targetEntity: User::class, cascade: ['persist'])]
@@ -41,6 +45,7 @@ class Teacher
     private ?User $user = null;
 
     #[ORM\OneToMany(targetEntity: StudyClass::class, mappedBy: 'principalTeacher')]
+    #[Groups(['read_teacher'])]
     private Collection $classes;
 
 
