@@ -22,6 +22,7 @@ import NewStudyClass from './pages/studyClass/NewStudyClass.vue';
 import PlanningStudyClass from './pages/studyClass/PlanningStudyClass.vue';
 import SessionShow from './pages/session/SessionShow.vue';
 import SessionList from './pages/session/SessionList.vue';
+import SessionOfDay from './pages/session/SessionOfDay.vue';
 import BookEdit from './pages/book/BookEdit.vue';
 import MenuList from './pages/MenuList.vue';
 import BookList from './pages/book/BookList.vue';
@@ -72,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('PlanningStudyClass', PlanningStudyClass);
     app.component('SessionShow', SessionShow);
     app.component('SessionList', SessionList);
+    app.component('SessionOfDay', SessionOfDay);
     app.component('RegistrationPageAcademicSupport', RegistrationPageAcademicSupport);
     app.component('RegistrationPageArabicCourse', RegistrationPageArabicCourse);
     app.component('RegistrationPageArabicCourseShow', RegistrationPageArabicCourseShow);

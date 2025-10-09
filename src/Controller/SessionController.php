@@ -41,8 +41,15 @@ class SessionController extends AbstractController
         private StudentRepository $studentRepository
     ) {
     }
-    #[Route('/', name: 'app_session_index', options: ['expose' => true], methods: ['GET'])]
+    #[Route('/all-session', name: 'app_session_index', options: ['expose' => true], methods: ['GET'])]
     public function index(): Response
+    {
+        return $this->render('session/all-sessions.html.twig');
+    }
+
+
+    #[Route('/', name: 'app_session_today', options: ['expose' => true], methods: ['GET'])]
+    public function sessionOfDay(): Response
     {
         return $this->render('session/index.html.twig');
     }
@@ -94,6 +101,94 @@ class SessionController extends AbstractController
         }
 
         // Récupération dynamique des classes et enseignants
+        $classesArray = [];
+        foreach ($studyClassRepository->findAll() as $studyClass) {
+            $classesArray[] = [
+                'id' => $studyClass->getId(),
+                'name' => $studyClass->getName()
+            ];
+        }
+        $teachersArray = [];
+        foreach ($teacherRepository->findAll() as $teacher) {
+            $teachersArray[] = [
+                'id' => $teacher->getId(),
+                'firstName' => $teacher->getFirstName(),
+                'lastName' => $teacher->getLastName()
+            ];
+        }
+
+        return $this->json([
+            'sessions' => $sessionsArray,
+            'classes' => $classesArray,
+            'teachers' => $teachersArray,
+            'isAdmin' => $this->isGranted('ROLE_ADMIN'),
+        ]);
+    }
+
+
+    #[Route('/sessions-today', name: 'api_sessions_today', options: ['expose' => true], methods: ['GET'])]
+    public function getSessionsToday(
+        Request $request,
+        StudyClassRepository $studyClassRepository,
+        TeacherRepository $teacherRepository,
+        EntityManagerInterface $em
+    ): Response {
+        $user = $this->getUser();
+
+        // --- Fenêtre "aujourd'hui" en Europe/Paris ---
+        $tzParis = new \DateTimeZone('Europe/Paris');
+        $startParis = (new \DateTime('today', $tzParis))->setTime(0, 0, 0);
+        $endParis   = (clone $startParis)->modify('+1 day'); // demain 00:00:00
+
+        $start = $startParis;
+        $end   = $endParis;
+
+        // --- QueryBuilder: sessions qui chevauchent la journée courante ---
+        $qb = $em->createQueryBuilder()
+            ->select('s', 'r', 't', 'c')
+            ->from('App\Entity\Session', 's')
+            ->leftJoin('s.room', 'r')
+            ->leftJoin('s.teacher', 't')
+            ->leftJoin('s.studyClass', 'c')
+            ->andWhere('s.startTime < :end')                 // commence avant fin de journée
+            ->andWhere('(s.endTime IS NULL OR s.endTime >= :start)') // et se termine après début de journée (ou pas de fin)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('s.startTime', 'ASC');
+
+        // Restriction prof / manager
+        if (!$this->isGranted('ROLE_MANAGER') && !$this->isGranted('ROLE_ADMIN')) {
+            $qb->andWhere('t.user = :user')
+                ->setParameter('user', $user);
+        }
+
+        $sessions = $qb->getQuery()->getResult();
+
+        // --- Sérialisation : format "naïf" (pas de Z) pour éviter tout décalage côté front ---
+        $sessionsArray = [];
+        foreach ($sessions as $session) {
+            $sessionsArray[] = [
+                'id' => $session->getId(),
+                'startTime' => $session->getStartTime() ? $session->getStartTime()->format('Y-m-d\TH:i:s') : null,
+                'endTime'   => $session->getEndTime()   ? $session->getEndTime()->format('Y-m-d\TH:i:s')   : null,
+                'room' => $session->getRoom() ? [
+                    'id' => $session->getRoom()->getId(),
+                    'name' => $session->getRoom()->getName(),
+                ] : null,
+                'teacher' => $session->getTeacher() ? [
+                    'id' => $session->getTeacher()->getId(),
+                    'firstName' => $session->getTeacher()->getFirstName(),
+                    'lastName' => $session->getTeacher()->getLastName(),
+                ] : null,
+                'studyClass' => $session->getStudyClass() ? [
+                    'id' => $session->getStudyClass()->getId(),
+                    'name' => $session->getStudyClass()->getName(),
+                    'speciality' => $session->getStudyClass()->getSpeciality(),
+                ] : null,
+            ];
+        }
+
+        // (facultatif) listes pour UI
         $classesArray = [];
         foreach ($studyClassRepository->findAll() as $studyClass) {
             $classesArray[] = [
@@ -309,6 +404,7 @@ class SessionController extends AbstractController
         return $this->render('session/show.html.twig', [
             'session' => $session,
             'studentsSession' => $allStudentsSessionSession,
+            'currentUser' => $this->getUser(),
         ]);
     }
 

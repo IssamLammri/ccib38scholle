@@ -225,6 +225,7 @@
         <!-- Espace Enseignant -->
         <template v-if="isTeacher">
           <li class="menu-header"><span>Mon Espace</span></li>
+
           <li>
             <a
                 :href="$routing.generate('app_session_index')"
@@ -234,6 +235,18 @@
             >
               <i class="fas fa-calendar-alt menu-icon"></i>
               <span class="menu-text">Mes Sessions</span>
+            </a>
+          </li>
+
+          <li>
+            <a
+                :href="$routing.generate('app_session_today')"
+                class="menu-link"
+                :class="{ active: isActiveRoute('app_session_today') }"
+                :aria-current="isActiveRoute('app_session_today') ? 'page' : null"
+            >
+              <i class="fas fa-calendar-day menu-icon"></i>
+              <span class="menu-text">Sessions du jour</span>
             </a>
           </li>
         </template>
@@ -296,7 +309,6 @@ export default {
     }
   },
   mounted() {
-    const path = window.location.pathname;
     const g = (name, params = {}) => this.safeGenerate(name, params);
 
     const map = {
@@ -319,7 +331,7 @@ export default {
     };
 
     for (const key of Object.keys(map)) {
-      this.open[key] = map[key].some(h => this.pathMatch(path, h));
+      this.open[key] = map[key].some(href => this.pathStartsWithCurrent(href));
     }
 
     if (window.innerWidth >= 1024) {
@@ -337,10 +349,28 @@ export default {
       // Fallback simple si $routing n’est pas dispo (dev)
       return `/${name}`;
     },
+    normalizePath(path) {
+      if (!path) return '/';
+      // retire les // multiples et le slash final sauf pour la racine
+      let p = path.replace(/\/{2,}/g, '/');
+      if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+      return p || '/';
+    },
+    hrefToPath(href) {
+      try {
+        const u = new URL(href, window.location.origin);
+        return this.normalizePath(u.pathname);
+      } catch {
+        // si href est déjà un pathname
+        return this.normalizePath(href);
+      }
+    },
     // Teste si la route est active (parnom + params)
-    isActiveRoute(name, params = {}) {
-      const href = this.safeGenerate(name, params);
-      return this.pathMatch(window.location.pathname, href);
+    isActiveRoute(name, params = {}, exact = true) {
+      const current = this.normalizePath(window.location.pathname);
+      const target = this.hrefToPath(this.safeGenerate(name, params));
+      if (exact) return current === target;
+      return current.startsWith(target === '/' ? '/' : `${target}`);
     },
     // Comparaison pathname vs href
     pathMatch(pathname, href) {
@@ -355,6 +385,13 @@ export default {
         return pathname.startsWith(href);
       }
     },
+    // Pour l’ouverture auto des sous-menus (préfixe)
+    pathStartsWithCurrent(href) {
+      const current = this.normalizePath(window.location.pathname);
+      const target = this.hrefToPath(href);
+      return current.startsWith(target === '/' ? '/' : `${target}`);
+    },
+
     toggle(key) {
       this.open[key] = !this.open[key];
       Object.keys(this.open).forEach(k => {

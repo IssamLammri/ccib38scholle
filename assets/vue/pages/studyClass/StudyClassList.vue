@@ -969,27 +969,26 @@ export default {
     },
 
     formatTime(isoString) {
-      if (!isoString) return "";
-      try {
-        const date = new Date(isoString);
-        if (isNaN(date.getTime())) return "";
-        const hours = String(date.getHours()).padStart(2, "0");
-        const minutes = String(date.getMinutes()).padStart(2, "0");
-        return `${hours}:${minutes}`;
-      } catch {
-        return "";
-      }
+      const date = this.toDateUTC(isoString);
+      if (!date) return "";
+      const hours = String(date.getUTCHours()).padStart(2, "0");
+      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+      return `${hours}:${minutes}`;
     },
 
     parseTime(isoString) {
+      const date = this.toDateUTC(isoString);
+      if (!date) return null;
+      return date.getUTCHours() * 60 + date.getUTCMinutes();
+    },
+
+    toDateUTC(isoString) {
       if (!isoString) return null;
-      try {
-        const date = new Date(isoString);
-        if (isNaN(date.getTime())) return null;
-        return date.getHours() * 60 + date.getMinutes();
-      } catch {
-        return null;
-      }
+      const s = String(isoString);
+      const hasTZ = /[zZ]|[+\-]\d{2}:\d{2}$/.test(s); // contient 'Z' ou +hh:mm / -hh:mm
+      const normalized = hasTZ ? s : s + 'Z';
+      const d = new Date(normalized);
+      return isNaN(d.getTime()) ? null : d;
     },
 
     timeSlot(isoString) {
