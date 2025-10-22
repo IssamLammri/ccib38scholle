@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ParentEntity;
 use App\Form\ParentEntityType;
+use App\Model\ApiResponseTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,6 +17,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/parent')]
 class ParentEntityController extends AbstractController
 {
+    use ApiResponseTrait;
     #[Route('/', name: 'app_parent_entity_index', options: ['expose' => true], methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {

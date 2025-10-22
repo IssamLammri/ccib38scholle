@@ -33,7 +33,7 @@
 
       <ul class="sidebar-menu list-unstyled">
         <!-- Tableau de bord -->
-        <template v-if="isAdmin || isManager">
+        <template v-if="isAdmin">
           <li>
             <a
                 :href="$routing.generate('app_dashboard')"
@@ -216,6 +216,15 @@
                     :aria-current="isActiveRoute('app_invoice_index') ? 'page' : null"
                 >
                   <span class="submenu-dot"></span>Factures
+                </a>
+              </li>
+              <li>
+                <a
+                    :href="$routing.generate('app_refund_index')"
+                    :class="{ active: isActiveRoute('app_refund_index') }"
+                    :aria-current="isActiveRoute('app_refund_index') ? 'page' : null"
+                >
+                  <span class="submenu-dot"></span> Remboursement
                 </a>
               </li>
             </ul>

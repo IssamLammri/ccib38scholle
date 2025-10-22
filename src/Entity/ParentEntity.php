@@ -18,35 +18,35 @@ class ParentEntity
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment', 'read_parent'])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private ?string $fatherLastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment', 'read_parent'])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private ?string $fatherFirstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment', 'read_parent'])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private ?string $fatherEmail = null;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['read_payment', 'read_parent'])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private ?string $fatherPhone = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment', 'read_parent'])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private ?string $motherLastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment', 'read_parent'])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private ?string $motherFirstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment', 'read_parent'])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private ?string $motherEmail = null;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['read_payment', 'read_parent'])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private ?string $motherPhone = null;
 
     #[ORM\Column(type: 'string', length: 20)]

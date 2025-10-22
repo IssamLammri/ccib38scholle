@@ -23,7 +23,7 @@ class Session
     private ?\DateTimeImmutable $endTime = null;
 
     #[ORM\ManyToOne(targetEntity: Room::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'room_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     #[Groups(['read_session'])]
     private ?Room $room = null;
 

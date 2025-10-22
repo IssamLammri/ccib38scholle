@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\ParentsRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Invoice;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Service\MailService;
+use Symfony\Component\Serializer\SerializerInterface;
 
 
 #[IsGranted('ROLE_MANAGER')]
@@ -29,6 +31,48 @@ final class InvoiceController extends AbstractController
         private  MailService $mailService,
     ){
     }
+
+    #[Route('/search-invoice', name: 'app_search_invoice', options: ['expose' => true], methods: ['GET'])]
+    public function searchInvoice(
+        Request $request,
+        SerializerInterface $serializer,
+        ParentsRepository $parentsRepository,
+    ): Response {
+        $parentId = (int) $request->query->get('parentId', 0);
+
+        if ($parentId <= 0) {
+            return $this->apiErrorResponse('Paramètre "parentId" manquant ou invalide.', Response::HTTP_BAD_REQUEST);
+        }
+
+        $parent = $parentsRepository->find($parentId);
+        if (!$parent) {
+            return $this->apiErrorResponse('Aucun parent trouvé pour cet identifiant.', Response::HTTP_NOT_FOUND);
+        }
+
+        // Récupération des factures du parent
+        $invoices = $this->invoiceRepository->createQueryBuilder('i')
+            ->leftJoin('i.payments', 'p')->addSelect('p')
+            ->andWhere('i.parent = :parent')->setParameter('parent', $parent)
+            ->orderBy('i.invoiceDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+
+        // Sérialisation avec groupe read_invoice_for_refund
+        $context = [
+            'groups' => ['read_invoice_for_refund'],
+            'enable_max_depth' => true,
+            'circular_reference_handler' => function ($object) {
+                return method_exists($object, 'getId') ? $object->getId() : spl_object_id($object);
+            },
+        ];
+        $serialized = $serializer->serialize($invoices, 'json', $context);
+        $payload = json_decode($serialized, true);
+        dump($payload);
+        // Réponse OK (NB: apiResponse attend ($data, $code))
+        return $this->apiResponse(['invoices' => $payload], Response::HTTP_OK);
+    }
+
     #[Route(name: 'app_invoice_index', options: ['expose' => true], methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
