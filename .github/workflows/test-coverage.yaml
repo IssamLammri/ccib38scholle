@@ -1,34 +1,29 @@
-name: tests+coverage
+name: Tests & Coverage
 
 on:
   push:
-    branches: [ main, master ]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   phpunit:
+    name: PHPUnit (coverage)
     runs-on: ubuntu-latest
 
     env:
+      # --- Symfony & App env ---
       APP_ENV: test
       APP_DEBUG: 1
       APP_SECRET: testing
-      APP_URL: http://localhost:8080       # <- évite l'erreur EnvVarProcessor
-      # Choisis SQLite en test (simple/rapide) :
+      APP_URL: http://localhost
+
+      # --- DB test: SQLite rapide & sans service externe ---
       DATABASE_URL: 'sqlite:///%kernel.project_dir%/var/test.db'
-      # (ou mets ta vraie URL si tu fais tourner MySQL dans le job)
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: schollccib_test
-        ports: [ "3306:3306" ]
-        options: >-
-          --health-cmd="mysqladmin ping -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
+
+      # --- Couverture (générée par phpunit) ---
+      XDEBUG_MODE: coverage
 
     steps:
       - name: Checkout
@@ -38,57 +33,71 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mbstring, intl, pdo_mysql
+          tools: composer:v2
           coverage: xdebug
+          extensions: mbstring, intl, pdo_sqlite, dom, json, ctype, tokenizer
 
-      - name: Install Composer deps (no dev cache issues)
-        run: composer install --no-interaction --prefer-dist
+      - name: Validate composer.json
+        run: composer validate --strict
 
-      - name: Build assets (si requis)
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      # IMPORTANT: --no-scripts pour éviter cache:clear prod & autres recettes en CI
+      - name: Install dependencies (no scripts)
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      # Optionnel: si tes tests ont besoin d'autowarmers (rarement nécessaire)
+      # - name: Cache warmup (test)
+      #   run: php bin/console cache:warmup --env=test
+
+      - name: Prepare test DB schema (SQLite)
         run: |
-          if [ -f package.json ]; then
-            npm ci || yarn install --frozen-lockfile
-          fi
+          mkdir -p var
+          php bin/console doctrine:database:create --env=test --if-not-exists || true
+          # Utilise migrations si tu préfères:
+          # php bin/console doctrine:migrations:migrate --no-interaction --env=test
+          php bin/console doctrine:schema:update --force --env=test
 
-      - name: Wait DB ready
+      - name: Run PHPUnit (with coverage)
         run: |
-          for i in `seq 1 30`; do
-            (echo 'SELECT 1' | mysql -h 127.0.0.1 -uroot -proot schollccib_test) && break
-            echo "⏳ MySQL not ready yet..."
-            sleep 2
-          done
+          vendor/bin/phpunit \
+            --colors=always \
+            --log-junit junit.xml \
+            --coverage-clover coverage.xml
 
-      - name: Prepare .env.test
-        run: |
-          cp .env.test .env.test.ci || true
-          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/schollccib_test" > .env.test
-
-      - name: Init schema (sans migrations si tu préfères)
-        run: |
-          php bin/console doctrine:database:create --if-not-exists --env=test
-          php bin/console doctrine:schema:create --env=test
-
-      - name: Run PHPUnit with coverage
-        env:
-          XDEBUG_MODE: coverage
-        run: |
-          mkdir -p var/coverage/html var/coverage
-          php -d xdebug.start_with_request=0 \
-            bin/phpunit \
-            --coverage-html var/coverage/html \
-            --coverage-clover var/coverage/clover.xml
-
-      - name: Upload HTML report as artifact
+      - name: Upload coverage.xml as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-html
-          path: var/coverage/html
-          retention-days: 7
+          name: coverage-clover
+          path: coverage.xml
+          if-no-files-found: error
+          retention-days: 14
 
+      - name: Upload JUnit report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-junit
+          path: junit.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+      # ---- Optionnel : envoi à Codecov (recommandé) ----
       - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v4
         with:
-          files: var/coverage/clover.xml
-          fail_ci_if_error: true
+          files: coverage.xml
+          flags: php
+          name: phpunit-coverage
+          fail_ci_if_error: false
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}  # requis si repo privé
+          # Requis pour les dépôts privés, optionnel pour les publics
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
