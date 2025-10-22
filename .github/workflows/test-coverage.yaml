@@ -1,28 +1,23 @@
-name: Tests & Coverage
+name: PHPUnit (coverage)
 
 on:
   push:
+    branches: [ main, master ]
   pull_request:
-
-permissions:
-  contents: read
+    branches: [ main, master ]
 
 jobs:
-  phpunit:
-    name: PHPUnit (coverage)
+  tests:
     runs-on: ubuntu-latest
 
     env:
-      # --- Symfony & App env ---
       APP_ENV: test
-      APP_DEBUG: 1
-      APP_SECRET: testing
+      # Valeurs de base pour éviter les erreurs de cache:clear, normalisées pour l'env CI
+      APP_SECRET: testsecret
       APP_URL: http://localhost
-
-      # --- DB test: SQLite rapide & sans service externe ---
-      DATABASE_URL: 'sqlite:///%kernel.project_dir%/var/test.db'
-
-      # --- Couverture (générée par phpunit) ---
+      # DB SQLite pour les tests
+      DATABASE_URL: 'sqlite:///%kernel.project_dir%/var/data_ci.sqlite'
+      # Couverture
       XDEBUG_MODE: coverage
 
     steps:
@@ -33,12 +28,11 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          tools: composer:v2
           coverage: xdebug
-          extensions: mbstring, intl, pdo_sqlite, dom, json, ctype, tokenizer
+          tools: composer, phpunit
 
-      - name: Validate composer.json
-        run: composer validate --strict
+      - name: Validate composer.json (no publish check)
+        run: composer validate --no-check-publish
 
       - name: Cache Composer
         uses: actions/cache@v4
@@ -50,54 +44,45 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
-      # IMPORTANT: --no-scripts pour éviter cache:clear prod & autres recettes en CI
       - name: Install dependencies (no scripts)
-        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+        run: composer install --no-interaction --no-progress --prefer-dist --no-scripts
 
-      # Optionnel: si tes tests ont besoin d'autowarmers (rarement nécessaire)
-      # - name: Cache warmup (test)
-      #   run: php bin/console cache:warmup --env=test
-
+      # Crée le fichier SQLite et applique le schéma
       - name: Prepare test DB schema (SQLite)
         run: |
           mkdir -p var
-          php bin/console doctrine:database:create --env=test --if-not-exists || true
-          # Utilise migrations si tu préfères:
-          # php bin/console doctrine:migrations:migrate --no-interaction --env=test
-          php bin/console doctrine:schema:update --force --env=test
+          rm -f var/data_ci.sqlite
+          touch var/data_ci.sqlite
+          php bin/console doctrine:schema:create --env=test -q
 
       - name: Run PHPUnit (with coverage)
         run: |
-          vendor/bin/phpunit \
-            --colors=always \
-            --log-junit junit.xml \
-            --coverage-clover coverage.xml
+          php -v
+          ./vendor/bin/phpunit \
+            --log-junit var/junit.xml \
+            --coverage-xml var/coverage-xml \
+            --coverage-clover var/coverage.xml
+
+      - name: Show coverage file (debug)
+        run: ls -lh var && du -h var/coverage.xml || true
 
       - name: Upload coverage.xml as artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-clover
-          path: coverage.xml
-          if-no-files-found: error
-          retention-days: 14
+          path: var/coverage.xml
 
       - name: Upload JUnit report as artifact
         uses: actions/upload-artifact@v4
         with:
           name: phpunit-junit
-          path: junit.xml
-          if-no-files-found: warn
-          retention-days: 14
+          path: var/junit.xml
 
-      # ---- Optionnel : envoi à Codecov (recommandé) ----
+      # --- Codecov (requiert le secret CODECOV_TOKEN pour repo privé) ---
       - name: Upload coverage to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          files: coverage.xml
-          flags: php
-          name: phpunit-coverage
-          fail_ci_if_error: false
-        env:
-          # Requis pour les dépôts privés, optionnel pour les publics
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }}     # laisse vide pour repo public
+          files: var/coverage.xml                 # chemin vers le Clover XML
+          verbose: true
+          fail_ci_if_error: false                 # mets true si tu veux que ça casse le job si l’upload échoue
