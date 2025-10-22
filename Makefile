@@ -107,3 +107,7 @@ xdebug-on:
 .PHONY: xdebug-off
 xdebug-off:
 	@echo "Xdebug sera off par défaut; de toute façon nos cibles coverage l’activent à la volée."
+
+.PHONY: bash
+bash:
+	$(COMPOSE) exec app bash
