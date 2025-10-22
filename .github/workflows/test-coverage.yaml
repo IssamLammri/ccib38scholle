@@ -1,0 +1,86 @@
+name: tests+coverage
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: schollccib_test
+        ports: [ "3306:3306" ]
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo_mysql
+          coverage: xdebug
+
+      - name: Install Composer deps (no dev cache issues)
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Build assets (si requis)
+        run: |
+          if [ -f package.json ]; then
+            npm ci || yarn install --frozen-lockfile
+          fi
+
+      - name: Wait DB ready
+        run: |
+          for i in `seq 1 30`; do
+            (echo 'SELECT 1' | mysql -h 127.0.0.1 -uroot -proot schollccib_test) && break
+            echo "⏳ MySQL not ready yet..."
+            sleep 2
+          done
+
+      - name: Prepare .env.test
+        run: |
+          cp .env.test .env.test.ci || true
+          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/schollccib_test" > .env.test
+
+      - name: Init schema (sans migrations si tu préfères)
+        run: |
+          php bin/console doctrine:database:create --if-not-exists --env=test
+          php bin/console doctrine:schema:create --env=test
+
+      - name: Run PHPUnit with coverage
+        env:
+          XDEBUG_MODE: coverage
+        run: |
+          mkdir -p var/coverage/html var/coverage
+          php -d xdebug.start_with_request=0 \
+            bin/phpunit \
+            --coverage-html var/coverage/html \
+            --coverage-clover var/coverage/clover.xml
+
+      - name: Upload HTML report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: var/coverage/html
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: var/coverage/clover.xml
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}  # requis si repo privé

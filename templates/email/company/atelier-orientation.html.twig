@@ -2,9 +2,9 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Invitation à l'atelier d'orientation – 13 avril 2025, 14h00 - 16h00</title>
+    <title>Planning annuel 2025–2026 – Vacances, examens et fête de fin d’année</title>
     <style>
-        /* Style moderne et élégant pour une meilleure appréciation par les parents */
+        /* Style moderne et lisible pour email */
         body {
             margin: 0;
             padding: 0;
@@ -23,7 +23,7 @@
             background-color: #ffffff;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             overflow: hidden;
         }
         .header {
@@ -33,51 +33,102 @@
         }
         .header h1 {
             margin: 0;
-            font-size: 26px;
+            font-size: 24px;
             color: #ffffff;
+            line-height: 1.3;
         }
         .subheader {
-            margin-top: 5px;
-            font-size: 16px;
-            color: #f0f0f0;
+            margin-top: 6px;
+            font-size: 14px;
+            color: #e8f1ff;
         }
         .content {
-            padding: 30px;
-            font-size: 16px;
+            padding: 26px 30px 8px 30px;
+            font-size: 15px;
             line-height: 1.6;
         }
         .content p {
-            margin: 15px 0;
+            margin: 12px 0;
         }
-        .cta-button {
-            display: inline-block;
-            background: #28a745;
-            color: #ffffff;
-            text-decoration: none;
-            padding: 15px 25px;
-            border-radius: 5px;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .section-title {
+            margin: 24px 0 8px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #0c3d87;
         }
-        .cta-button:hover {
-            background: #218838;
+        .legend {
+            font-size: 13px;
+            color: #666;
+            margin-top: 6px;
         }
-        .image-container {
-            text-align: center;
-            margin: 30px 0;
-        }
-        .image-container img {
-            max-width: 100%;
-            height: auto;
+        .table-wrap {
+            margin: 12px 0 22px 0;
+            border: 1px solid #e6eefb;
             border-radius: 8px;
+            overflow: hidden;
+        }
+        .tbl {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tbl th {
+            text-align: left;
+            background: #f1f6ff;
+            font-size: 13px;
+            font-weight: 700;
+            color: #0c3d87;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e6eefb;
+        }
+        .tbl td {
+            font-size: 14px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        .tbl tr:last-child td {
+            border-bottom: none;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+        .vacances { background: #e8f5e9; color: #2e7d32; }
+        .examen  { background: #fff3cd; color: #7a5a00; }
+        .fete    { background: #e3f2fd; color: #0d47a1; }
+        .note {
+            background: #fff7e6;
+            border: 1px solid #ffe8b3;
+            color: #6b4e00;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 8px;
         }
         .footer {
             background-color: #f4f4f4;
-            padding: 20px;
+            padding: 18px 20px;
             text-align: center;
             font-size: 12px;
             color: #777777;
         }
+        /* Bouton optionnel (si vous voulez un lien de contact ou d’infos) */
+        .cta-button {
+            display: inline-block;
+            background: #28a745;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+        .cta-button:hover { background: #218838; }
     </style>
 </head>
 <body>
@@ -88,45 +139,140 @@
                 <!-- En-tête -->
                 <tr>
                     <td class="header">
-                        <h1>Atelier d'orientation</h1>
-                        <p class="subheader">13 avril 2025 • 14h00 - 16h00</p>
+                        <h1>Planning annuel 2025–2026</h1>
+                        <p class="subheader">Vacances, examens et fête de fin d’année – Groupes du mercredi, samedi et dimanche</p>
                     </td>
                 </tr>
+
                 <!-- Corps du message -->
                 <tr>
                     <td class="content">
-                        <p>Bonjour {{ fullName }},</p>
+                        <p>Chers parents,</p>
                         <p>
-                            Nous avons le plaisir de vous inviter à un atelier dédié à l’orientation et aux idées reçues, animé par <strong>Djahida TANEM</strong> (formatrice et consultante en psychologie positive).
+                            Veuillez trouver ci-dessous le <strong>planning des dates importantes</strong> pour l’année scolaire
+                            <strong>2025–2026</strong> : <em>vacances</em>, <em>examens</em> et <em>fête de fin d’année</em>.
+                            Ce message s’adresse à <strong>tous les parents</strong>. Merci d’identifier les dates correspondant
+                            au <strong>jour de présence de votre enfant</strong> (mercredi, samedi ou dimanche).
                         </p>
-                        <p>
-                            Cet atelier a pour objectif de vous présenter des méthodes concrètes afin d’accompagner vos enfants dans l’identification de leurs aspirations et la planification de leur avenir scolaire et professionnel.
-                        </p>
-                        <p>
-                            La participation est prise en charge par le Centre Culturel Ibn Badis Grenoble. Nous vous prions de bien vouloir confirmer votre présence en cliquant sur le bouton ci-dessous :
-                        </p>
-                        <p style="text-align: center;">
-                            <a class="cta-button" href="https://forms.gle/t3deksgednq2hnYw5">confirmer ma présence</a>
-                        </p>
-                        <p>
-                            Pour toute question, n’hésitez pas à nous contacter au 06 32 52 92 16.
-                        </p>
-                        <p>
+
+                        <!-- ✳️ Remarque CP (ajoutée avant les tableaux) -->
+                        <div class="note">
+                            <strong>Remarque – classes niveau CP :</strong>
+                            pour les élèves de <strong>CP</strong>, il <strong>n’y aura pas d’examen</strong>.
+                            Les séances prévues aux dates indiquées «&nbsp;<em>Examen</em>&nbsp;» seront
+                            des <strong>cours normaux</strong>.
+                        </div>
+
+                        <!-- Samedi -->
+                        <div class="section-title">🗓️ Groupe du <strong>samedi</strong></div>
+                        <div class="table-wrap">
+                            <table class="tbl" role="presentation" cellpadding="0" cellspacing="0">
+                                <thead>
+                                <tr>
+                                    <th style="width:55%">Date</th>
+                                    <th style="width:45%">Statut</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr><td>Samedi 25 octobre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Samedi 1<sup>er</sup> novembre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Samedi 27 décembre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Samedi 3 janvier 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Samedi 24 janvier 2026</td><td><span class="badge examen">EXAMEN 1</span></td></tr>
+                                <tr><td>Samedi 14 février 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Samedi 21 février 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Samedi 11 avril 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Samedi 18 avril 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Samedi 30 mai 2026</td><td><span class="badge examen">EXAMEN 2</span></td></tr>
+                                <tr><td>Samedi 27 juin 2026</td><td><span class="badge fete">Fête de fin d’année</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Dimanche -->
+                        <div class="section-title">🗓️ Groupe du <strong>dimanche</strong></div>
+                        <div class="table-wrap">
+                            <table class="tbl" role="presentation" cellpadding="0" cellspacing="0">
+                                <thead>
+                                <tr>
+                                    <th style="width:55%">Date</th>
+                                    <th style="width:45%">Statut</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr><td>Dimanche 26 octobre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Dimanche 2 novembre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Dimanche 28 décembre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Dimanche 4 janvier 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Dimanche 25 janvier 2026</td><td><span class="badge examen">EXAMEN 1</span></td></tr>
+                                <tr><td>Dimanche 15 février 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Dimanche 22 février 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Dimanche 12 avril 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Dimanche 19 avril 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Dimanche 31 mai 2026</td><td><span class="badge examen">EXAMEN 2</span></td></tr>
+                                <tr><td>Dimanche 28 juin 2026</td><td><span class="badge fete">Fête de fin d’année</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mercredi -->
+                        <div class="section-title">🗓️ Groupe du <strong>mercredi</strong></div>
+                        <div class="table-wrap">
+                            <table class="tbl" role="presentation" cellpadding="0" cellspacing="0">
+                                <thead>
+                                <tr>
+                                    <th style="width:55%">Date</th>
+                                    <th style="width:45%">Statut</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr><td>Mercredi 22 octobre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Mercredi 29 octobre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Mercredi 24 décembre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Mercredi 31 décembre 2025</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Mercredi 21 janvier 2026</td><td><span class="badge examen">EXAMEN 1</span></td></tr>
+                                <tr><td>Mercredi 11 février 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Mercredi 18 février 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Mercredi 8 avril 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Mercredi 15 avril 2026</td><td><span class="badge vacances">VACANCES</span></td></tr>
+                                <tr><td>Mercredi 27 mai 2026</td><td><span class="badge examen">EXAMEN 2</span></td></tr>
+                                <tr><td>Mercredi 24 juin 2026</td><td><span class="badge fete">Fête de fin d’année</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="note">
+                            <strong>Important :</strong> merci de respecter ces dates et d’anticiper les absences éventuelles.
+                            Pour toute question, contactez-nous à <a href="mailto:cours.arabe.ccib38@gmail.com">cours.arabe.ccib38@gmail.com</a>
+                            ou au <a href="tel:+33 6 63 03 29 67">+33 6 63 03 29 67</a>.
+                        </div>
+
+                        <p style="margin-top:18px;">
                             Cordialement,<br>
-                            L’équipe organisatrice
+                            <strong>L’équipe pédagogique</strong><br>
+                            CCIB38
                         </p>
+
+                        <!-- Bouton optionnel (remplacez l’URL si besoin) -->
+                        <!-- <p style="text-align:center;">
+                            <a class="cta-button" href="https://votre-ecole.fr/planning-2025-2026">Consulter en ligne</a>
+                        </p> -->
                     </td>
                 </tr>
-                <!-- Image de l'événement -->
+
+                <!-- (Image facultative) -->
+                <!--
                 <tr>
-                    <td class="image-container">
-                        <img src="https://www.ccib38.com/wp-content/uploads/2025/04/WhatsApp-Image-2025-04-06-at-14.04.50.jpeg" alt="Flyer de l'événement">
+                    <td class="image-container" style="text-align:center; padding: 8px 30px 22px 30px;">
+                        <img src="https://via.placeholder.com/620x300?text=Planning+2025-2026" alt="Visuel planning">
                     </td>
                 </tr>
+                -->
+
                 <!-- Pied de page -->
                 <tr>
                     <td class="footer">
-                        &copy; 2025 Centre Culturel Ibn Badis Grenoble. Tous droits réservés.
+                        &copy; 2025 CCIB38. Tous droits réservés.
                     </td>
                 </tr>
             </table>

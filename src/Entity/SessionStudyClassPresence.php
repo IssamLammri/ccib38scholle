@@ -18,13 +18,13 @@ class SessionStudyClassPresence
     #[Groups(['student_session_read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne(targetEntity: Student::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'presences')]
+    #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     #[Groups(['student_session_read'])]
     private ?Student $student = null;
 
-    #[ORM\ManyToOne(targetEntity: Session::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Session::class, inversedBy: 'presences')]
+    #[ORM\JoinColumn(name: 'session_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Session $session = null;
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => null])]

@@ -51,3 +51,10 @@ COPY --chown=www-data:www-data . .
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
 CMD ["php-fpm"]
+
+# Install Xdebug via PECL
+RUN pecl install xdebug \
+ && docker-php-ext-enable xdebug
+
+# Optionnel: montrer la version à build-time
+RUN php -v && php -m | grep -i xdebug || true

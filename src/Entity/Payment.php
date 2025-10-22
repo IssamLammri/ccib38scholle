@@ -13,7 +13,7 @@ class Payment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_payment','read_student_class_registered'])]
+    #[Groups(['read_payment','read_student_class_registered','read_invoice_for_refund','read_refund'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: ParentEntity::class)]
@@ -23,7 +23,7 @@ class Payment
 
     #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['read_payment','read_invoice'])]
+    #[Groups(['read_payment','read_invoice','read_invoice_for_refund','read_refund'])]
     private ?Student $student = null;
 
     #[ORM\ManyToOne(targetEntity: StudyClass::class, inversedBy: 'payments')]
@@ -32,11 +32,11 @@ class Payment
     private ?StudyClass $studyClass = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard','read_invoice_for_refund','read_refund'])]
     private ?string $amountPaid = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_invoice','statistic_dashboard','read_student_class_registered'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard','read_student_class_registered','read_invoice_for_refund','read_refund'])]
     private ?string $serviceType = null;
 
     #[ORM\Column(type: 'date')]
@@ -44,15 +44,15 @@ class Payment
     private ?\DateTimeInterface $paymentDate = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard','read_invoice_for_refund','read_refund'])]
     private ?string $paymentType = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard','read_invoice_for_refund','read_refund'])]
     private ?string $month = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Groups(['read_payment','read_invoice','statistic_dashboard'])]
+    #[Groups(['read_payment','read_invoice','statistic_dashboard','read_invoice_for_refund','read_refund'])]
     private ?int $year = null;
 
     #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'payments')]
@@ -66,7 +66,7 @@ class Payment
     private ?string $comment= null;
 
     #[ORM\OneToMany(targetEntity: PaymentBookItem::class, mappedBy: 'payment', cascade: ['persist','remove'], orphanRemoval: true)]
-    #[Groups(['read_payment','read_invoice','read_student_class_registered'])]
+    #[Groups(['read_payment','read_invoice','read_student_class_registered','read_invoice_for_refund','read_refund'])]
     private Collection $bookItems;
 
 

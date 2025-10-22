@@ -70,8 +70,8 @@ class StudyClass
     #[Groups(['read_study_class','read_session'])]
     private ?Teacher $principalTeacher = null;
 
-    // >>> NOUVEAU : Salle principale
     #[ORM\ManyToOne(targetEntity: Room::class)]
+    #[ORM\JoinColumn(name: 'principal_room_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     #[Groups(['read_study_class','read_session'])]
     private ?Room $principalRoom = null;
 

@@ -14,14 +14,14 @@ class Book
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read_book', 'read_payment','read_invoice','read_student_class_registered'])]
+    #[Groups(['read_book', 'read_payment','read_invoice','read_student_class_registered','read_invoice_for_refund'])]
     private ?int $id = null;
 
     // Nom du livre
     #[ORM\Column(length: 180)]
     #[Assert\NotBlank(message: 'Le nom du livre est obligatoire.')]
     #[Assert\Length(max: 180)]
-    #[Groups(['read_book', 'read_payment','read_invoice','read_student_class_registered'])]
+    #[Groups(['read_book', 'read_payment','read_invoice','read_student_class_registered','read_invoice_for_refund'])]
     private ?string $name = null;
 
     // Description
