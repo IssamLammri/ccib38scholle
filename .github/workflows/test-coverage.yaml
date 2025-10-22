@@ -69,8 +69,32 @@ jobs:
       - name: Stub Webpack Encore assets (manifest / entrypoints)
         run: |
           mkdir -p public/build
-          echo '{}' > public/build/manifest.json
-          echo '{"entrypoints":{}}' > public/build/entrypoints.json
+
+          # entrypoints.json avec une entrée "app" factice
+          cat > public/build/entrypoints.json <<'JSON'
+          {
+            "entrypoints": {
+              "app": {
+                "js": ["/build/runtime.js", "/build/app.js"],
+                "css": ["/build/app.css"]
+              }
+            }
+          }
+          JSON
+
+          # manifest.json minimal – utile si tu utilises asset() avec manifest dans tes templates
+          cat > public/build/manifest.json <<'JSON'
+          {
+            "build/runtime.js": "/build/runtime.js",
+            "build/app.js": "/build/app.js",
+            "build/app.css": "/build/app.css"
+          }
+          JSON
+
+          # on crée aussi des fichiers vides pour éviter toute surprise si un serveur veut réellement les lire
+          : > public/build/runtime.js
+          : > public/build/app.js
+          : > public/build/app.css
 
       - name: Run PHPUnit (with coverage)
         run: |
