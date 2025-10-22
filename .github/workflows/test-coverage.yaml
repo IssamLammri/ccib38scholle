@@ -9,6 +9,14 @@ jobs:
   phpunit:
     runs-on: ubuntu-latest
 
+    env:
+      APP_ENV: test
+      APP_DEBUG: 1
+      APP_SECRET: testing
+      APP_URL: http://localhost:8080       # <- évite l'erreur EnvVarProcessor
+      # Choisis SQLite en test (simple/rapide) :
+      DATABASE_URL: 'sqlite:///%kernel.project_dir%/var/test.db'
+      # (ou mets ta vraie URL si tu fais tourner MySQL dans le job)
     services:
       mysql:
         image: mysql:8.0
