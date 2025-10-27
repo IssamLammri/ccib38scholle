@@ -1,19 +1,18 @@
-name: Deploy to o2switch
+name: Deploy to o2switch (Self-hosted)
 
 on:
   push:
-    branches: [ "master" ]        # change en "main" si besoin
-  workflow_dispatch:               # permet de lancer manuellement
+    branches: [ "master" ]          # change en "main" si besoin
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
-
+    runs-on: [self-hosted, linux, deploy]    # ← correspond aux labels de ton runner
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ---- PHP / Composer (prod) : on évite les scripts ici (cache:clear etc.)
+      # --- PHP / Composer (on évite les scripts ici)
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -24,7 +23,7 @@ jobs:
       - name: Composer install (prod, no-scripts)
         run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
-      # ---- Build front (Yarn prioritaire si yarn.lock, sinon npm)
+      # --- Front (Yarn prioritaire si yarn.lock, sinon npm)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -47,26 +46,25 @@ jobs:
             npm run build
           fi
 
-      # ---- Déploiement via rsync
+      # --- Sanity check réseau (facultatif)
+      - name: Connectivity check
+        run: nc -vz -w 5 turquoise.o2switch.net 22
+
+      # --- Déploiement via rsync (utilise la clé ~/.ssh/id_ed25519 du runner)
       - name: Rsync to o2switch
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: turquoise.o2switch.net
+          SSH_USER: yiba1083
+          SSH_PORT: 22
+          REMOTE_PATH: /home/yiba1083/ecole.ccib38.fr/ccib38scholle
         run: |
           set -eu
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-
-          ssh -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_PATH'"
-
-          rsync -az --delete -e "ssh -p $SSH_PORT -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_PATH'"
+          rsync -az --delete -e "ssh -p $SSH_PORT" \
             --exclude=".git" \
             --exclude=".github" \
             --exclude="node_modules" \
+            --exclude="vendor" \
             --exclude="docker" \
             --exclude="docker-compose.yml" \
             --exclude="docker-compose.yaml" \
@@ -75,40 +73,24 @@ jobs:
             --exclude="var/cache/*" \
             ./ "$SSH_USER@$SSH_HOST:$REMOTE_PATH"
 
-      # ---- Post-deploy : Composer (avec scripts), migrations, cache
+      # --- Post-deploy : composer (avec scripts), migrations, cache
       - name: Run post-deploy commands
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-          APP_URL: ${{ secrets.APP_URL }}     # ajoute ce secret (ex: https://ecole.ccib38.fr)
+          SSH_HOST: turquoise.o2switch.net
+          SSH_USER: yiba1083
+          SSH_PORT: 22
+          REMOTE_PATH: /home/yiba1083/ecole.ccib38.fr/ccib38scholle
+          APP_URL: https://ecole.ccib38.fr   # adapte si besoin (ou mets-le dans .env.local)
         run: |
           set -eu
-          cat > run_remote.sh << 'EOSH'
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" bash -s <<'EOSH'
           set -eu
           cd "$REMOTE_PATH"
-
-          # Variables d'env Symfony (si .env.local ne les définit pas déjà)
           export APP_ENV=prod
           export APP_DEBUG=0
-
-          # Composer en prod AVEC scripts (cache:clear etc.)
+          export APP_URL="${APP_URL:-}"
           /usr/local/bin/php -d memory_limit=-1 $(which composer) install --no-dev --prefer-dist --optimize-autoloader --no-interaction
-
-          # Migrer la base (on exécute les migrations déjà committées)
           /usr/local/bin/php bin/console doctrine:migrations:migrate --no-interaction --env=prod
-
-          # Cache
           /usr/local/bin/php bin/console cache:clear --env=prod
           /usr/local/bin/php bin/console cache:warmup --env=prod
           EOSH
-
-          chmod +x run_remote.sh
-
-          # Passe APP_URL au shell distant (utilisé par tes scripts si nécessaire)
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "APP_URL='${APP_URL}' bash -s" < run_remote.sh
