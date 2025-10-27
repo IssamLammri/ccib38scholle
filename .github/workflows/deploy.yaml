@@ -2,8 +2,8 @@ name: Deploy to o2switch
 
 on:
   push:
-    branches: [ "master" ]   # change en "main" si besoin
-  workflow_dispatch:         # permet de lancer manuellement
+    branches: [ "master" ]        # change en "main" si besoin
+  workflow_dispatch:               # permet de lancer manuellement
 
 jobs:
   build-and-deploy:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # PHP / Composer (prod)
+      # ---- PHP / Composer (prod) : on évite les scripts ici (cache:clear etc.)
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -21,22 +21,33 @@ jobs:
           tools: composer
           coverage: none
 
-      - name: Composer install (prod)
+      - name: Composer install (prod, no-scripts)
         run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
-      # Build front (Webpack Encore/Vite)
+      # ---- Build front (Yarn prioritaire si yarn.lock, sinon npm)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Build assets
+      - name: Install & Build (Yarn or npm)
         run: |
-          npm ci
-          npm run build
+          set -eu
+          if [ -f yarn.lock ]; then
+            npm install -g yarn
+            yarn install --frozen-lockfile
+            yarn build
+          else
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+            npm run build
+          fi
 
-      # Déploiement via rsync
+      # ---- Déploiement via rsync
       - name: Rsync to o2switch
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -64,7 +75,7 @@ jobs:
             --exclude="var/cache/*" \
             ./ "$SSH_USER@$SSH_HOST:$REMOTE_PATH"
 
-      # Commandes post-deploy (migrations + cache)
+      # ---- Post-deploy : Composer (avec scripts), migrations, cache
       - name: Run post-deploy commands
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -72,22 +83,32 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
-          APP_URL: ${{ secrets.APP_URL }}
+          APP_URL: ${{ secrets.APP_URL }}     # ajoute ce secret (ex: https://ecole.ccib38.fr)
         run: |
           set -eu
           cat > run_remote.sh << 'EOSH'
           set -eu
           cd "$REMOTE_PATH"
 
+          # Variables d'env Symfony (si .env.local ne les définit pas déjà)
           export APP_ENV=prod
           export APP_DEBUG=0
-          export APP_URL="${APP_URL:-}" 
 
+          # Composer en prod AVEC scripts (cache:clear etc.)
           /usr/local/bin/php -d memory_limit=-1 $(which composer) install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+          # Migrer la base (on exécute les migrations déjà committées)
           /usr/local/bin/php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+
+          # Cache
           /usr/local/bin/php bin/console cache:clear --env=prod
           /usr/local/bin/php bin/console cache:warmup --env=prod
           EOSH
 
           chmod +x run_remote.sh
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'bash -s' < run_remote.sh
+
+          # Passe APP_URL au shell distant (utilisé par tes scripts si nécessaire)
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "APP_URL='${APP_URL}' bash -s" < run_remote.sh
