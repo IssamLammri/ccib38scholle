@@ -1,0 +1,91 @@
+name: Deploy to o2switch
+
+on:
+  push:
+    branches: [ "master" ]   # change en "main" si besoin
+  workflow_dispatch:         # permet de lancer manuellement
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # PHP / Composer (prod)
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          coverage: none
+
+      - name: Composer install (prod)
+        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+      # Build front (Webpack Encore/Vite)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Build assets
+        run: |
+          npm ci
+          npm run build
+
+      # Déploiement via rsync
+      - name: Rsync to o2switch
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          set -eu
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          ssh -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_PATH'"
+
+          rsync -az --delete -e "ssh -p $SSH_PORT -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            --exclude=".git" \
+            --exclude=".github" \
+            --exclude="node_modules" \
+            --exclude="docker" \
+            --exclude="docker-compose.yml" \
+            --exclude="docker-compose.yaml" \
+            --exclude="compose.override.yaml" \
+            --exclude="tests" \
+            --exclude="var/cache/*" \
+            ./ "$SSH_USER@$SSH_HOST:$REMOTE_PATH"
+
+      # Commandes post-deploy (migrations + cache)
+      - name: Run post-deploy commands
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          set -eu
+          cat > run_remote.sh << 'EOSH'
+          set -eu
+          cd "$REMOTE_PATH"
+
+          export APP_ENV=prod
+          export APP_DEBUG=0
+
+          /usr/local/bin/php -d memory_limit=-1 $(which composer) install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+          /usr/local/bin/php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+          /usr/local/bin/php bin/console cache:clear --env=prod
+          /usr/local/bin/php bin/console cache:warmup --env=prod
+          EOSH
+
+          chmod +x run_remote.sh
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'bash -s' < run_remote.sh
