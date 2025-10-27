@@ -224,7 +224,7 @@
                     :class="{ active: isActiveRoute('app_refund_index') }"
                     :aria-current="isActiveRoute('app_refund_index') ? 'page' : null"
                 >
-                  <span class="submenu-dot"></span> Remboursement
+                  <span class="submenu-dot"></span> Remboursements
                 </a>
               </li>
             </ul>

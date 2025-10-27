@@ -323,6 +323,7 @@
               <div class="input-with-max">
                 <input
                     v-model.number="refundAmount"
+                    @input="userTouchedAmount = true"
                     type="number"
                     min="0"
                     step="0.01"
@@ -330,7 +331,7 @@
                     :max="totalSelected"
                     :placeholder="formatMoney(totalSelected)"
                 />
-                <button @click="refundAmount = totalSelected" class="btn-max">MAX</button>
+                <button @click="refundAmount = totalSelected; userTouchedAmount = true" class="btn-max">MAX</button>
               </div>
               <div class="form-hint">Maximum: {{ formatMoney(totalSelected) }}</div>
             </div>
@@ -419,6 +420,7 @@ export default {
 
       // Form remboursement
       refundAmount: null,
+      userTouchedAmount: false,
       refundMethod: "",
       refundComment: "",
 
@@ -434,9 +436,14 @@ export default {
       this.resetRefundForm();
       if (newVal) this.fetchInvoices();
     },
-    totalSelected(newVal) {
-      // Auto-remplir le montant si vide
-      if (!this.refundAmount || this.refundAmount > newVal) {
+    totalSelected(newVal, oldVal) {
+      // 1) Si l’utilisateur n’a pas touché au champ, on suit automatiquement la sélection
+      if (!this.userTouchedAmount) {
+        this.refundAmount = newVal;
+        return;
+      }
+      // 2) S’il a touché, on ne modifie pas… sauf pour “clipper” au max
+      if (typeof this.refundAmount === 'number' && this.refundAmount > newVal) {
         this.refundAmount = newVal;
       }
     },
@@ -726,6 +733,7 @@ export default {
       this.refundAmount = null;
       this.refundMethod = "";
       this.refundComment = "";
+      this.userTouchedAmount = false;
     },
 
     async submitRefund() {
@@ -2194,4 +2202,39 @@ select.form-input {
     page-break-inside: avoid;
   }
 }
+
+/* Checkbox paiement : style de base */
+.payment-checkbox .checkbox-custom {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+/* Masquer l’input natif (déjà fait) */
+.payment-checkbox input[type="checkbox"] { display: none; }
+
+/* Etat coché */
+.payment-checkbox input[type="checkbox"]:checked + .checkbox-custom {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.payment-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
+  content: '✓';
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* (optionnel) focus clavier sur la ligne/checkbox */
+.table-row:focus-within .checkbox-custom {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: var(--color-primary);
+}
+
 </style>
