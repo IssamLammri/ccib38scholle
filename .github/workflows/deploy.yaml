@@ -22,7 +22,7 @@ jobs:
           coverage: none
 
       - name: Composer install (prod)
-        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
       # Build front (Webpack Encore/Vite)
       - name: Setup Node
@@ -72,6 +72,7 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
+          APP_URL: ${{ secrets.APP_URL }}
         run: |
           set -eu
           cat > run_remote.sh << 'EOSH'
@@ -80,6 +81,7 @@ jobs:
 
           export APP_ENV=prod
           export APP_DEBUG=0
+          export APP_URL="${APP_URL:-}" 
 
           /usr/local/bin/php -d memory_limit=-1 $(which composer) install --no-dev --prefer-dist --optimize-autoloader --no-interaction
           /usr/local/bin/php bin/console doctrine:migrations:migrate --no-interaction --env=prod
