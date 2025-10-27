@@ -2,28 +2,28 @@ name: Deploy to o2switch (Self-hosted)
 
 on:
   push:
-    branches: [ "master" ]          # change en "main" si besoin
+    branches: [ "master" ]    # change en "main" si besoin
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
-    runs-on: [self-hosted, linux, deploy]    # ← correspond aux labels de ton runner
+    runs-on: [self-hosted, linux, deploy]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- PHP / Composer (on évite les scripts ici)
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          tools: composer
-          coverage: none
+      # On utilise le PHP/Composer déjà installés sur le runner
+      - name: PHP/Composer versions
+        run: |
+          set -e
+          php -v
+          composer -V
 
       - name: Composer install (prod, no-scripts)
         run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
-      # --- Front (Yarn prioritaire si yarn.lock, sinon npm)
+      # Node côté runner (yarn.lock présent -> Yarn)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Install & Build (Yarn or npm)
         run: |
-          set -eu
+          set -e
           if [ -f yarn.lock ]; then
             npm install -g yarn
             yarn install --frozen-lockfile
@@ -46,11 +46,9 @@ jobs:
             npm run build
           fi
 
-      # --- Sanity check réseau (facultatif)
       - name: Connectivity check
         run: nc -vz -w 5 turquoise.o2switch.net 22
 
-      # --- Déploiement via rsync (utilise la clé ~/.ssh/id_ed25519 du runner)
       - name: Rsync to o2switch
         env:
           SSH_HOST: turquoise.o2switch.net
@@ -58,7 +56,7 @@ jobs:
           SSH_PORT: 22
           REMOTE_PATH: /home/yiba1083/ecole.ccib38.fr/ccib38scholle
         run: |
-          set -eu
+          set -e
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_PATH'"
           rsync -az --delete -e "ssh -p $SSH_PORT" \
             --exclude=".git" \
@@ -73,18 +71,17 @@ jobs:
             --exclude="var/cache/*" \
             ./ "$SSH_USER@$SSH_HOST:$REMOTE_PATH"
 
-      # --- Post-deploy : composer (avec scripts), migrations, cache
       - name: Run post-deploy commands
         env:
           SSH_HOST: turquoise.o2switch.net
           SSH_USER: yiba1083
           SSH_PORT: 22
           REMOTE_PATH: /home/yiba1083/ecole.ccib38.fr/ccib38scholle
-          APP_URL: https://ecole.ccib38.fr   # adapte si besoin (ou mets-le dans .env.local)
+          APP_URL: https://ecole.ccib38.fr   # adapte si besoin, ou mets-le dans .env.local sur le serveur
         run: |
-          set -eu
+          set -e
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" bash -s <<'EOSH'
-          set -eu
+          set -e
           cd "$REMOTE_PATH"
           export APP_ENV=prod
           export APP_DEBUG=0
