@@ -9,7 +9,10 @@ use App\Repository\ParentsRepository;
 use App\Repository\PaymentRepository;
 use App\Repository\RefundRepository;
 use App\Repository\InvoiceRepository;
+use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -53,36 +56,19 @@ class RefundController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'api_refund_index',  options: ['expose' => true], methods: ['GET'])]
-    public function index(Request $request): JsonResponse
+    #[Route('/', name: 'api_refund_list',  options: ['expose' => true], methods: ['GET'])]
+    public function index(Request $request, SerializerInterface $serializer): JsonResponse
     {
-        $criteria = [
-            'parentId' => $request->query->getInt('parentId') ?: null,
-            'status'   => $request->query->get('status'),
-            'q'        => $request->query->get('q'),
-            'page'     => $request->query->getInt('page', 1),
-            'limit'    => $request->query->getInt('limit', 20),
-        ];
+        $refunds = $this->refundRepo->findAll();
 
-        if ($df = $request->query->get('dateFrom')) {
-            $criteria['dateFrom'] = new \DateTimeImmutable($df);
-        }
-        if ($dt = $request->query->get('dateTo')) {
-            $criteria['dateTo'] = new \DateTimeImmutable($dt);
-        }
-
-        $result = $this->refundRepo->search($criteria);
-
-        $data = [
-            'items' => json_decode($this->serializer->serialize($result['items'], 'json', [
-                'groups' => ['read_refund', 'read_invoice'],
+        return $this->apiResponse([
+            'text'   => 'Remboursement créé avec succès.',
+            'refunds' => json_decode($serializer->serialize($refunds, 'json', [
+                'groups' => ['read_refund'],
+                'enable_max_depth' => true,
+                'circular_reference_handler' => fn($o) => method_exists($o,'getId') ? $o->getId() : spl_object_id($o),
             ]), true),
-            'total' => $result['total'],
-            'page'  => $result['page'],
-            'limit' => $result['limit'],
-        ];
-
-        return $this->json($data, 200);
+        ], Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'api_refund_show', options: ['expose' => true],  methods: ['GET'])]
@@ -304,7 +290,7 @@ class RefundController extends AbstractController
 
         $this->em->flush();
 
-        return $this->json($refund, 200, [], ['groups' => ['read_refund', 'read_invoice']]);
+        return $this->json($refund, 200, [], ['groups' => ['read_refund']]);
     }
 
     #[Route('/{id}', name: 'api_refund_delete',  options: ['expose' => true], methods: ['DELETE'])]
@@ -367,6 +353,73 @@ class RefundController extends AbstractController
         $limit = (int)$request->query->get('limit', 10);
         $items = $repo->searchLight($q, $limit); // renvoie id, invoiceDate, totalAmount
         return $this->json(['items' => $items]);
+    }
+
+    #[Route('/send-email/{id}', name: 'refund_send_email', options: ['expose' => true], methods: ['POST'])]
+    public function sendInvoiceEmail(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        MailService $mailService
+    ): Response {
+        /** @var Refund $refund */
+        $refund = $this->refundRepo->findOneBy(['id' => $id]);
+
+        if (!$refund) {
+            return $this->json(['error' => 'Remboursement non trouvé.'], 404);
+        }
+
+        try {
+            // Récupérer l'email depuis la requête
+            $email = $request->request->get('email');
+            if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $this->json(['error' => 'Adresse email invalide.'], 400);
+            }
+
+            // Configurer Dompdf
+            $options = new Options();
+            $options->set('defaultFont', 'Arial');
+            $options->set('isRemoteEnabled', true);
+
+            $dompdf = new Dompdf($options);
+
+            // Générer le HTML de la facture
+            $html = $this->renderView('refund/pdf.html.twig', [
+                'refund' => $refund,
+                'parentFullName' => $refund->getParent()->getFullNameParent(),
+            ]);
+
+            // Charger le HTML et générer le PDF
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            // Sauvegarder le PDF temporairement
+            $pdfOutput = $dompdf->output();
+            $pdfPath = sys_get_temp_dir() . '/refund_' . $refund->getId() . '.pdf';
+            file_put_contents($pdfPath, $pdfOutput);
+
+            // Envoi de l'email avec le PDF en pièce jointe
+            $mailService->sendEmail(
+                $email, // Adresse email saisie par l'utilisateur
+                'Votre remboursement ' . $refund->getId(),
+                'email/refund.html.twig',
+                [
+                    'refund' => $refund,
+                    'parentFullName' => $refund->getParent()->getFullNameParent(),
+                ],
+                $pdfPath
+            );
+
+            return $this->json(['message' => 'Email envoyé avec succès à ' . $email], 200);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Une erreur est survenue lors de l\'envoi de l\'email : ' . $e->getMessage()], 500);
+        } finally {
+            // Nettoyer le fichier temporaire
+            if (isset($pdfPath) && file_exists($pdfPath)) {
+                unlink($pdfPath);
+            }
+        }
     }
 
 }

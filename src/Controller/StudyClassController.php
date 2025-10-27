@@ -135,23 +135,27 @@ class StudyClassController extends AbstractController
     #[Route('/new-student-to-class/{id}', name: 'new_student_to_class', options: ['expose' => true], methods: ['POST'])]
     public function newStudentToClass(Request $request, StudyClass $studyClass): Response
     {
-        $data = json_decode($request->getContent(), true);
-        if (array_key_exists('studentIds', $data)) {
-            foreach ($data['studentIds'] as $studentId) {
-                $student = $this->studentRepository->find($studentId);
-                if ($student) {
-                    $studentClassRegistered = new StudentClassRegistered($studyClass, $student);
-                    $this->entityManager->persist($studentClassRegistered);
-                    $futureSessions = $this->sessionRepository->findFutureSessions($studentClassRegistered->getStudyClass());
-                    foreach ($futureSessions as $session){
-                        $sessionStudyClassPresence = new SessionStudyClassPresence($student, $session);
-                        $this->entityManager->persist($sessionStudyClassPresence);
+        try {
+            $data = json_decode($request->getContent(), true);
+            if (array_key_exists('studentIds', $data)) {
+                foreach ($data['studentIds'] as $studentId) {
+                    $student = $this->studentRepository->find($studentId);
+                    if ($student) {
+                        $studentClassRegistered = new StudentClassRegistered($studyClass, $student);
+                        $this->entityManager->persist($studentClassRegistered);
+                        $futureSessions = $this->sessionRepository->findFutureSessions($studentClassRegistered->getStudyClass());
+                        foreach ($futureSessions as $session){
+                            $sessionStudyClassPresence = new SessionStudyClassPresence($student, $session);
+                            $this->entityManager->persist($sessionStudyClassPresence);
+                        }
                     }
                 }
             }
+            $this->entityManager->flush();
+            return $this->apiResponse('Inscription request');
+        } catch (\Exception $e) {
+            return $this->apiErrorResponse('JSON invalide.', Response::HTTP_BAD_REQUEST);
         }
-        $this->entityManager->flush();
-        return $this->apiResponse('Inscription request');
     }
 
     #[Route('/delete-student-from-class/{id}', name: 'delete_student_from_class', options: ['expose' => true], methods: ['POST'])]
@@ -256,6 +260,7 @@ class StudyClassController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
         } catch (NotEncodableValueException $e) {
+
             return $this->apiErrorResponse('JSON invalide.', Response::HTTP_BAD_REQUEST);
         }
         //dump($data);

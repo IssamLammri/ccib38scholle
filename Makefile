@@ -111,3 +111,13 @@ xdebug-off:
 .PHONY: bash
 bash:
 	$(COMPOSE) exec app bash
+
+
+.PHONY: clean-node-modules
+clean-node-modules:
+	$(EXEC_APP) rm -rf node_modules yarn.lock package-lock.json
+
+.PHONY: install-node-modules
+install-node-modules:
+	$(EXEC_APP) yarn install
+	$(EXEC_APP) yarn add @popperjs/core
