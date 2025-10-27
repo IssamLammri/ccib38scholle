@@ -77,17 +77,23 @@ jobs:
           SSH_USER: yiba1083
           SSH_PORT: 22
           REMOTE_PATH: /home/yiba1083/ecole.ccib38.fr/ccib38scholle
-          APP_URL: https://ecole.ccib38.fr   # adapte si besoin, ou mets-le dans .env.local sur le serveur
+          APP_URL: https://ecole.ccib38.fr
         run: |
           set -e
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" bash -s <<'EOSH'
           set -e
           cd "$REMOTE_PATH"
+
           export APP_ENV=prod
           export APP_DEBUG=0
           export APP_URL="${APP_URL:-}"
+
+          # Composer install dans le dossier du projet
           /usr/local/bin/php -d memory_limit=-1 $(which composer) install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+          # Commandes Symfony
           /usr/local/bin/php bin/console doctrine:migrations:migrate --no-interaction --env=prod
           /usr/local/bin/php bin/console cache:clear --env=prod
           /usr/local/bin/php bin/console cache:warmup --env=prod
           EOSH
+      
