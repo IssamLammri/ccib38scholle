@@ -50,175 +50,204 @@ class HomeController extends AbstractController
     }
 
 
-    #[Route('/dashboard/api/stats', name: 'app_dashboard_stats', options: ['expose' => true], methods: ['GET'])]
+    #[Route('/dashboard/api/stats', name: 'app_dashboard_stats', methods: ['GET'])]
     public function getStatistics(
         Request $request,
         SessionRepository $sessionRepository,
         TeacherRepository $teacherRepository,
-        InvoiceRepository $invoiceRepository,
-        PaymentRepository $paymentRepository,
-        StudentClassRegisteredRepository $studentClassRegisteredRepository,
-        SerializerInterface $serializer
     ): Response {
-        // Récupération des dates (optionnelles)
-        $startDateStr = $request->query->get('startDate');
-        $endDateStr = $request->query->get('endDate');
+        // --- Filtres (dates par défaut = mois précédent)
+        $endParam   = $request->query->get('endDate');   // "Y-m-d"
+        $startParam = $request->query->get('startDate'); // "Y-m-d"
 
-        $startDate = $startDateStr ? new \DateTimeImmutable($startDateStr) : null;
-        $endDate = $endDateStr ? new \DateTimeImmutable($endDateStr) : null;
-
-        // Récupération des sessions (avec filtre ou toutes)
-        $sessions = $startDate || $endDate
-            ? $sessionRepository->findSessionsBetweenDates($startDate ?? new \DateTimeImmutable('2000-01-01'), $endDate ?? new \DateTimeImmutable('2100-01-01'))
-            : $sessionRepository->findAll();
-
-        $totalSessions = count($sessions);
-        $totalHours = 0;
-        $sessionsByTeacher = [];
-        $hoursByTeacher = [];
-
-        foreach ($sessions as $session) {
-            $duration = ($session->getEndTime()->getTimestamp() - $session->getStartTime()->getTimestamp()) / 3600;
-            $totalHours += $duration;
-            $teacherId = $session->getTeacher()->getId();
-
-            if (!isset($sessionsByTeacher[$teacherId])) {
-                $sessionsByTeacher[$teacherId] = 0;
-                $hoursByTeacher[$teacherId] = 0;
-            }
-
-            $sessionsByTeacher[$teacherId] += 1;
-            $hoursByTeacher[$teacherId] += $duration;
-        }
-
-        // Récupération des enseignants
-        $teachers = $teacherRepository->findAll();
-        $teachersStats = array_map(fn($teacher) => [
-            'id' => $teacher->getId(),
-            'fullName' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
-            'sessions' => $sessionsByTeacher[$teacher->getId()] ?? 0,
-            'hours' => round($hoursByTeacher[$teacher->getId()] ?? 0, 2)
-        ], $teachers);
-
-        // Récupération des factures et paiements
-        $invoices = $startDate || $endDate
-            ? $invoiceRepository->findInvoicesBetweenDates($startDate ?? new \DateTimeImmutable('2000-01-01'), $endDate ?? new \DateTimeImmutable('2100-01-01'))
-            : $invoiceRepository->findAll();
-
-        $payments = $startDate || $endDate
-            ? $paymentRepository->findPaymentsBetweenDates($startDate ?? new \DateTimeImmutable('2000-01-01'), $endDate ?? new \DateTimeImmutable('2100-01-01'))
-            : $paymentRepository->findAll();
-
-        // Calcul des montants financiers
-        $totalInvoices = count($invoices);
-        $totalPayments = count($payments);
-        $totalInvoiceAmount = array_reduce($invoices, fn($sum, $invoice) => $sum + (float) $invoice->getTotalAmount(), 0);
-        $totalPaymentAmount = array_reduce($payments, fn($sum, $payment) => $sum + (float) $payment->getAmountPaid(), 0);
-
-        $filterSelectedYear = $request->query->get('selectedYear');
-        $filterSelectedMonth = $request->query->get('selectedMonth');
-
-        $monthsMapping = [
-            "Janvier" => "01", "Février" => "02", "Mars" => "03", "Avril" => "04",
-            "Mai" => "05", "Juin" => "06", "Juillet" => "07", "Août" => "08",
-            "Septembre" => "09", "Octobre" => "10", "Novembre" => "11", "Décembre" => "12"
-        ];
-
-
-        if ($filterSelectedMonth === 'all' && $filterSelectedYear === 'all') {
-            // 🔹 Cas : Aucun filtre → Prend tous les paiements et inscriptions
-            $paymentsForUnpaidParents = $paymentRepository->findAll();
-            $registrations = $studentClassRegisteredRepository->findAll();
-        } elseif ($filterSelectedMonth === 'all' && $filterSelectedYear !== 'all') {
-            // 🔹 Cas : Filtre uniquement par année
-            $startDate = new \DateTimeImmutable("$filterSelectedYear-01-01");
-            $endDate = (new \DateTimeImmutable("$filterSelectedYear-12-01"))->modify('last day of this month');
-
-            $paymentsForUnpaidParents = $paymentRepository->findBy(['year' => $filterSelectedYear]);
-            $registrations = $studentClassRegisteredRepository->findRegisteredForUnpaidParents($endDate);
-        } elseif ($filterSelectedMonth !== 'all' && $filterSelectedYear === 'all') {
-            // 🔹 Cas : Filtre uniquement par mois (Toutes années confondues)
-            if (!isset($monthsMapping[$filterSelectedMonth])) {
-                throw new \InvalidArgumentException("Mois invalide : " . $filterSelectedMonth);
-            }
-
-            $monthNumber = $monthsMapping[$filterSelectedMonth];
-
-            // Définit une plage temporelle large pour capturer tous les enregistrements du mois sélectionné
-            $startDate = new \DateTimeImmutable("2000-$monthNumber-01");
-            $endDate = (new \DateTimeImmutable("2100-$monthNumber-01"))->modify('last day of this month');
-
-            $paymentsForUnpaidParents = $paymentRepository->findBy(['month' => $filterSelectedMonth]);
-            $registrations = $studentClassRegisteredRepository->findRegisteredForUnpaidParents($endDate);
+        if ($startParam && $endParam) {
+            $startDate = new \DateTimeImmutable($startParam . ' 00:00:00');
+            $endDate   = new \DateTimeImmutable($endParam . ' 23:59:59');
         } else {
-            // 🔹 Cas : Filtre par mois ET année
-            if (!isset($monthsMapping[$filterSelectedMonth])) {
-                throw new \InvalidArgumentException("Mois invalide : " . $filterSelectedMonth);
-            }
+            $today = new \DateTimeImmutable('today');
+            $year  = (int)$today->format('Y');
+            $month = (int)$today->format('n'); // 1..12
 
-            $monthNumber = $monthsMapping[$filterSelectedMonth];
+            $prevMonth = $month === 1 ? 12 : $month;
+            $prevYear  = $month === 1 ? $year - 1 : $year;
 
-            // 🔹 Calculer le dernier jour du mois sélectionné dans l'année sélectionnée
-            $startDate = new \DateTimeImmutable("$filterSelectedYear-$monthNumber-01");
-            $endDate = $startDate->modify('last day of this month');
-
-            $paymentsForUnpaidParents = $paymentRepository->findBy([
-                'month' => $filterSelectedMonth,
-                'year' => $filterSelectedYear
-            ]);
-            $registrations = $studentClassRegisteredRepository->findRegisteredForUnpaidParents($endDate);
+            $startDate = (new \DateTimeImmutable(sprintf('%04d-%02d-01 00:00:00', $prevYear, $prevMonth)));
+            // dernier jour du mois précédent: prendre le 1er du mois courant - 1 jour
+            $endDate   = (new \DateTimeImmutable(sprintf('%04d-%02d-01 23:59:59', $year, $month)))->modify('-1 day')->setTime(23,59,59);
         }
 
 
-        // Construire un ensemble de couples (studyClass, student) pour les paiements
-        $paidCouples = [];
-        foreach ($paymentsForUnpaidParents as $payment) {
-            $student = $payment->getStudent();
-            $studyClass = $payment->getStudyClass();
-            if ($student && $studyClass) {
-                $paidCouples[$student->getId() . '-' . $studyClass->getId()] = true;
+        $classType  = $request->query->get('classType');   // Arabe | Soutien scolaire | Autre
+        $speciality = $request->query->get('speciality');  // string
+        $schoolYear = $request->query->get('schoolYear');  // 2024/2025 | 2025/2026
+        $teacherId  = $request->query->get('teacherId');   // int
+
+        // --- Requête sessions + joins
+        $qb = $sessionRepository->createQueryBuilder('s')
+            ->leftJoin('s.studyClass', 'sc')->addSelect('sc')
+            ->leftJoin('s.teacher', 't')->addSelect('t')
+            ->andWhere('s.startTime >= :start')
+            ->andWhere('s.endTime   <= :end')
+            ->setParameter('start', $startDate)
+            ->setParameter('end', $endDate);
+
+        if ($classType)  { $qb->andWhere('sc.classType = :ct')->setParameter('ct', $classType); }
+        if ($speciality) { $qb->andWhere('sc.speciality = :sp')->setParameter('sp', $speciality); }
+        if ($schoolYear) { $qb->andWhere('sc.schoolYear = :sy')->setParameter('sy', $schoolYear); }
+        if ($teacherId)  { $qb->andWhere('t.id = :tid')->setParameter('tid', (int) $teacherId); }
+
+        $sessions = $qb->getQuery()->getResult();
+
+        // --- Agrégations minimales
+        $totals = ['sessionsCount' => 0, 'hoursSum' => 0.0];
+        $byTeacher = []; // id => { teacherId, teacherName, sessionsCount, hoursSum }
+        $bySpec = [];    // pour peupler les filtres disponibles sur la plage
+        $byType = [];
+
+        foreach ($sessions as $s) {
+            $start = $s->getStartTime(); $end = $s->getEndTime();
+            if (!$start || !$end) { continue; }
+            $hours = max(0, ($end->getTimestamp() - $start->getTimestamp()) / 3600);
+
+            $t  = $s->getTeacher();
+            $sc = $s->getStudyClass();
+
+            $tid  = $t?->getId();
+            $tname = $t ? trim(($t->getFirstName() ?? '') . ' ' . ($t->getLastName() ?? '')) : '—';
+
+            $type = $sc?->getClassType() ?? '—';
+            $spec = $sc?->getSpeciality() ?? '—';
+
+            $totals['sessionsCount']++;
+            $totals['hoursSum'] += $hours;
+
+            if (!isset($byTeacher[$tid])) {
+                $byTeacher[$tid] = ['teacherId' => $tid, 'teacherName' => $tname, 'sessionsCount' => 0, 'hoursSum' => 0.0];
             }
+            $byTeacher[$tid]['sessionsCount']++;
+            $byTeacher[$tid]['hoursSum'] += $hours;
+
+            $byType[$type] = true;
+            $bySpec[$spec] = true;
         }
-        // Identifier les inscriptions non payées
-        $unpaidParents = [];
-        foreach ($registrations as $registration) {
-            /** @var Student $student */
-            $student = $registration->getStudent();
-            /** @var StudyClass $studyClass */
-            $studyClass = $registration->getStudyClass();
-            if ($student && $studyClass) {
-                $key = $student->getId() . '-' . $studyClass->getId();
-                if (!isset($paidCouples[$key])) {
-                    $unpaidParents[] = [
-                        'studentId' => $student->getId(),
-                        'studentName' => $student->getFirstName() . ' ' . $student->getLastName(),
-                        'ParentName' => $student->getParent()->getFullNameParent(),
-                        'ParentEmailContact' => $student->getParent()->getEmailContact(),
-                        'ParentPhoneContact' => $student->getParent()->getPhoneContact(),
-                        'studyClassName' => $studyClass->getName() . ' ( ' . $studyClass->getSpeciality(). ' )',
-                    ];
-                }
+
+        // Ordonne la liste des profs par heures décroissantes
+        $byTeacher = array_values($byTeacher);
+        usort($byTeacher, fn($a, $b) => $b['hoursSum'] <=> $a['hoursSum']);
+
+        // --- Filtres disponibles (listes pour les <select>)
+        $allTeachers = $teacherRepository->createQueryBuilder('t')
+            ->orderBy('t.lastName', 'ASC')->addOrderBy('t.firstName', 'ASC')
+            ->getQuery()->getResult();
+
+        $teachersForFilter = array_map(function ($t) {
+            $name = trim(($t->getFirstName() ?? '') . ' ' . ($t->getLastName() ?? ''));
+            return ['id' => $t->getId(), 'name' => $name ?: '—'];
+        }, $allTeachers);
+
+        $available = [
+            'classTypes'  => [StudyClass::CLASS_TYPE_ARABE, StudyClass::CLASS_TYPE_SOUTIEN, StudyClass::CLASS_TYPE_AUTRE],
+            'specialities'=> array_values(array_filter(array_keys($bySpec), fn($s) => $s !== '—')),
+            'teachers'    => $teachersForFilter,
+            'schoolYears' => StudyClass::SCHOOL_YEARS,
+        ];
+        sort($available['specialities']);
+
+        return $this->json([
+            'totals'    => ['sessionsCount' => $totals['sessionsCount'], 'hoursSum' => round($totals['hoursSum'], 2)],
+            'byTeacher' => $byTeacher,
+            'available' => $available,
+            'filtersEcho' => [
+                'startDate' => $startDate->format('Y-m-d'),
+                'endDate'   => $endDate->format('Y-m-d'),
+                'classType' => $classType,
+                'speciality'=> $speciality,
+                'schoolYear'=> $schoolYear,
+                'teacherId' => $teacherId ? (int)$teacherId : null,
+            ],
+        ]);
+    }
+
+
+    #[Route('/dashboard/api/teacher-sessions', name: 'app_dashboard_teacher_sessions', methods: ['GET'])]
+    public function getTeacherSessions(Request $request, SessionRepository $sessionRepository): Response
+    {
+        $teacherId  = (int) $request->query->get('teacherId', 0);
+        if ($teacherId <= 0) {
+            return $this->json(['error' => 'teacherId manquant'], 400);
+        }
+
+        // Filtres dates
+        $endParam   = $request->query->get('endDate');   // Y-m-d
+        $startParam = $request->query->get('startDate'); // Y-m-d
+        if ($startParam && $endParam) {
+            $startDate = new \DateTimeImmutable($startParam . ' 00:00:00');
+            $endDate   = new \DateTimeImmutable($endParam . ' 23:59:59');
+        } else {
+            // fallback: 30 derniers jours
+            $endDate   = new \DateTimeImmutable('today 23:59:59');
+            $startDate = $endDate->sub(new \DateInterval('P30D'))->setTime(0, 0, 0);
+        }
+
+        // Filtres optionnels
+        $classType  = $request->query->get('classType');
+        $speciality = $request->query->get('speciality');
+        $schoolYear = $request->query->get('schoolYear');
+
+        $qb = $sessionRepository->createQueryBuilder('s')
+            ->leftJoin('s.studyClass', 'sc')->addSelect('sc')
+            ->leftJoin('s.teacher', 't')->addSelect('t')
+            ->andWhere('t.id = :tid')->setParameter('tid', $teacherId)
+            ->andWhere('s.startTime >= :start')->setParameter('start', $startDate)
+            ->andWhere('s.endTime   <= :end')->setParameter('end', $endDate)
+            ->orderBy('s.startTime', 'ASC');
+
+        if ($classType)  { $qb->andWhere('sc.classType = :ct')->setParameter('ct', $classType); }
+        if ($speciality) { $qb->andWhere('sc.speciality = :sp')->setParameter('sp', $speciality); }
+        if ($schoolYear) { $qb->andWhere('sc.schoolYear = :sy')->setParameter('sy', $schoolYear); }
+
+        $sessions = $qb->getQuery()->getResult();
+
+        $teacherName = null;
+        $items = [];
+        $totalHours = 0.0;
+
+        foreach ($sessions as $s) {
+            $start = $s->getStartTime(); $end = $s->getEndTime();
+            if (!$start || !$end) continue;
+
+            $h = max(0, ($end->getTimestamp() - $start->getTimestamp()) / 3600);
+            $totalHours += $h;
+
+            $t = $s->getTeacher();
+            if (!$teacherName && $t) {
+                $teacherName = trim(($t->getFirstName() ?? '') . ' ' . ($t->getLastName() ?? ''));
             }
+
+            $sc = $s->getStudyClass();
+            $items[] = [
+                'id'        => $s->getId(),
+                'startTime' => $start->format(DATE_ATOM),
+                'endTime'   => $end->format(DATE_ATOM),
+                'hours'     => round($h, 2),
+                'studyClass'=> [
+                    'name'       => $sc?->getName(),
+                    'level'      => $sc?->getLevel(),
+                    'speciality' => $sc?->getSpeciality(),
+                    'classType'  => $sc?->getClassType(),
+                    'schoolYear' => $sc?->getSchoolYear(),
+                ],
+            ];
         }
 
         return $this->json([
-            'totalSessions' => $totalSessions,
-            'totalHours' => round($totalHours, 2),
-            'teachersStats' => $teachersStats,
-            'totalInvoices' => $totalInvoices,
-            'totalInvoiceAmount' => round($totalInvoiceAmount, 2),
-            'totalPayments' => $totalPayments,
-            'totalPaymentAmount' => round($totalPaymentAmount, 2),
-            'unpaidParents' => $unpaidParents,
-            'allData' => [
-                'invoices' => $serializer->serialize($invoices, 'json', ['groups' => 'statistic_dashboard']),
-                'payments' => $serializer->serialize($payments, 'json', ['groups' => 'statistic_dashboard']),
-                'sessions' => $serializer->serialize($sessions, 'json', ['groups' => 'statistic_dashboard']),
-                'teachers' => $serializer->serialize($teachers, 'json', ['groups' => 'statistic_dashboard']),
-                'registrations' => $serializer->serialize($registrations, 'json', ['groups' => 'read_student_class_registered']),
-            ]
+            'teacherId'   => $teacherId,
+            'teacherName' => $teacherName,
+            'total'       => ['count' => count($items), 'hours' => round($totalHours, 2)],
+            'sessions'    => $items,
         ]);
     }
+
 
 
 
