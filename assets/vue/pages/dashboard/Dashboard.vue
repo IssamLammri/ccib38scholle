@@ -441,7 +441,6 @@ export default {
 
 .dashboard-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #e8f5e9 0%, #f1f4f1 50%, #eefaef 100%);
   padding: 2rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
