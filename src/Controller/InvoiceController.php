@@ -68,7 +68,6 @@ final class InvoiceController extends AbstractController
         ];
         $serialized = $serializer->serialize($invoices, 'json', $context);
         $payload = json_decode($serialized, true);
-        dump($payload);
         // Réponse OK (NB: apiResponse attend ($data, $code))
         return $this->apiResponse(['invoices' => $payload], Response::HTTP_OK);
     }

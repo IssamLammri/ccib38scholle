@@ -66,7 +66,6 @@ class SendMailAtelierOrientationCommand extends Command
             ];
         }
         foreach ($contacts as $contact) {
-            dump($contact['email']);
             $email = $contact['email'];
             $this->mailService->sendEmail(
                 to: $email,

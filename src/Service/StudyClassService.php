@@ -55,7 +55,6 @@ class StudyClassService
                 new \DateTimeImmutable($data['endHour'], new \DateTimeZone('Europe/Paris'))
             );
         }
-        dump($data);
         if (array_key_exists('schoolYear', $data)) {
             $studyClass->setSchoolYear($data['schoolYear'] ? : null);
         }
