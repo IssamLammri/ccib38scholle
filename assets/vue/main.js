@@ -16,6 +16,7 @@ import RegistrationList from './pages/registers/RegistrationList.vue';
 import NewSession from './pages/session/NewSession.vue';
 import ShowInvoice from './pages/invoice/ShowInvoice.vue';
 import ShowParent from './pages/parent/ShowParent.vue';
+import ListParents from './pages/parent/ListParents.vue';
 import TeacherShow from './pages/teacher/TeacherShow.vue';
 import StudyClass from './pages/studyClass/StudyClass.vue';
 import StudyList from './pages/studyClass/StudyList.vue';
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Enregistrement des composants
     app.component('Hello', Hello);
     app.component('NewPage', NewPage);
+    app.component('ListParents', ListParents);
     app.component('ListPayments', ListPayments);
     app.component('ListInvoice', ListInvoice);
     app.component('ListRefund', ListRefund);
