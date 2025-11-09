@@ -82,11 +82,31 @@ final class InvoiceController extends AbstractController
     }
 
     #[Route('/all', name: 'all_invoices', options: ['expose' => true], methods: ['GET'])]
-    public function getAllInvoices(): JsonResponse
+    public function getAllInvoices(Request $request): JsonResponse
     {
-        $allInvoices = $this->invoiceRepository->findBy([], ['invoiceDate' => 'DESC']);
+        $page  = max(1, (int) $request->query->get('page', 1));
+        $limit = 100;
+        $offset = ($page - 1) * $limit;
+
+        // On récupère limit + 1 éléments pour savoir s'il reste une page derrière
+        $invoices = $this->invoiceRepository->findBy(
+            [],
+            ['invoiceDate' => 'DESC'],
+            $limit + 1,
+            $offset
+        );
+
+        $hasMore = count($invoices) > $limit;
+
+        if ($hasMore) {
+            // on enlève le 101e pour ne renvoyer que 100
+            array_pop($invoices);
+        }
+
         return $this->json([
-            'allInvoices' => $allInvoices,
+            'allInvoices' => $invoices,
+            'page'        => $page,
+            'hasMore'     => $hasMore,
         ], 200, [], ['groups' => 'read_invoice']);
     }
 

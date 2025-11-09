@@ -26,6 +26,7 @@ class StudyClass
     // Années scolaires autorisées
     public const SCHOOL_YEAR_2024_2025 = '2024/2025';
     public const SCHOOL_YEAR_2025_2026 = '2025/2026';
+    public const SCHOOL_YEAR_ACTIVE = self::SCHOOL_YEAR_2025_2026;
 
     public const SCHOOL_YEARS = [
         self::SCHOOL_YEAR_2024_2025,
