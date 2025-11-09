@@ -14,6 +14,7 @@ import DashboardParent from './pages/dashboard/DashboardParent.vue';
 import RegistrationAcademicSupportList from './pages/registrationPageAcademicSupport/RegistrationAcademicSupportList.vue';
 import RegistrationList from './pages/registers/RegistrationList.vue';
 import NewSession from './pages/session/NewSession.vue';
+import ListInvoiceNew from './pages/session/ListInvoiceNew.vue';
 import ShowInvoice from './pages/invoice/ShowInvoice.vue';
 import ShowParent from './pages/parent/ShowParent.vue';
 import ListParents from './pages/parent/ListParents.vue';
@@ -65,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('NewRefund', NewRefund);
     app.component('ShowRefund', ShowRefund);
     app.component('NewSession', NewSession);
+    app.component('ListInvoiceNew', ListInvoiceNew);
     app.component('MenuList', MenuList);
     app.component('DashboardParent', DashboardParent);
     app.component('Dashboard', Dashboard);

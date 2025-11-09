@@ -18,7 +18,6 @@
 
       <div class="header-actions">
         <button
-            v-if="isAdmin"
             class="primary-btn"
             @click="goToNewRefund"
         >

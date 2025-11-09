@@ -282,7 +282,7 @@ class SessionController extends AbstractController
     ): Response
     {
         $rooms = $roomRepository->findAll();
-        $classes = $classRepository->findAll();
+        $classes = $classRepository->findBy(['schoolYear' => StudyClass::SCHOOL_YEAR_ACTIVE]);
         $teachers = $teacherRepository->findAll();
 
         $roomsArray = array_map(fn(Room $r) => [
@@ -294,12 +294,15 @@ class SessionController extends AbstractController
             'id' => $c->getId(),
             'name' => $c->getName(),
             'level' => $c->getLevel(),
-            'speciality' => $c->getSpeciality()
+            'speciality' => $c->getSpeciality(),
+            'principal_teacher' => $c->getPrincipalTeacher()?->getId(),
+            'school_year' => $c->getSchoolYear()
         ], $classes);
 
         $teachersArray = array_map(fn(Teacher $t) => [
             'id' => $t->getId(),
-            'fullName' => $t->getFirstName() . ' ' . $t->getLastName()
+            'fullName' => $t->getFirstName() . ' ' . $t->getLastName(),
+            'speciality' => $t->getSpecialities()
         ], $teachers);
 
         return $this->json([
