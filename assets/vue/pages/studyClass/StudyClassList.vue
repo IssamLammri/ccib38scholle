@@ -15,6 +15,8 @@
         </a>
       </div>
     </div>
+    <!-- Alerte -->
+    <alert v-if="messageAlert" :text="messageAlert" :type="typeAlert" class="mt-4" />
 
     <!-- Filtres -->
     <div class="filters-card mb-4">
@@ -336,6 +338,9 @@
                 <i class="fas fa-sort ms-1"></i>
               </th>
               <th>Professeur</th>
+              <th class="text-center">
+                <i class="fab fa-whatsapp"></i>
+              </th>
               <th class="text-center">Actions</th>
             </tr>
             </thead>
@@ -385,6 +390,18 @@
                     <i class="fas fa-user-slash me-1"></i>
                     Aucun
                   </span>
+              </td>
+              <td class="text-center">
+                <button
+                    v-if="c.whatsappUrl"
+                    type="button"
+                    class="btn btn-sm whatsapp-icon-btn"
+                    @click="copyWhatsapp(c.whatsappUrl)"
+                    :title="'Copier le lien WhatsApp'"
+                >
+                  <i class="fab fa-whatsapp"></i>
+                </button>
+                <span v-else class="text-muted small">—</span>
               </td>
               <td class="text-center">
                 <div class="btn-group">
@@ -559,6 +576,16 @@
                   <i class="fas fa-edit me-1"></i> Modifier
                 </a>
                 <button
+                    v-if="c.whatsappUrl"
+                    class="btn btn-outline-success btn-sm whatsapp-icon-btn"
+                    type="button"
+                    @click.stop="copyWhatsapp(c.whatsappUrl)"
+                    title="Copier le lien WhatsApp"
+                >
+                  <i class="fab fa-whatsapp me-1"></i>
+                  WhatsApp
+                </button>
+                <button
                     @click="confirmDelete(c)"
                     class="btn btn-outline-danger btn-sm"
                     :disabled="isDeleting === c.id"
@@ -643,9 +670,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Alerte -->
-    <alert v-if="messageAlert" :text="messageAlert" :type="typeAlert" class="mt-4" />
   </div>
 </template>
 
@@ -1035,6 +1059,49 @@ export default {
       this.searchTimeout = setTimeout(() => {}, 300);
     },
 
+    copyWhatsapp(url) {
+      if (!url) return;
+
+      const text = String(url).trim();
+
+      // API moderne si dispo
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard
+            .writeText(text)
+            .then(() => {
+              this.showAlert('Lien WhatsApp copié dans le presse-papiers ✅', 'success');
+            })
+            .catch(() => {
+              this.fallbackCopyWhatsapp(text);
+            });
+      } else {
+        this.fallbackCopyWhatsapp(text);
+      }
+    },
+
+    fallbackCopyWhatsapp(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        const ok = document.execCommand('copy');
+        if (ok) {
+          this.showAlert('Lien WhatsApp copié dans le presse-papiers ✅', 'success');
+        } else {
+          this.showAlert('Impossible de copier le lien WhatsApp 😕', 'danger');
+        }
+      } catch (e) {
+        this.showAlert('Impossible de copier le lien WhatsApp 😕', 'danger');
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    },
+
     // Actions CRUD
     confirmDelete(classItem) {
       this.classToDelete = classItem;
@@ -1290,4 +1357,26 @@ export default {
   outline: 2px solid #667eea;
   outline-offset: 2px;
 }
+
+.whatsapp-icon-btn {
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  color: #fff;
+  box-shadow: 0 0.5rem 1rem rgba(18, 140, 126, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.whatsapp-icon-btn i {
+  font-size: 1rem;
+}
+
+.whatsapp-icon-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.75rem 1.25rem rgba(18, 140, 126, 0.35);
+  color: #fff;
+}
+
 </style>
