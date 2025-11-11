@@ -55,6 +55,10 @@ class StudyClass
     #[Groups(['read_study_class','read_session'])]
     private ?string $day = self::DAY_SATURDAY;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['read_study_class'])]
+    private ?string $whatsappUrl = null;
+
     #[ORM\Column(type: 'time')]
     #[Groups(['read_study_class','read_session'])]
     private ?\DateTimeInterface $startHour = null;
@@ -174,6 +178,17 @@ class StudyClass
     public function setSchoolYear(?string $schoolYear): self
     {
         $this->schoolYear = $schoolYear;
+        return $this;
+    }
+
+    public function getWhatsappUrl(): ?string
+    {
+        return $this->whatsappUrl;
+    }
+
+    public function setWhatsappUrl(?string $whatsappUrl): self
+    {
+        $this->whatsappUrl = $whatsappUrl;
         return $this;
     }
 }

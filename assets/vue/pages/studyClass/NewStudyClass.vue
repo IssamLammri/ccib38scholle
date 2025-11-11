@@ -169,6 +169,31 @@
           </div>
         </div>
 
+        <!-- >>> NOUVEAU : URL du groupe WhatsApp -->
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <label for="whatsappUrl" class="form-label">
+              Lien du groupe WhatsApp (optionnel)
+            </label>
+            <div class="input-group">
+      <span class="input-group-text">
+        <i class="fab fa-whatsapp"></i>
+      </span>
+              <input
+                  type="url"
+                  id="whatsappUrl"
+                  class="form-control"
+                  v-model="form.whatsappUrl"
+                  :disabled="!canEditClass"
+                  placeholder="https://chat.whatsapp.com/… ou https://wa.me/…"
+              />
+            </div>
+            <small class="text-muted">
+              Collez ici le lien d’invitation vers le groupe WhatsApp de cette classe.
+            </small>
+          </div>
+        </div>
+
         <div class="row">
           <!-- Heure de Début -->
           <div class="col-md-6 mb-3">
@@ -325,6 +350,7 @@ export default {
         principalTeacherId: null,  // facultatif
         schoolYear: '2025/2026',   // défaut requis
         principalRoomId: null,     // facultatif
+        whatsappUrl: '',
       },
 
       days: ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'],
@@ -420,7 +446,8 @@ export default {
           endHour:   toIsoTime(this.form.endHour),
           principalTeacherId,
           schoolYear: this.form.schoolYear,
-          principalRoomId
+          principalRoomId,
+          whatsappUrl: this.form.whatsappUrl?.trim() || null,
         };
 
         const url = this.$routing.generate(this.createRouteName);
@@ -460,6 +487,7 @@ export default {
         principalTeacherId: null,
         schoolYear: '2025/2026',
         principalRoomId: null,
+        whatsappUrl: '',
       };
     }
   }

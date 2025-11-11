@@ -66,6 +66,10 @@ class StudyClassService
             $studyClass->setPrincipalRoom($room);
         }
 
+        if (array_key_exists('whatsappUrl', $data)) {
+            $studyClass->setWhatsappUrl($data['whatsappUrl'] ? : null);
+        }
+
         if (array_key_exists('principalTeacherId', $data)) {
             $teacher = $data['principalTeacherId']
                 ? $this->em->getRepository(Teacher::class)
