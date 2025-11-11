@@ -78,8 +78,6 @@ class StudyClassService
             $studyClass->setPrincipalTeacher($teacher);
         }
 
-
-
         // validation
         $errors = [];
         $violations = $this->validator->validate($studyClass);
