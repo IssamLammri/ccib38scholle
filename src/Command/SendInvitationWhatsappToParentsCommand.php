@@ -122,6 +122,7 @@ class SendInvitationWhatsappToParentsCommand extends Command
             return Command::SUCCESS;
         }
 
+        $motherSend  = 0;
         $sentCount  = 0;
         $skipped    = 0;
         $noLinkSkip = 0;
@@ -153,6 +154,7 @@ class SendInvitationWhatsappToParentsCommand extends Command
                 'studyClass' => $studyClass,
                 'active'     => true,
             ]);
+
 
             if (!$registrations) {
                 $io->note('Aucun élève actif dans cette classe.');
@@ -206,6 +208,7 @@ class SendInvitationWhatsappToParentsCommand extends Command
                     $io->text(sprintf('[DRY RUN] À: %s | Sujet: %s', $emailTo, $subject));
                     $io->text(sprintf('          Lien WhatsApp: %s', $whatsappUrl));
                 } else {
+                    $sentCount++;
                     $this->mailService->sendEmail(
                         to: $emailTo,
                         subject: $subject,
@@ -215,6 +218,7 @@ class SendInvitationWhatsappToParentsCommand extends Command
                     );
                     $emailToMother = $parent->getMotherEmail();
                     if ($emailToMother != $emailTo){
+                        $motherSend ++;
                         $this->mailService->sendEmail(
                         to: $emailToMother,
                             subject: $subject,
@@ -225,13 +229,44 @@ class SendInvitationWhatsappToParentsCommand extends Command
                     }
                 }
 
-                $sentCount++;
             }
+
+            $teacher = $studyClass->getPrincipalTeacher();
+            if ($teacher === null) {
+                $io->note('Aucun enseignant principal pour cette classe, pas d’email de notification envoyé.');
+                continue;
+            }
+            $subject = sprintf(
+                'Invitation au groupe WhatsApp – %s (%s, %s)',
+                $teacher->getFirstName().' '.$teacher->getLastName(),
+                $studyClass->getName(),
+                $yearLabel
+            );
+            $context = [
+                'yearLabel'       => $yearLabel,
+                'teacherFullName'=> $teacher->getFirstName().' '.$teacher->getLastName(),
+                'className'       => $studyClass->getName(),
+                'classLevel'      => $studyClass->getLevelClass(),
+                'speciality'      => $studyClass->getSpeciality(),
+                'day'             => $studyClass->getDay(),
+                'startHour'       => $studyClass->getStartHour(),
+                'endHour'         => $studyClass->getEndHour(),
+                'whatsappUrl'     => $whatsappUrl,
+            ];
+            $this->mailService->sendEmail(
+                to: $teacher->getEmail(),
+                subject: $subject,
+                template: 'email/send_invitation_teacher_whatsapp.html.twig',
+                context: $context,
+                sender: 'contact@ccib38.fr'
+            );
+
         }
 
         $io->success(sprintf(
-            'Terminé. Invitations envoyées: %d | Inscriptions ignorées (pb élève/parent/email): %d | Classes sans lien WhatsApp: %d%s',
+            'Terminé. Invitations envoyées: %d | Mères envoyé : %d | Inscriptions ignorées (pb élève/parent/email): %d | Classes sans lien WhatsApp: %d%s',
             $sentCount,
+            $motherSend,
             $skipped,
             $noLinkSkip,
             $dryRun ? ' (dry-run, aucun e-mail réellement envoyé)' : ''
