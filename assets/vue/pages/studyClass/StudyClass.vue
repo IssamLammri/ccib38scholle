@@ -143,6 +143,44 @@
           </div>
         </div>
         <!-- <<< -->
+        <!-- >>> Ajout: Groupe WhatsApp -->
+        <div class="info-card" v-if="studyClass.whatsappUrl">
+          <div class="info-icon whatsapp-icon">
+            <i class="fab fa-whatsapp"></i>
+          </div>
+          <div class="info-content">
+            <label>Groupe WhatsApp</label>
+
+            <div class="whatsapp-actions">
+              <!-- Bouton pour ouvrir le groupe -->
+              <a
+                  :href="normalizedWhatsappUrl"
+                  target="_blank"
+                  rel="noopener"
+                  class="whatsapp-open-btn"
+              >
+                <i class="fab fa-whatsapp"></i>
+                Ouvrir le groupe
+              </a>
+
+              <!-- Bouton pour copier -->
+              <button
+                  type="button"
+                  class="whatsapp-copy-btn"
+                  @click="copyWhatsappUrl"
+              >
+                <i class="fas fa-copy"></i>
+                Copier le lien
+              </button>
+            </div>
+
+            <!-- Affichage du lien brut (optionnel) -->
+            <small class="whatsapp-link">
+              {{ studyClass.whatsappUrl }}
+            </small>
+          </div>
+        </div>
+        <!-- <<< -->
       </div>
     </div>
 
@@ -340,6 +378,18 @@ export default {
     };
   },
   computed: {
+    normalizedWhatsappUrl() {
+      const url = this.studyClass?.whatsappUrl || '';
+      if (!url) return '#';
+
+      // Si l'URL commence déjà par http(s), on la garde
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+
+      // Sinon on préfixe en https
+      return 'https://' + url;
+    },
     filteredStudents() {
       return this.localStudentsInStudyClass.filter(s => s.active === this.filterActive);
     },
@@ -359,6 +409,20 @@ export default {
     }
   },
   methods: {
+    async copyWhatsappUrl() {
+      const url = this.studyClass?.whatsappUrl;
+      if (!url) return;
+
+      try {
+        await navigator.clipboard.writeText(url);
+        this.messageAlert = "Lien WhatsApp copié dans le presse-papiers.";
+        this.typeAlert = "success";
+      } catch (e) {
+        console.error("Erreur lors de la copie du lien WhatsApp", e);
+        this.messageAlert = "Impossible de copier le lien WhatsApp.";
+        this.typeAlert = "danger";
+      }
+    },
     printBooksReport() {
       const html = this.generateBooksPrintContent();
       const w = window.open('', '_blank');
@@ -1554,5 +1618,62 @@ input:checked + .switch-slider:before {
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
+
+.whatsapp-icon {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+}
+
+.whatsapp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.whatsapp-open-btn,
+.whatsapp-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.whatsapp-open-btn {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(18, 140, 126, 0.4);
+}
+
+.whatsapp-open-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(18, 140, 126, 0.55);
+}
+
+.whatsapp-copy-btn {
+  background: rgba(15, 23, 42, 0.04);
+  color: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+}
+
+.whatsapp-copy-btn:hover {
+  background: rgba(148, 163, 184, 0.12);
+  transform: translateY(-1px);
+}
+
+.whatsapp-link {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  word-break: break-all;
+}
+
 
 </style>
