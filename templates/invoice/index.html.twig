@@ -3,5 +3,7 @@
 {% block title %}Factures{% endblock %}
 
 {% block body %}
-        <list-invoice></list-invoice>
+        <list-invoice
+        :is-admin="{{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }}"
+        ></list-invoice>
 {% endblock %}
