@@ -263,7 +263,6 @@ class StudyClassController extends AbstractController
 
             return $this->apiErrorResponse('JSON invalide.', Response::HTTP_BAD_REQUEST);
         }
-        //dump($data);
         // 2. Déléguer au service
         $errors = $studyClassService->updateFromArray($studyClass, $data);
         if (null !== $errors) {
