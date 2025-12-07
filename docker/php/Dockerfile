@@ -16,7 +16,11 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) intl pdo pdo_mysql zip gd
+    && docker-php-ext-install -j$(nproc) intl pdo pdo_mysql zip gd \
+    # Install Encore CLI
+    && curl -sSL https://encore.dev/install.sh | bash \
+    # Ensure Encore is in PATH
+    && echo 'export PATH="$PATH:/root/.encore/bin"' >> /root/.bashrc
 
 # 2) Copier la conf d’upload avant de démarrer PHP
 COPY docker/php/conf.d/uploads.ini /usr/local/etc/php/conf.d/uploads.ini

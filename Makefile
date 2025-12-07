@@ -2,7 +2,7 @@
 # Makefile for schollccib project
 
 # Variables
-COMPOSE = docker-compose
+COMPOSE = docker compose
 EXEC_APP = $(COMPOSE) exec app
 
 # Commands
