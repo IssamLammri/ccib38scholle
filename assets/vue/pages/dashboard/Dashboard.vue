@@ -144,6 +144,154 @@
           </div>
         </div>
       </div>
+      <!-- Tableau des parents impayés -->
+      <div class="card-modern" style="margin-top: 2rem;">
+        <div class="card-header-modern">
+          <h3 class="card-title">💶 Suivi des Paiements & Impayés</h3>
+          <span class="card-badge" v-if="unpaidTotals">
+            {{ unpaidTotals.parentsCount }} familles concernées
+          </span>
+        </div>
+
+        <div class="unpaid-summary-banner" v-if="unpaidTotals">
+          <div class="summary-item">
+            <span class="lbl">Total Dû (Année)</span>
+            <span class="val">{{ unpaidTotals.totalDue.toFixed(2) }} €</span>
+          </div>
+          <div class="summary-item">
+            <span class="lbl">Déjà Versé</span>
+            <span class="val success">{{ unpaidTotals.totalPaid.toFixed(2) }} €</span>
+          </div>
+          <div class="summary-item">
+            <span class="lbl">Reste à recouvrer</span>
+            <span class="val danger">{{ unpaidTotals.totalRemaining.toFixed(2) }} €</span>
+          </div>
+        </div>
+
+        <div class="table-container" v-if="!unpaidLoading">
+          <table class="modern-table" v-if="unpaidParents && unpaidParents.length">
+            <thead>
+            <tr>
+              <th>Parent</th>
+              <th>Contact</th>
+
+              <th class="th-center bg-gray-50">
+                <span class="th-sub">🕋 Arabe</span>
+              </th>
+
+              <th class="th-center bg-gray-50">
+                <span class="th-sub">📚 Soutien</span>
+              </th>
+
+              <th class="th-number">Total Dû</th>
+              <th class="th-number">Versé Global</th>
+              <th class="th-number">Reste</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="(p, index) in unpaidParents"
+                :key="p.parentId"
+                class="table-row"
+                :style="{'--row-index': index}"
+            >
+              <td>
+                <div class="parent-name">{{ p.parentName }}</div>
+              </td>
+
+              <td>
+                <div class="parent-contact">
+                  <div v-if="p.email" class="contact-row">
+                    <span class="icon">📧</span> {{ p.email }}
+                  </div>
+                  <div v-if="p.phone" class="contact-row">
+                    <span class="icon">📞</span> {{ p.phone }}
+                  </div>
+                </div>
+              </td>
+
+              <td class="td-center bg-gray-50">
+                <div class="service-detail" :class="{ 'inactive': p.arabChildrenCount === 0 }">
+                  <div class="badge-count" v-if="p.arabChildrenCount > 0">
+                    {{ p.arabChildrenCount }} enf.
+                  </div>
+
+                  <div class="price-split" v-if="p.arabChildrenCount > 0 || p.paidArabe > 0">
+                    <div class="split-row">
+                      <span class="lbl">Dû:</span>
+                      <span class="val">{{ Number(p.dueArabe).toFixed(2) }}€</span>
+                    </div>
+                    <div class="split-row success" v-if="p.paidArabe > 0">
+                      <span class="lbl">Reçu:</span>
+                      <span class="val">{{ Number(p.paidArabe).toFixed(2) }}€</span>
+                    </div>
+                  </div>
+                  <div v-else class="dash">-</div>
+                </div>
+              </td>
+
+              <td class="td-center bg-gray-50">
+                <div class="service-detail" :class="{ 'inactive': p.soutienRegistrationsCount === 0 }">
+                  <div class="badge-count soutien" v-if="p.soutienRegistrationsCount > 0">
+                    {{ p.soutienRegistrationsCount }} inscr.
+                  </div>
+
+                  <div class="price-split" v-if="p.soutienRegistrationsCount > 0 || p.paidSoutien > 0">
+                    <div class="split-row">
+                      <span class="lbl">Dû:</span>
+                      <span class="val">{{ Number(p.dueSoutien).toFixed(2) }}€</span>
+                    </div>
+                    <div class="split-row success" v-if="p.paidSoutien > 0">
+                      <span class="lbl">Reçu:</span>
+                      <span class="val">{{ Number(p.paidSoutien).toFixed(2) }}€</span>
+                    </div>
+                  </div>
+                  <div v-else class="dash">-</div>
+                </div>
+              </td>
+
+              <td class="td-number">
+        <span class="font-bold">
+          {{ Number(p.totalDue).toFixed(2) }} €
+        </span>
+              </td>
+
+              <td class="td-number">
+        <span class="number-badge paid-badge">
+          {{ Number(p.totalPaid).toFixed(2) }} €
+        </span>
+              </td>
+
+              <td class="td-number">
+        <span
+            class="number-badge unpaid-badge"
+            :class="{'unpaid-high': p.remaining >= 200}"
+        >
+          {{ Number(p.remaining).toFixed(2) }} €
+        </span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div v-else class="empty-state">
+            <div class="empty-icon">✅</div>
+            <h3>Tout est en ordre !</h3>
+            <p>Aucun impayé détecté pour l'année {{ filterSchoolYear || defaultSchoolYear }}.</p>
+          </div>
+        </div>
+
+        <div v-else class="loading-state" style="box-shadow:none; border-radius:0;">
+          <div class="spinner"></div>
+          <p>Analyse des paiements en cours...</p>
+        </div>
+
+        <div v-if="unpaidError" class="error-message" style="margin-top:1rem">
+          <span class="error-icon">⚠️</span>
+          {{ unpaidError }}
+        </div>
+      </div>
+
 
       <!-- Error Message -->
       <div v-if="error" class="error-message">
@@ -253,6 +401,10 @@ export default {
       },
 
       _debounceTimer: null,
+      unpaidLoading: false,
+      unpaidError: null,
+      unpaidParents: [],
+      unpaidTotals: null,
     };
   },
 
@@ -271,19 +423,50 @@ export default {
   },
 
   mounted() {
-    this.fetchStatistics();
+    //this.fetchStatistics();
+    //this.fetchInfosNotPayed();
   },
+
 
   watch: {
     filterStartDate() { this.debouncedFetch(); },
     filterEndDate() { this.debouncedFetch(); },
     filterClassType() { this.debouncedFetch(); },
     filterSpeciality() { this.debouncedFetch(); },
-    filterSchoolYear() { this.debouncedFetch(); },
+
+    filterSchoolYear() {
+      this.debouncedFetch();
+      this.fetchInfosNotPayed();
+    },
+
     filterTeacherId() { this.debouncedFetch(); },
   },
 
+
   methods: {
+    fetchInfosNotPayed() {
+      this.unpaidLoading = true;
+      this.unpaidError = null;
+
+      const params = {};
+      const schoolYear = this.filterSchoolYear || this.defaultSchoolYear;
+      if (schoolYear) {
+        params.schoolYear = schoolYear;
+      }
+
+      axios
+          .get("/dashboard/api/unpaid-parents", { params })
+          .then(({ data }) => {
+            this.unpaidParents = data.parents || [];
+            this.unpaidTotals = data.totals || null;
+          })
+          .catch(() => {
+            this.unpaidError = "Impossible de récupérer les informations d'impayés.";
+          })
+          .finally(() => {
+            this.unpaidLoading = false;
+          });
+    },
     openTeacherSessions(row) {
       if (!row || !row.teacherId) return;
       this.showSessionsModal = true;
@@ -403,7 +586,6 @@ export default {
             this.loading = false;
           });
     },
-
     getInitials(name) {
       return name
           .split(' ')
@@ -1008,4 +1190,185 @@ export default {
   color: #2d3748;
 }
 
+.parent-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.parent-contact {
+  font-size: 0.85rem;
+  color: #4a5568;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.number-badge.unpaid-badge {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #b91c1c;
+}
+
+.number-badge.unpaid-badge.unpaid-high {
+  background: linear-gradient(135deg, #fecaca, #fca5a5);
+  color: #7f1d1d;
+}
+
+/* --- NOUVEAUX STYLES POUR LE TABLEAU DES PAIEMENTS --- */
+
+/* Bandeau de résumé sous le titre */
+.unpaid-summary-banner {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #edf2f7;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-item .lbl {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #718096;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.summary-item .val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.summary-item .val.success { color: #059669; }
+.summary-item .val.danger { color: #e53e3e; }
+
+
+/* Styles des cellules */
+.bg-gray-50 {
+  background-color: #f8fafc; /* Légère teinte pour séparer les services */
+}
+
+.th-center, .td-center {
+  text-align: center;
+}
+
+.th-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Cellule de contact */
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #4a5568;
+  margin-bottom: 0.15rem;
+}
+.contact-row .icon { opacity: 0.7; }
+
+/* Cellule Service (Arabe / Soutien) */
+.service-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.service-detail.inactive {
+  opacity: 0.4;
+}
+
+.badge-count {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-count.soutien {
+  background-color: #e0f2fe; /* Bleu très clair pour soutien */
+  color: #0369a1;
+}
+
+.service-price {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+
+.dash {
+  color: #cbd5e0;
+  font-weight: bold;
+}
+
+.font-bold {
+  font-weight: 700;
+  color: #2d3748;
+}
+
+/* Badges Monétaires */
+.number-badge.paid-badge {
+  background-color: #ecfdf5;
+  color: #047857; /* Vert foncé */
+}
+
+.number-badge.unpaid-badge {
+  background-color: #fff1f2;
+  color: #be123c; /* Rouge */
+  box-shadow: 0 0 0 1px rgba(190, 18, 60, 0.1);
+}
+
+.number-badge.unpaid-high {
+  background-color: #ffe4e6;
+  color: #9f1239;
+  font-weight: 800;
+  box-shadow: 0 0 0 1px rgba(159, 18, 57, 0.2);
+}
+
+.price-split {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+}
+
+.split-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 80px;
+  gap: 0.5rem;
+}
+
+.split-row .lbl {
+  color: #718096;
+  font-size: 0.75rem;
+}
+
+.split-row .val {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.split-row.success .val {
+  color: #059669; /* Vert pour l'argent reçu */
+}
+
+.split-row.success .lbl {
+  color: #059669;
+  opacity: 0.8;
+}
 </style>

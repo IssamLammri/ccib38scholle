@@ -2,16 +2,13 @@
 
 namespace App\Controller;
 
-use App\Entity\Student;
 use App\Entity\StudyClass;
 use App\Model\ApiResponseTrait;
-use App\Repository\InvoiceRepository;
-use App\Repository\PaymentRepository;
 use App\Repository\SessionRepository;
-use App\Repository\StudentClassRegisteredRepository;
 use App\Repository\TeacherRepository;
 use App\Service\MailService;
 use App\Service\SmsService;
+use App\Service\UnpaidParentsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\SerializerInterface;
 
 
 #[IsGranted('ROLE_USER')]
@@ -167,6 +163,23 @@ class HomeController extends AbstractController
             ],
         ]);
     }
+
+    #[Route('/dashboard/api/unpaid-parents', name: 'app_dashboard_unpaid_parents', methods: ['GET'])]
+    public function getUnpaidParents(
+        Request $request,
+        UnpaidParentsService $unpaidParentsService
+    ): Response {
+        // Année scolaire en query param, sinon valeur par défaut
+        $schoolYear = $request->query->get('schoolYear');
+        if (!$schoolYear) {
+            $schoolYear = StudyClass::SCHOOL_YEAR_ACTIVE;
+        }
+
+        $data = $unpaidParentsService->computeUnpaidParents($schoolYear);
+
+        return $this->json($data);
+    }
+
 
 
     #[Route('/dashboard/api/teacher-sessions', name: 'app_dashboard_teacher_sessions', methods: ['GET'])]
