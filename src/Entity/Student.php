@@ -13,15 +13,15 @@ class Student
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_student','read_study_class','read_student_class_registered','read_payment','read_parent','read_invoice_for_refund','read_refund'])]
+    #[Groups(['read_student','read_study_class','read_student_class_registered','read_payment','read_parent','read_invoice_for_refund','read_refund','presence_session'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read','read_parent','read_invoice_for_refund','read_refund'])]
+    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read','read_parent','read_invoice_for_refund','read_refund','presence_session'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read','read_parent','read_invoice_for_refund','read_refund'])]
+    #[Groups(['read_student','read_payment','read_student_class_registered','student_session_read','read_parent','read_invoice_for_refund','read_refund','presence_session'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'date')]

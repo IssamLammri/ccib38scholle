@@ -15,7 +15,7 @@ class Room
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_session','read_room','read_study_class'])]
+    #[Groups(['read_session','read_room','read_study_class','presence_session'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'integer')]
