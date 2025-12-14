@@ -13,15 +13,15 @@ class Teacher
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_study_class','read_teacher'])]
+    #[Groups(['read_study_class','read_teacher','presence_session'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_session','read_study_class','read_teacher'])]
+    #[Groups(['read_session','read_study_class','read_teacher','presence_session'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_session','read_study_class','read_teacher'])]
+    #[Groups(['read_session','read_study_class','read_teacher','presence_session'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'string', length: 255)]

@@ -36,19 +36,19 @@ class StudyClass
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_payment','read_student','read_study_class','read_teacher'])]
+    #[Groups(['read_payment','read_student','read_study_class','read_teacher','presence_session'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_payment','read_student','read_study_class','read_session','read_invoice','read_teacher'])]
+    #[Groups(['read_payment','read_student','read_study_class','read_session','read_invoice','read_teacher','presence_session'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'string')]
-    #[Groups(['read_study_class','read_session'])]
+    #[Groups(['read_study_class','read_session','presence_session'])]
     private ?string $level = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_study_class','read_session','read_payment','read_invoice'])]
+    #[Groups(['read_study_class','read_session','read_payment','read_invoice','presence_session'])]
     private ?string $speciality = null;
 
     #[ORM\Column(type: 'string', length: 50)]
@@ -84,7 +84,7 @@ class StudyClass
     #[ORM\Column(type: 'string', length: 9)]
     #[Assert\Choice(choices: StudyClass::SCHOOL_YEARS, message: 'Année scolaire invalide.')]
     #[Groups(['read_study_class','read_session','read_payment','read_invoice'])]
-    private ?string $schoolYear = self::SCHOOL_YEAR_2024_2025;
+    private ?string $schoolYear = self::SCHOOL_YEAR_2025_2026;
 
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'studyClass')]
     private Collection $payments;

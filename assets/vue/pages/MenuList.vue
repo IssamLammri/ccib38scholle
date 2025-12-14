@@ -258,6 +258,17 @@
               <span class="menu-text">Sessions du jour</span>
             </a>
           </li>
+          <li>
+            <a
+                :href="$routing.generate('app_session_presences')"
+                class="menu-link"
+                :class="{ active: isActiveRoute('app_session_presences') }"
+                :aria-current="isActiveRoute('app_session_presences') ? 'page' : null"
+            >
+              <i class="fas fa-calendar-day menu-icon"></i>
+              <span class="menu-text">Présences</span>
+            </a>
+          </li>
         </template>
 
         <!-- Espace Parent -->
