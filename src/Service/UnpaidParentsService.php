@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\StudentClassRegistered;
 use App\Entity\StudyClass;
 use App\Entity\ParentEntity;
 use App\Repository\StudentClassRegisteredRepository;
@@ -23,7 +24,7 @@ class UnpaidParentsService
         $parents = [];
 
         $registrations = $this->registrationRepository->findStudentsActiveInStudyClassBySchoolYear($schoolYear);
-
+        /** @var StudentClassRegistered $registration */
         foreach ($registrations as $registration) {
             $student    = $registration->getStudent();
             $parent     = $student?->getParent();
@@ -31,7 +32,7 @@ class UnpaidParentsService
 
             if (!$parent || !$studyClass) { continue; }
 
-            if (method_exists($registration, 'isActive') && $registration->isActive() === false) { continue; }
+            if ($registration->isActive() === false) { continue; }
 
             $parentId  = $parent->getId();
             $studentId = $student->getId();
@@ -64,7 +65,7 @@ class UnpaidParentsService
             $type = $studyClass->getClassType();
 
             if ($type === StudyClass::CLASS_TYPE_SOUTIEN) {
-                $parents[$parentId]['soutienRegistrationsCount']++;
+                $parents[$parentId]['soutienRegistrationsCount'] += $this->getNumberOfMonth($registration->getCreatedAt());
             }
             if ($type === StudyClass::CLASS_TYPE_ARABE) {
                 $parents[$parentId]['arabChildrenIds'][$studentId] = true;
@@ -80,12 +81,13 @@ class UnpaidParentsService
                 $countChildrenArabe === 1 => 240,
                 $countChildrenArabe === 2 => 450,
                 $countChildrenArabe === 3 => 630,
-                $countChildrenArabe >= 4  => 200 * $countChildrenArabe,
+                $countChildrenArabe === 4 => 780,
+                $countChildrenArabe >= 5  => 200 * $countChildrenArabe,
                 default => 0,
             };
 
             // Soutien
-            $data['dueSoutien'] = $data['soutienRegistrationsCount'] * 75;
+            $data['dueSoutien'] = $data['soutienRegistrationsCount'] * 25;
 
             // Total
             $data['totalDue'] = $data['dueArabe'] + $data['dueSoutien'];
@@ -108,7 +110,9 @@ class UnpaidParentsService
             $serviceType = (string) $payment->getServiceType();
 
             if (stripos($serviceType, 'soutien') !== false) {
-                $parents[$parentId]['paidSoutien'] += $amount;
+                if ($payment->getStudyClass()->getSchoolYear() === $schoolYear){
+                    $parents[$parentId]['paidSoutien'] += $amount;
+                }
             } else {
                 $parents[$parentId]['paidArabe'] += $amount;
             }
@@ -150,6 +154,33 @@ class UnpaidParentsService
             ],
         ];
     }
+
+    private function getNumbreOfWeekBetween(\DateTimeImmutable $registrationDate): int
+    {
+        $now = new \DateTimeImmutable('now');
+
+        // Diff absolue (peu importe si la date est dans le futur)
+        $interval = $registrationDate->diff($now, true);
+
+        // Jours totaux -> semaines entières
+        $days = $interval->days ?? 0;
+
+        return intdiv($days, 7);
+    }
+
+
+    private function getNumberOfMonth(\DateTimeImmutable $registrationDate): int
+    {
+        $weeks = $this->getNumbreOfWeekBetween($registrationDate);
+
+        if ($weeks <= 4) {
+            return 1;
+        }
+
+        // 5..8 => 2, 9..12 => 3, 13..16 => 4, ...
+        return intdiv($weeks - 5, 4) + 2;
+    }
+
 
     private function formatParentName(ParentEntity $parent): string
     {
