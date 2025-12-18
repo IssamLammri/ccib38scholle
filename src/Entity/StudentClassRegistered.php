@@ -29,7 +29,7 @@ class StudentClassRegistered
     private ?StudyClass $studyClass = null; // Relation Many-to-One avec StudyClass
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => null])]
-    #[Groups(['read_student_class_registered','read_payment'])]
+    #[Groups(['read_student_class_registered','read_payment','read_student'])]
     private ?bool $active = null;
 
     public function __construct(StudyClass $studyClass, Student $student)

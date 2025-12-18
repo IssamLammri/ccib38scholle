@@ -354,6 +354,9 @@ export default {
       };
 
       try {
+        // Set pour éviter les doublons
+        const invoiceIds = new Set();
+
         // boucle tant qu'il reste des pages
         while (this.hasMore) {
           const url = this.$routing.generate("all_invoices") + "?page=" + this.page;
@@ -361,14 +364,23 @@ export default {
           const response = await this.axios.get(url);
           const { allInvoices, hasMore } = response.data;
 
-          const normalized = (allInvoices || []).map((inv) => ({
-            ...inv,
-            payments: (inv.payments || []).map((p) => ({
-              ...p,
-              paymentType: mapPayment(p.paymentType),
-              serviceType: mapService(p.serviceType),
-            })),
-          }));
+          const normalized = (allInvoices || [])
+              .filter((inv) => {
+                // Éviter les doublons
+                if (invoiceIds.has(inv.id)) {
+                  return false;
+                }
+                invoiceIds.add(inv.id);
+                return true;
+              })
+              .map((inv) => ({
+                ...inv,
+                payments: (inv.payments || []).map((p) => ({
+                  ...p,
+                  paymentType: mapPayment(p.paymentType),
+                  serviceType: mapService(p.serviceType),
+                })),
+              }));
 
           // on ajoute au tableau existant
           this.invoices = [...this.invoices, ...normalized];
@@ -419,7 +431,8 @@ export default {
         this.axios
             .delete(this.$routing.generate("invoice_delete", { id: invoice.id }))
             .then(() => {
-              this.fetchInvoices();
+              // Retirer la facture du tableau local
+              this.invoices = this.invoices.filter(inv => inv.id !== invoice.id);
               this.messageAlert = "Facture supprimée avec succès.";
               this.typeAlert = "success";
             })

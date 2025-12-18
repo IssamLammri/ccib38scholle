@@ -33,27 +33,13 @@
 
       <ul class="sidebar-menu list-unstyled">
         <!-- Tableau de bord -->
-        <template v-if="isAdmin">
+        <template v-if="isManager">
           <li>
             <a
                 :href="$routing.generate('app_dashboard')"
                 class="menu-link"
                 :class="{ active: isActiveRoute('app_dashboard') }"
                 :aria-current="isActiveRoute('app_dashboard') ? 'page' : null"
-            >
-              <i class="fa-solid fa-chart-line menu-icon"></i>
-              <span class="menu-text">Tableau de bord</span>
-            </a>
-          </li>
-        </template>
-
-        <template v-else-if="isParent">
-          <li>
-            <a
-                :href="$routing.generate('app_dashboard_parent')"
-                class="menu-link"
-                :class="{ active: isActiveRoute('app_dashboard_parent') }"
-                :aria-current="isActiveRoute('app_dashboard_parent') ? 'page' : null"
             >
               <i class="fa-solid fa-chart-line menu-icon"></i>
               <span class="menu-text">Tableau de bord</span>
@@ -282,7 +268,7 @@
                 :aria-current="isActiveRoute('app_dashboard_parent') ? 'page' : null"
             >
               <i class="fas fa-home menu-icon"></i>
-              <span class="menu-text">Tableau de bord</span>
+              <span class="menu-text">Tableau de bord Parent</span>
             </a>
           </li>
         </template>
