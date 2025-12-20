@@ -250,6 +250,7 @@
               </td>
               <td class="text-center">
                 <div class="btn-group" role="group">
+                  <barcode-modal :studentName="s.lastName + ' ' + s.firstName" :id="s.id" specifier="1" />
                   <a :href="$routing.generate('app_student_show', { id: s.id })"
                      class="btn btn-outline-info btn-sm"
                      data-bs-toggle="tooltip"
