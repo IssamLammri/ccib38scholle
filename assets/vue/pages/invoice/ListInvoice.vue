@@ -1,5 +1,12 @@
 <template>
   <div class="invoice-page">
+    <div class="loader-overlay" v-if="isLoading">
+      <div class="loader-card">
+        <span class="loader-spinner"></span>
+        <span class="loader-text">Chargement des factures...</span>
+      </div>
+    </div>
+
     <!-- En-tête avec titre et résumé -->
     <div class="page-header">
       <div class="header-content">
@@ -149,7 +156,7 @@
                   <div class="payment-student">
                     <strong>{{ payment.student.fullName || "Non renseigné" }}</strong>
                     <span class="payment-details">
-                        {{ payment.studyClass?.speciality || "Non renseignée" }} •
+                        {{ (payment.studyClass && payment.studyClass.speciality) || "Non renseignée" }} •
                         {{ payment.month || "Non renseigné" }}
                       </span>
                   </div>
@@ -188,6 +195,17 @@
         </table>
       </div>
     </div>
+    <div class="load-more-wrapper" v-if="hasMore">
+      <button
+          class="load-more-btn"
+          @click="loadMore"
+          :disabled="isLoading"
+      >
+        <span v-if="!isLoading">Charger plus de factures</span>
+        <span v-else>Chargement...</span>
+      </button>
+    </div>
+
   </div>
 </template>
 
@@ -233,6 +251,11 @@ export default {
       selectedServiceType: "",
       paymentTypes: ["Espèces", "Carte bancaire", "Chèque"],
       serviceTypes: ["soutien", "arabe"],
+
+      // pagination / chargement automatique
+      page: 1,
+      hasMore: true,
+      isLoading: false,
     };
   },
   computed: {
@@ -305,41 +328,82 @@ export default {
     }
   },
   methods: {
-    async fetchInvoices() {
-      this.axios
-          .get(this.$routing.generate("all_invoices"))
-          .then((response) => {
-            const mapPayment = (t) => {
-              if (!t) return t;
-              const s = String(t).toLowerCase();
-              if (s.includes("esp")) return "Espèces";
-              if (s.includes("carte")) return "Carte bancaire";
-              if (s.includes("ch")) return "Chèque";
-              return t;
-            };
+    async loadAllInvoices() {
+      if (this.isLoading) return;
 
-            const mapService = (t) => {
-              if (!t) return t;
-              const s = String(t).toLowerCase();
-              if (s.includes("souti")) return "soutien";
-              if (s.includes("arab")) return "arabe";
-              return t;
-            };
+      this.isLoading = true;
+      this.invoices = [];
+      this.page = 1;
+      this.hasMore = true;
 
-            this.invoices = (response.data.allInvoices || []).map((inv) => ({
-              ...inv,
-              payments: (inv.payments || []).map((p) => ({
-                ...p,
-                paymentType: mapPayment(p.paymentType),
-                serviceType: mapService(p.serviceType),
-              })),
-            }));
+      const mapPayment = (t) => {
+        if (!t) return t;
+        const s = String(t).toLowerCase();
+        if (s.includes("esp")) return "Espèces";
+        if (s.includes("carte")) return "Carte bancaire";
+        if (s.includes("ch")) return "Chèque";
+        return t;
+      };
 
-            this.setupYears();
-          })
-          .catch((error) => {
-            console.error("Erreur lors de la récupération des factures :", error);
-          });
+      const mapService = (t) => {
+        if (!t) return t;
+        const s = String(t).toLowerCase();
+        if (s.includes("souti")) return "soutien";
+        if (s.includes("arab")) return "arabe";
+        return t;
+      };
+
+      try {
+        // Set pour éviter les doublons
+        const invoiceIds = new Set();
+
+        // boucle tant qu'il reste des pages
+        while (this.hasMore) {
+          const url = this.$routing.generate("all_invoices") + "?page=" + this.page;
+
+          const response = await this.axios.get(url);
+          const { allInvoices, hasMore } = response.data;
+
+          const normalized = (allInvoices || [])
+              .filter((inv) => {
+                // Éviter les doublons
+                if (invoiceIds.has(inv.id)) {
+                  return false;
+                }
+                invoiceIds.add(inv.id);
+                return true;
+              })
+              .map((inv) => ({
+                ...inv,
+                payments: (inv.payments || []).map((p) => ({
+                  ...p,
+                  paymentType: mapPayment(p.paymentType),
+                  serviceType: mapService(p.serviceType),
+                })),
+              }));
+
+          // on ajoute au tableau existant
+          this.invoices = [...this.invoices, ...normalized];
+
+          this.hasMore = hasMore;
+          this.page += 1;
+
+          // on maintient la liste d'années au fur et à mesure
+          this.setupYears();
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des factures :", error);
+        this.messageAlert = "Erreur lors du chargement des factures.";
+        this.typeAlert = "danger";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    loadMore() {
+      if (!this.hasMore || this.isLoading) return;
+      this.page += 1;
+      this.fetchInvoices();
     },
 
     goToInvoice(invoice) {
@@ -367,7 +431,8 @@ export default {
         this.axios
             .delete(this.$routing.generate("invoice_delete", { id: invoice.id }))
             .then(() => {
-              this.fetchInvoices();
+              // Retirer la facture du tableau local
+              this.invoices = this.invoices.filter(inv => inv.id !== invoice.id);
               this.messageAlert = "Facture supprimée avec succès.";
               this.typeAlert = "success";
             })
@@ -402,7 +467,7 @@ export default {
     }
   },
   mounted() {
-    this.fetchInvoices();
+    this.loadAllInvoices();
   },
 };
 </script>
@@ -806,4 +871,79 @@ export default {
     padding: 0.75rem 0.5rem;
   }
 }
+.loader-overlay {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* ne bloque pas les clics sur la page */
+}
+
+
+.loader-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.9); /* fond sombre */
+  color: #e2e8f0;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(6px);
+}
+
+.loader-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  border: 2px solid rgba(148, 163, 184, 0.5);
+  border-top-color: #a855f7; /* violet */
+  border-right-color: #6366f1; /* indigo */
+  animation: loader-spin 0.7s linear infinite;
+}
+
+.loader-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Animation du spinner */
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.load-more-wrapper {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.load-more-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: none;
+  background: #667eea;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s ease;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+
 </style>

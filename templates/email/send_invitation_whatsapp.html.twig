@@ -1,0 +1,179 @@
+{# templates/email/whatsapp_invitation.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>📱 Invitation au groupe WhatsApp - {{ yearLabel }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+</head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.6;">
+<p style="margin:0 0 18px;font-size:14px;color:#92400e;background:#fef9c3;border-radius:10px;padding:10px 12px;border:1px solid #facc15;">
+    ⚠️ Vous recevez cet e-mail une nouvelle fois car nous avons rencontré un problème technique
+    avec les groupes WhatsApp lors du premier envoi.
+    Le lien d’invitation ci-dessous est maintenant actif ✅.
+    Merci de cliquer à nouveau sur le bouton pour rejoindre le groupe de la classe de votre enfant.
+</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding:20px 0;background:linear-gradient(135deg,#e0f7e9 0%,#dbeafe 100%);">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+                   style="max-width:600px;background:#ffffff;border-radius:18px;box-shadow:0 18px 45px rgba(15,23,42,0.18);overflow:hidden;">
+
+                <!-- Header -->
+                <tr>
+                    <td style="background:linear-gradient(135deg,#16a34a 0%,#22c55e 50%,#15803d 100%);padding:32px 24px;text-align:center;position:relative;">
+                        <h1 style="margin:0;font-size:24px;color:#ffffff;font-weight:700;">
+                            📱 Invitation au groupe WhatsApp de la classe
+                        </h1>
+                        <p style="margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.9);">
+                            Année scolaire {{ yearLabel }}
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Contenu -->
+                <tr>
+                    <td style="padding:32px 24px 28px;">
+
+                        {# Salutation #}
+                        {% if parentFullName %}
+                            <p style="margin:0 0 18px;font-size:17px;color:#111827;font-weight:500;">
+                                Bonjour {{ parentFullName }} 👋
+                            </p>
+                        {% else %}
+                            <p style="margin:0 0 18px;font-size:17px;color:#111827;font-weight:500;">
+                                Bonjour chers parents 👋
+                            </p>
+                        {% endif %}
+
+                        <p style="margin:0 0 18px;font-size:15px;color:#374151;">
+                            Afin de faciliter la communication entre l’équipe pédagogique et les familles, nous avons mis en place
+                            un <strong>groupe WhatsApp dédié à la classe de votre enfant</strong>.
+                        </p>
+
+                        <p style="margin:0 0 18px;font-size:15px;color:#374151;">
+                            Ce groupe vous permettra de recevoir&nbsp;:
+                        </p>
+
+                        <ul style="margin:0 0 20px 20px;padding:0;font-size:14px;color:#4b5563;">
+                            <li>Les <strong>devoirs</strong> et le travail à faire à la maison</li>
+                            <li>Les <strong>informations importantes</strong> concernant la classe</li>
+                            <li>Les éventuels <strong>changements d’horaires</strong> ou d’organisation</li>
+                            <li>Des <strong>rappels</strong> sur les évaluations ou événements</li>
+                        </ul>
+
+                        {# Rappel rapide des infos de l’élève / classe #}
+                        <div style="background:#f9fafb;border-radius:12px;padding:14px 16px;margin-bottom:22px;border:1px solid #e5e7eb;">
+                            <p style="margin:0 0 6px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">
+                                Classe concernée
+                            </p>
+                            <p style="margin:0;font-size:14px;color:#111827;">
+                                Élève :
+                                <strong>{{ studentFullName }}</strong>
+                                {% if studentDob is not null %}
+                                    <span style="color:#6b7280;font-size:12px;">
+                                        (né(e) le {{ studentDob|date('d/m/Y') }})
+                                    </span>
+                                {% endif %}
+                                <br>
+                                Classe :
+                                <strong>{{ className }}</strong>
+                                {% if classLevel %}
+                                    <span style="color:#4b5563;">(niveau {{ classLevel }})</span>
+                                {% endif %}
+                                <br>
+                                Jour : <strong>{{ day }}</strong>
+                                {% if startHour is not null and endHour is not null %}
+                                    – <strong>{{ startHour|date('H:i') }} - {{ endHour|date('H:i') }}</strong>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        {# Bloc WhatsApp #}
+                        {% if whatsappUrl %}
+                            <div style="background:linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%);border-radius:14px;padding:18px 16px;margin-bottom:24px;border:1px solid #22c55e;">
+                                <p style="margin:0 0 10px;font-size:15px;color:#166534;font-weight:600;">
+                                    👉 Rejoindre le groupe WhatsApp
+                                </p>
+                                <p style="margin:0 0 14px;font-size:14px;color:#166534;">
+                                    Merci de cliquer sur le bouton ci-dessous pour intégrer le groupe WhatsApp de la classe
+                                    de votre enfant. Ce groupe est <strong>réservé aux parents ou responsables légaux</strong>.
+                                </p>
+
+                                <div style="text-align:center;margin:18px 0;">
+                                    <a href="{{ whatsappUrl }}" target="_blank" rel="noopener"
+                                       style="display:inline-block;padding:10px 18px;border-radius:999px;background-color:#22c55e;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;box-shadow:0 8px 20px rgba(34,197,94,0.45);">
+                                        📲 Rejoindre le groupe WhatsApp
+                                    </a>
+                                </div>
+
+                                <p style="margin:0;font-size:12px;color:#166534;line-height:1.6;">
+                                    Si le bouton ne fonctionne pas, vous pouvez copier/coller ce lien dans votre navigateur ou
+                                    directement dans WhatsApp :</p>
+                                <p style="margin:6px 0 0;font-size:12px;color:#111827;word-break:break-all;">
+                                    <code style="background:#ecfdf3;padding:4px 6px;border-radius:6px;display:inline-block;">
+                                        {{ whatsappUrl }}
+                                    </code>
+                                </p>
+                            </div>
+                        {% else %}
+                            <div style="background:#fef3c7;border-radius:12px;padding:14px 16px;margin-bottom:24px;border:1px solid #facc15;">
+                                <p style="margin:0;font-size:14px;color:#92400e;">
+                                    Le lien du groupe WhatsApp de la classe sera communiqué prochainement par l’équipe
+                                    pédagogique.
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        <p style="margin:0 0 18px;font-size:14px;color:#4b5563;">
+                            Merci de ne partager ce lien qu’avec les personnes autorisées. Pour la sécurité de tous,
+                            l’accès au groupe pourra être retiré en cas de non-respect des règles de bonne conduite.
+                        </p>
+
+                        <p style="margin:20px 0 0;font-size:15px;color:#111827;">
+                            Bien cordialement,<br>
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="background:#f9fafb;padding:22px 18px;border-top:1px solid #e5e7eb;">
+                        <div style="text-align:center;margin-bottom:10px;">
+                            <p style="margin:0 0 6px;font-size:13px;color:#4b5563;">
+                                📍 Centre Culturel Ibn Badis – 18 Rue des Trembles, 38100 Grenoble
+                            </p>
+                            <p style="margin:0;font-size:13px;color:#4b5563;">
+                                📞 <a href="tel:+33663032967" style="color:#2563eb;text-decoration:none;">+33 6 63 03 29 67</a>
+                                &nbsp;•&nbsp;
+                                ✉️ <a href="mailto:cours.arabe.ccib38@gmail.com" style="color:#2563eb;text-decoration:none;">
+                                    cours.arabe.ccib38@gmail.com
+                                </a>
+                            </p>
+                        </div>
+
+                        <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:10px;text-align:center;">
+                            <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5;">
+                                Cet e-mail vous a été envoyé car votre enfant est inscrit aux cours d’Arabe du CCIB38.<br>
+                                Merci de ne pas répondre directement à ce message automatique.
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

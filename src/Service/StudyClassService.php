@@ -55,7 +55,6 @@ class StudyClassService
                 new \DateTimeImmutable($data['endHour'], new \DateTimeZone('Europe/Paris'))
             );
         }
-        dump($data);
         if (array_key_exists('schoolYear', $data)) {
             $studyClass->setSchoolYear($data['schoolYear'] ? : null);
         }
@@ -65,6 +64,10 @@ class StudyClassService
                 ? $this->roomRepository->findOneBy(['id' => $data['principalRoomId']])
                 : null;
             $studyClass->setPrincipalRoom($room);
+        }
+
+        if (array_key_exists('whatsappUrl', $data)) {
+            $studyClass->setWhatsappUrl($data['whatsappUrl'] ? : null);
         }
 
         if (array_key_exists('principalTeacherId', $data)) {

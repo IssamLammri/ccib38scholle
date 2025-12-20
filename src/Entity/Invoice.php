@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -12,7 +13,7 @@ class Invoice
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_invoice','statistic_dashboard'])]
+    #[Groups(['read_invoice','statistic_dashboard','read_invoice_for_refund','read_refund'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: ParentEntity::class, inversedBy: 'invoices')]
@@ -21,28 +22,33 @@ class Invoice
     private ?ParentEntity $parent = null;
 
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'invoice', cascade: ['persist', 'remove'])]
-    #[Groups(['read_invoice'])]
+    #[Groups(['read_invoice','read_invoice_for_refund','read_refund'])]
     private iterable $payments;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['read_invoice','statistic_dashboard'])]
+    #[Groups(['read_invoice','statistic_dashboard','read_invoice_for_refund','read_refund'])]
     private ?\DateTimeInterface $invoiceDate = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Groups(['read_invoice','statistic_dashboard'])]
+    #[Groups(['read_invoice','statistic_dashboard','read_invoice_for_refund','read_refund'])]
     private ?string $totalAmount = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['read_invoice'])]
+    #[Groups(['read_invoice','read_invoice_for_refund','read_refund'])]
     private ?string $comment = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     #[Groups(['read_invoice','statistic_dashboard'])]
     private ?string $discount = null;
 
+    #[ORM\ManyToMany(targetEntity: Refund::class, mappedBy: 'invoices')]
+    #[Groups(['read_invoice'])]
+    private Collection $refunds;
+
     public function __construct()
     {
         $this->payments = new ArrayCollection();
+        $this->refunds = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -127,6 +133,26 @@ class Invoice
     public function setDiscount(?string $discount): self
     {
         $this->discount = $discount;
+        return $this;
+    }
+
+    /** @return Collection<int, Refund> */
+    public function getRefunds(): Collection
+    {
+        return $this->refunds;
+    }
+
+    public function addRefund(Refund $refund): self
+    {
+        if (!$this->refunds->contains($refund)) {
+            $this->refunds->add($refund);
+        }
+        return $this;
+    }
+
+    public function removeRefund(Refund $refund): self
+    {
+        $this->refunds->removeElement($refund);
         return $this;
     }
 }

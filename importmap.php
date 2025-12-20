@@ -60,4 +60,7 @@ return [
         'version' => '5.3.3',
         'type' => 'css',
     ],
+    'vue-select' => [
+        'version' => '3.20.4',
+    ],
 ];

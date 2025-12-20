@@ -1,491 +1,1374 @@
 <template>
-  <div class="container mt-5">
-    <h1 class="text-primary mb-4">Tableau de bord</h1>
-    <!-- Filtre par date -->
-    <div class="card shadow-sm p-4 mb-4">
-      <h5 class="mb-3">Filtrer les statistiques par date</h5>
-      <div class="row">
-        <div class="col-md-5 mb-3">
-          <label class="form-label">Date de début</label>
-          <flatpickr v-model="filterStartDate" :config="flatpickrConfig" class="form-control bg-white" />
-        </div>
-        <div class="col-md-5 mb-3">
-          <label class="form-label">Date de fin</label>
-          <flatpickr v-model="filterEndDate" :config="flatpickrConfig" class="form-control bg-white" />
-        </div>
-        <div class="col-md-2 d-flex align-items-end" style="margin-bottom: 15px">
-          <button @click="fetchStatistics" class="btn btn-primary w-100">
-            <i class="fas fa-search"></i> Filtrer
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Indicateurs chiffrés -->
-    <div class="row mb-4 text-center">
-      <div class="col-md-3">
-        <div class="card text-white bg-primary shadow-sm p-3">
-          <h5 class="card-title">Total Sessions</h5>
-          <p class="display-4">{{ totalSessions }}</p>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-white bg-success shadow-sm p-3">
-          <h5 class="card-title">Total Heures</h5>
-          <p class="display-4">{{ totalHours }}</p>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-white bg-danger shadow-sm p-3">
-          <h5 class="card-title">Montant Payé</h5>
-          <p class="display-4">{{ totalPaymentAmount }} €</p>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-white bg-warning shadow-sm p-3">
-          <h5 class="card-title">Nombre de Factures</h5>
-          <p class="display-4">{{ totalInvoices }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bouton pour afficher la liste des profs -->
-    <div class="text-center mb-4">
-      <button @click="showTeacherStats = !showTeacherStats" class="btn btn-outline-primary">
-        Voir la liste des professeurs
-      </button>
-    </div>
-
-    <!-- Liste des enseignants avec leurs heures -->
-    <div v-if="showTeacherStats" class="card shadow-sm p-4 mb-4">
-      <h5 class="mb-3">Statistiques des Enseignants</h5>
-      <table class="table table-bordered">
-        <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Sessions</th>
-          <th>Heures</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="teacher in teachersStats" :key="teacher.id">
-          <td>{{ teacher.fullName }}</td>
-          <td>{{ teacher.sessions }}</td>
-          <td>{{ teacher.hours }}</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Graphiques d'évolution -->
-    <div class="row">
-      <div class="col-md-6">
-        <canvas ref="sessionsChart"></canvas>
-      </div>
-      <div class="col-md-6">
-        <canvas ref="paymentsChart"></canvas>
-      </div>
-    </div>
-    <div class="container mt-4">
-      <!-- Filtrer les impayés par Mois et Année -->
-      <div class="card shadow-sm p-4 mb-4">
-        <h5 class="mb-3">📌 Filtrer les impayés</h5>
-        <div class="row">
-          <!-- Sélection du Mois -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Mois</label>
-            <select v-model="selectedMonth" class="form-control">
-              <option value="all">Tous les Mois</option>
-              <option v-for="(month, index) in months" :key="index" :value="month.value">
-                {{ month.label }}
-              </option>
-            </select>
+  <div class="dashboard-container">
+    <!-- Header avec gradient -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <h1 class="dashboard-title">
+          <span class="icon-wrapper">📊</span>
+          Tableau de bord
+        </h1>
+        <div class="header-stats">
+          <div class="stat-pill" v-if="totals">
+            <span class="stat-label">Sessions</span>
+            <span class="stat-value">{{ totals.sessionsCount }}</span>
           </div>
-
-          <!-- Sélection de l'Année -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Année</label>
-            <select v-model="selectedYear" class="form-control">
-              <option value="all">Toutes les Années</option>
-              <option v-for="year in availableYears" :key="year" :value="year">
-                {{ year }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Bouton de Filtrage -->
-          <div class="col-md-2 d-flex align-items-end mb-3">
-            <button @click="fetchStatistics" class="btn btn-primary w-100">
-              <i class="fas fa-filter"></i> Filtrer
-            </button>
-          </div>
-
-          <!-- Bouton Envoyer Mail -->
-          <div class="col-md-2 d-flex align-items-end mb-3">
-            <button @click="openMailModal" class="btn btn-secondary w-100">
-              <i class="fas fa-envelope"></i> Envoyer un mail
-            </button>
+          <div class="stat-pill" v-if="totals">
+            <span class="stat-label">Heures</span>
+            <span class="stat-value">{{ Number(totals.hoursSum).toFixed(2) }}</span>
           </div>
         </div>
       </div>
-      <alert
-          v-if="messageAlert"
-          :text="messageAlert"
-          :type="typeAlert"
-      />
-      <!-- Liste des Impayés -->
-      <div v-if="groupedUnpaidParents.length > 0" class="card shadow-sm p-4">
-        <h5 class="mb-3 text-danger">⚠️ Liste des Impayés</h5>
-        <div v-for="(parent, index) in groupedUnpaidParents" :key="index" class="mb-3 p-3 shadow-sm border rounded bg-light">
-          <h6 class="text-primary"><i class="fas fa-user"></i> {{ parent.parentName }}</h6>
-          <ul class="list-group">
-            <li v-for="(student, sIndex) in parent.students" :key="sIndex" class="list-group-item">
-              <strong>{{ student.studentName }}</strong>
-              <br />
-              <small class="text-muted">{{ student.studyClasses.join(', ') }}</small>
-            </li>
-          </ul>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="filters-header">
+        <h2 class="filters-title">🔍 Filtres</h2>
+        <button class="btn-reset" @click="resetFilters" :disabled="loading">
+          <span class="reset-icon">↻</span>
+          Réinitialiser
+        </button>
+      </div>
+
+      <div class="filters-grid">
+        <!-- Date Range -->
+        <div class="filter-group date-range-group">
+          <div class="filter-item">
+            <label class="filter-label">📅 Du</label>
+            <Flatpickr
+                v-model="filterStartDate"
+                :config="flatpickrConfig"
+                class="filter-input date-input"
+                placeholder="Date de début"
+            />
+          </div>
+          <div class="filter-item">
+            <label class="filter-label">📅 Au</label>
+            <Flatpickr
+                v-model="filterEndDate"
+                :config="flatpickrConfig"
+                class="filter-input date-input"
+                placeholder="Date de fin"
+            />
+          </div>
+        </div>
+
+        <!-- Type & Year -->
+        <div class="filter-item">
+          <label class="filter-label">📚 Type de cours</label>
+          <select v-model="filterClassType" class="filter-input filter-select">
+            <option value="">Tous les types</option>
+            <option v-for="t in available.classTypes" :key="t" :value="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label class="filter-label">🎓 Année scolaire</label>
+          <select v-model="filterSchoolYear" class="filter-input filter-select">
+            <option value="">Toutes les années</option>
+            <option v-for="y in available.schoolYears" :key="y" :value="y">{{ y }}</option>
+          </select>
+        </div>
+
+        <!-- Teacher & Speciality -->
+        <div class="filter-item">
+          <label class="filter-label">👨‍🏫 Professeur</label>
+          <select v-model.number="filterTeacherId" class="filter-input filter-select">
+            <option :value="null">Tous les professeurs</option>
+            <option v-for="t in available.teachers" :key="t.id" :value="t.id">{{ t.name }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label class="filter-label">🎯 Spécialité</label>
+          <select v-model="filterSpeciality" class="filter-input filter-select">
+            <option value="">Toutes les spécialités</option>
+            <option v-for="s in available.specialities" :key="s" :value="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement des données...</p>
+    </div>
+
+    <!-- Results Table -->
+    <div v-else class="results-section">
+      <div class="card-modern">
+        <div class="card-header-modern">
+          <h3 class="card-title">👥 Heures & sessions par professeur</h3>
+          <span class="card-badge" v-if="byTeacher.length">{{ byTeacher.length }} professeur(s)</span>
+        </div>
+
+        <div class="table-container">
+          <table class="modern-table" v-if="byTeacher && byTeacher.length > 0">
+            <thead>
+            <tr>
+              <th class="th-name">Professeur</th>
+              <th class="th-number">Heures</th>
+              <th class="th-number">Sessions</th>
+              <th class="th-chart">Répartition</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(t, index) in byTeacher" :key="t.teacherId" class="table-row" :style="{'--row-index': index}" role="button"  @click="openTeacherSessions(t)">
+              <td class="td-name">
+                <div class="teacher-cell">
+                  <div class="teacher-avatar">{{ getInitials(t.teacherName) }}</div>
+                  <span class="teacher-name">{{ t.teacherName }}</span>
+                </div>
+              </td>
+              <td class="td-number">
+                <span class="number-badge hours">{{ Number(t.hoursSum).toFixed(2) }}h</span>
+              </td>
+              <td class="td-number">
+                <span class="number-badge sessions">{{ t.sessionsCount }}</span>
+              </td>
+              <td class="td-chart">
+                <div class="chart-bar">
+                  <div class="chart-fill" :style="{width: getPercentage(t.hoursSum) + '%'}"></div>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+
+          <!-- Empty State -->
+          <div v-else class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>Aucune donnée disponible</h3>
+            <p>Essayez de modifier vos filtres pour voir des résultats</p>
+          </div>
+        </div>
+      </div>
+      <!-- Tableau des parents impayés -->
+      <div class="card-modern" style="margin-top: 2rem;">
+        <div class="card-header-modern">
+          <h3 class="card-title">💶 Suivi des Paiements & Impayés</h3>
+          <span class="card-badge" v-if="unpaidTotals">
+            {{ unpaidTotals.parentsCount }} familles concernées
+          </span>
+        </div>
+
+        <div class="unpaid-summary-banner" v-if="unpaidTotals">
+          <div class="summary-item">
+            <span class="lbl">Total Dû (Année)</span>
+            <span class="val">{{ unpaidTotals.totalDue.toFixed(2) }} €</span>
+          </div>
+          <div class="summary-item">
+            <span class="lbl">Déjà Versé</span>
+            <span class="val success">{{ unpaidTotals.totalPaid.toFixed(2) }} €</span>
+          </div>
+          <div class="summary-item">
+            <span class="lbl">Reste à recouvrer</span>
+            <span class="val danger">{{ unpaidTotals.totalRemaining.toFixed(2) }} €</span>
+          </div>
+        </div>
+
+        <div class="table-container" v-if="!unpaidLoading">
+          <table class="modern-table" v-if="unpaidParents && unpaidParents.length">
+            <thead>
+            <tr>
+              <th>Parent</th>
+              <th>Contact</th>
+
+              <th class="th-center bg-gray-50">
+                <span class="th-sub">🕋 Arabe</span>
+              </th>
+
+              <th class="th-center bg-gray-50">
+                <span class="th-sub">📚 Soutien</span>
+              </th>
+
+              <th class="th-number">Total Dû</th>
+              <th class="th-number">Versé Global</th>
+              <th class="th-number">Reste</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="(p, index) in unpaidParents"
+                :key="p.parentId"
+                class="table-row"
+                :style="{'--row-index': index}"
+            >
+              <td>
+                <div class="parent-name">{{ p.parentName }}</div>
+              </td>
+
+              <td>
+                <div class="parent-contact">
+                  <div v-if="p.email" class="contact-row">
+                    <span class="icon">📧</span> {{ p.email }}
+                  </div>
+                  <div v-if="p.phone" class="contact-row">
+                    <span class="icon">📞</span> {{ p.phone }}
+                  </div>
+                </div>
+              </td>
+
+              <td class="td-center bg-gray-50">
+                <div class="service-detail" :class="{ 'inactive': p.arabChildrenCount === 0 }">
+                  <div class="badge-count" v-if="p.arabChildrenCount > 0">
+                    {{ p.arabChildrenCount }} enf.
+                  </div>
+
+                  <div class="price-split" v-if="p.arabChildrenCount > 0 || p.paidArabe > 0">
+                    <div class="split-row">
+                      <span class="lbl">Dû:</span>
+                      <span class="val">{{ Number(p.dueArabe).toFixed(2) }}€</span>
+                    </div>
+                    <div class="split-row success" v-if="p.paidArabe > 0">
+                      <span class="lbl">Reçu:</span>
+                      <span class="val">{{ Number(p.paidArabe).toFixed(2) }}€</span>
+                    </div>
+                  </div>
+                  <div v-else class="dash">-</div>
+                </div>
+              </td>
+
+              <td class="td-center bg-gray-50">
+                <div class="service-detail" :class="{ 'inactive': p.soutienRegistrationsCount === 0 }">
+                  <div class="badge-count soutien" v-if="p.soutienRegistrationsCount > 0">
+                    {{ p.soutienRegistrationsCount }} inscr.
+                  </div>
+
+                  <div class="price-split" v-if="p.soutienRegistrationsCount > 0 || p.paidSoutien > 0">
+                    <div class="split-row">
+                      <span class="lbl">Dû:</span>
+                      <span class="val">{{ Number(p.dueSoutien).toFixed(2) }}€</span>
+                    </div>
+                    <div class="split-row success" v-if="p.paidSoutien > 0">
+                      <span class="lbl">Reçu:</span>
+                      <span class="val">{{ Number(p.paidSoutien).toFixed(2) }}€</span>
+                    </div>
+                  </div>
+                  <div v-else class="dash">-</div>
+                </div>
+              </td>
+
+              <td class="td-number">
+        <span class="font-bold">
+          {{ Number(p.totalDue).toFixed(2) }} €
+        </span>
+              </td>
+
+              <td class="td-number">
+        <span class="number-badge paid-badge">
+          {{ Number(p.totalPaid).toFixed(2) }} €
+        </span>
+              </td>
+
+              <td class="td-number">
+        <span
+            class="number-badge unpaid-badge"
+            :class="{'unpaid-high': p.remaining >= 200}"
+        >
+          {{ Number(p.remaining).toFixed(2) }} €
+        </span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div v-else class="empty-state">
+            <div class="empty-icon">✅</div>
+            <h3>Tout est en ordre !</h3>
+            <p>Aucun impayé détecté pour l'année {{ filterSchoolYear || defaultSchoolYear }}.</p>
+          </div>
+        </div>
+
+        <div v-else class="loading-state" style="box-shadow:none; border-radius:0;">
+          <div class="spinner"></div>
+          <p>Analyse des paiements en cours...</p>
+        </div>
+
+        <div v-if="unpaidError" class="error-message" style="margin-top:1rem">
+          <span class="error-icon">⚠️</span>
+          {{ unpaidError }}
         </div>
       </div>
 
-      <!-- Message si aucun impayé -->
-      <div v-else class="alert alert-success mt-4">
-        🎉 Aucune impayé trouvé !
+
+      <!-- Error Message -->
+      <div v-if="error" class="error-message">
+        <span class="error-icon">⚠️</span>
+        {{ error }}
       </div>
     </div>
-  </div>
-
-  <!-- Modal pour envoyer un mail aux parents -->
-  <div v-if="showMailModal" class="modal-backdrop">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
+    <!-- Modal Sessions Prof -->
+    <div v-if="showSessionsModal" class="modal-overlay" @click.self="closeSessionsModal" @keyup.esc="closeSessionsModal" tabindex="0">
+      <div class="modal-card">
         <div class="modal-header">
-          <h5 class="modal-title">Envoyer un mail aux parents</h5>
-          <button type="button" class="close" @click="closeMailModal">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <h3>📅 Sessions — {{ sessionsModal.teacherName || 'Professeur' }}</h3>
+          <button class="modal-close" @click="closeSessionsModal">✕</button>
         </div>
+
         <div class="modal-body">
-          <!-- Champ de recherche -->
-          <div class="mb-3">
-            <input type="text" class="form-control" placeholder="Rechercher par nom ou email" v-model="mailSearch">
+          <div v-if="sessionsModal.loading" class="modal-loading">
+            <div class="spinner"></div>
+            Chargement…
           </div>
-          <!-- Liste des parents filtrés -->
-          <div v-if="filteredParents.length">
-            <div v-for="(parent, index) in filteredParents" :key="parent.ParentEmailContact" class="form-check mb-2">
-              <input
-                  class="form-check-input"
-                  type="checkbox"
-                  :id="'parent-' + index"
-                  :value="parent"
-                  v-model="selectedParents"
-              />
-              <label class="form-check-label parent-label" :for="'parent-' + index">
-                <span>{{ parent.parentName }}</span>
-                <span>{{ parent.ParentEmailContact }}</span>
-                <span>{{ parent.ParentPhoneContact }}</span>
-              </label>
+
+          <div v-else>
+            <div class="modal-summary">
+              <span class="badge">Total: {{ sessionsModal.total.count }} sessions</span>
+              <span class="badge">{{ Number(sessionsModal.total.hours).toFixed(2) }} h</span>
+            </div>
+
+            <ul v-if="sessionsModal.items.length" class="session-list">
+              <li v-for="s in sessionsModal.items" :key="s.id" class="session-item">
+                <div class="session-time">
+                  <div class="session-date">{{ formatDateWithWeekday(s.startTime) }}</div>
+                  <div class="session-hours">{{ formatTime(s.startTime) }} → {{ formatTime(s.endTime) }} ({{ Number(s.hours).toFixed(2) }}h)</div>
+                </div>
+                <div class="session-meta">
+                  <div class="meta-line">
+                    <span class="pill">{{ s.studyClass.classType }}</span>
+                    <span class="pill">{{ s.studyClass.speciality }}</span>
+                    <span class="pill weak">{{ s.studyClass.schoolYear }}</span>
+                  </div>
+                  <div class="meta-line weak">
+                    {{ s.studyClass.name }} — Niveau: {{ s.studyClass.level }}
+                  </div>
+                </div>
+              </li>
+            </ul>
+
+            <div v-else class="empty-state">
+              <div class="empty-icon">📭</div>
+              <h3>Aucune session sur cette période</h3>
             </div>
           </div>
-          <div v-else>
-            <p>Aucun parent trouvé.</p>
+
+          <div v-if="sessionsModal.error" class="error-message" style="margin-top:1rem">
+            <span class="error-icon">⚠️</span>
+            {{ sessionsModal.error }}
           </div>
         </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeMailModal">Annuler</button>
-          <button type="button" class="btn btn-primary" :disabled="selectedParents.length === 0" @click="sendMail">
-            Envoyer
-          </button>
+          <button class="btn-reset" @click="closeSessionsModal">Fermer</button>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
-import Flatpickr from 'vue-flatpickr-component';
-import 'flatpickr/dist/flatpickr.css';
-import { Chart, registerables } from 'chart.js';
-import Alert from "../../ui/Alert.vue";
-
-Chart.register(...registerables);
+import axios from "axios";
+import Flatpickr from "vue-flatpickr-component";
+import "flatpickr/dist/flatpickr.css";
 
 export default {
-  components: {Alert, Flatpickr },
+  components: { Flatpickr },
+
   data() {
     return {
+      showSessionsModal: false,
+      sessionsModal: {
+        teacherId: null,
+        teacherName: null,
+        loading: false,
+        error: null,
+        total: { count: 0, hours: 0 },
+        items: [],
+      },
       filterStartDate: "",
       filterEndDate: "",
-      totalSessions: 0,
-      totalHours: 0,
-      totalInvoices: 0,
-      totalPaymentAmount: 0,
-      allData: null,
-      chartSessions: null,  // Référence au graphique des sessions
-      messageAlert: null,
-      typeAlert: null,
-      chartPayments: null,  // Référence au graphique des paiements
+      filterClassType: "",
+      filterSpeciality: "",
+      filterSchoolYear: "",
+      defaultSchoolYear: "2025/2026",
+      filterTeacherId: null,
+
+      totals: null,
+      byTeacher: [],
+      available: { classTypes: [], specialities: [], teachers: [], schoolYears: [] },
+
+      loading: false,
+      error: null,
+
+      flatpickrConfig: {
+        enableTime: false,
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d/m/Y"
+      },
+
+      _debounceTimer: null,
+      unpaidLoading: false,
+      unpaidError: null,
       unpaidParents: [],
-      teachersStats: [],
-      showTeacherStats: false,
-      flatpickrConfig: { enableTime: false, dateFormat: "Y-m-d" },
-      selectedMonth: 'all', // Mois sélectionné
-      selectedYear: 'all',  // Année sélectionnée
-      months: [
-        { label: "Janvier", value: "Janvier" },
-        { label: "Février", value: "Février" },
-        { label: "Mars", value: "Mars" },
-        { label: "Avril", value: "Avril" },
-        { label: "Mai", value: "Mai" },
-        { label: "Juin", value: "Juin" },
-        { label: "Juillet", value: "Juillet" },
-        { label: "Août", value: "Août" },
-        { label: "Septembre", value: "Septembre" },
-        { label: "Octobre", value: "Octobre" },
-        { label: "Novembre", value: "Novembre" },
-        { label: "Décembre", value: "Décembre" }
-      ],
-      availableYears: [2024, 2025],
-      // Pour le modal d'envoi de mail
-      showMailModal: false,
-      mailSearch: "",
-      selectedParents: []
+      unpaidTotals: null,
     };
   },
+
   computed: {
-    groupedUnpaidParents() {
-      const grouped = {};
-
-      this.unpaidParents.forEach(entry => {
-        if (!grouped[entry.ParentName]) {
-          grouped[entry.ParentName] = { parentName: entry.ParentName, students: {} };
-        }
-
-        if (!grouped[entry.ParentName].students[entry.studentId]) {
-          grouped[entry.ParentName].students[entry.studentId] = {
-            studentName: entry.studentName,
-            studyClasses: []
-          };
-        }
-
-        grouped[entry.ParentName].students[entry.studentId].studyClasses.push(entry.studyClassName);
-      });
-
-      return Object.values(grouped).map(parent => ({
-        parentName: parent.parentName,
-        students: Object.values(parent.students)
-      }));
-    },
-    uniqueUnpaidParents() {
-      const unique = {};
-      this.unpaidParents.forEach(entry => {
-        if (!unique[entry.ParentEmailContact]) {
-          unique[entry.ParentEmailContact] = {
-            parentName: entry.ParentName,
-            ParentEmailContact: entry.ParentEmailContact,
-            ParentPhoneContact: entry.ParentPhoneContact
-          };
-        }
-      });
-      return Object.values(unique);
-    },
-    filteredParents() {
-      return this.uniqueUnpaidParents.filter(parent =>
-          parent.parentName.toLowerCase().includes(this.mailSearch.toLowerCase()) ||
-          parent.ParentEmailContact.toLowerCase().includes(this.mailSearch.toLowerCase())
-      );
+    maxHours() {
+      if (!this.byTeacher || this.byTeacher.length === 0) return 1;
+      return Math.max(...this.byTeacher.map(t => Number(t.hoursSum)));
     }
   },
+
+  created() {
+    const { start, end } = this.getPreviousMonthRange();
+    this.filterStartDate = start;
+    this.filterEndDate = end;
+    this.filterSchoolYear = this.defaultSchoolYear;
+  },
+
   mounted() {
-    this.fetchStatistics();
+    //this.fetchStatistics();
+    //this.fetchInfosNotPayed();
   },
+
+
+  watch: {
+    filterStartDate() { this.debouncedFetch(); },
+    filterEndDate() { this.debouncedFetch(); },
+    filterClassType() { this.debouncedFetch(); },
+    filterSpeciality() { this.debouncedFetch(); },
+
+    filterSchoolYear() {
+      this.debouncedFetch();
+      this.fetchInfosNotPayed();
+    },
+
+    filterTeacherId() { this.debouncedFetch(); },
+  },
+
+
   methods: {
-    fetchStatistics() {
+    fetchInfosNotPayed() {
+      this.unpaidLoading = true;
+      this.unpaidError = null;
+
       const params = {};
-      if (this.filterStartDate) params.startDate = this.filterStartDate;
-      if (this.filterEndDate) params.endDate = this.filterEndDate;
-      if (this.selectedYear) params.selectedYear = this.selectedYear;
-      if (this.selectedMonth) params.selectedMonth = this.selectedMonth;
+      const schoolYear = this.filterSchoolYear || this.defaultSchoolYear;
+      if (schoolYear) {
+        params.schoolYear = schoolYear;
+      }
 
-      this.axios
-          .get(this.$routing.generate("app_dashboard_stats"), { params })
-          .then(response => {
-            this.totalSessions = Math.round(response.data.totalSessions);
-            this.totalHours = Math.round(response.data.totalHours);
-            this.totalInvoices = response.data.totalInvoices;
-            this.totalPaymentAmount = Math.round(response.data.totalPaymentAmount);
-            this.teachersStats = response.data.teachersStats;
-            this.allData = response.data.allData;
-            this.unpaidParents = response.data.unpaidParents;
-
-            this.renderCharts(response.data);
+      axios
+          .get("/dashboard/api/unpaid-parents", { params })
+          .then(({ data }) => {
+            this.unpaidParents = data.parents || [];
+            this.unpaidTotals = data.totals || null;
           })
-          .catch(error => console.error("Erreur de récupération des stats:", error));
-    },
-    renderCharts() {
-      if (!this.allData) return;
-
-      const invoices = JSON.parse(this.allData.invoices);
-      const payments = JSON.parse(this.allData.payments);
-
-      // Agrégation des données par mois
-      const invoiceData = this.aggregateByMonth(invoices, 'invoiceDate', 'totalAmount');
-      const paymentData = this.aggregateByMonth(payments, 'paymentDate', 'amountPaid');
-
-      if (this.chartSessions) this.chartSessions.destroy();
-      if (this.chartPayments) this.chartPayments.destroy();
-
-      // Graphique des factures
-      const ctx1 = this.$refs.sessionsChart.getContext('2d');
-      this.chartSessions = new Chart(ctx1, {
-        type: 'line',
-        data: {
-          labels: Object.keys(invoiceData),
-          datasets: [
-            {
-              label: 'Montant Facturé (€)',
-              data: Object.values(invoiceData),
-              borderColor: 'red',
-              fill: false
-            }
-          ]
-        },
-        options: { responsive: true }
-      });
-
-      // Graphique des paiements
-      const ctx2 = this.$refs.paymentsChart.getContext('2d');
-      this.chartPayments = new Chart(ctx2, {
-        type: 'line',
-        data: {
-          labels: Object.keys(paymentData),
-          datasets: [
-            {
-              label: 'Montant Payé (€)',
-              data: Object.values(paymentData),
-              borderColor: 'purple',
-              fill: false
-            }
-          ]
-        },
-        options: { responsive: true }
-      });
-    },
-    /**
-     * Regroupement des données par mois
-     * @param {Array} data - Tableau d'objets (factures ou paiements)
-     * @param {String} dateKey - Clé contenant la date
-     * @param {String} amountKey - Clé contenant le montant
-     * @returns {Object} - Données agrégées par mois (clé: YYYY-MM)
-     */
-    aggregateByMonth(data, dateKey, amountKey) {
-      const result = {};
-
-      data.forEach(item => {
-        const date = new Date(item[dateKey]);
-        const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-        result[monthYear] = (result[monthYear] || 0) + parseFloat(item[amountKey]);
-      });
-
-      const sortedKeys = Object.keys(result).sort((a, b) => new Date(a) - new Date(b));
-      const sortedResult = {};
-      sortedKeys.forEach(key => {
-        sortedResult[key] = result[key];
-      });
-
-      return sortedResult;
-    },
-    // Ouvre le modal pour envoyer un mail
-    openMailModal() {
-      this.mailSearch = "";
-      this.selectedParents = [];
-      this.showMailModal = true;
-    },
-    closeMailModal() {
-      this.showMailModal = false;
-    },
-    // Envoie le mail aux parents sélectionnés
-    sendMail() {
-      const payload = {
-        parents: this.selectedParents.map(parent => ({
-          parentName: parent.parentName,
-          email: parent.ParentEmailContact,
-          phone: parent.ParentPhoneContact
-        }))
-      };
-      this.axios
-          .post(this.$routing.generate("app_send_mail_to_unpaid_parent"), payload)
-          .then(response => {
-            this.messageAlert = "Le mail a été envoyé avec succès.";
-            this.typeAlert = "success";
-            this.closeMailModal();
+          .catch(() => {
+            this.unpaidError = "Impossible de récupérer les informations d'impayés.";
           })
-          .catch(error => {
-            console.error("Erreur lors de l'envoi du mail:", error);
-            alert("Une erreur est survenue lors de l'envoi du mail.");
+          .finally(() => {
+            this.unpaidLoading = false;
           });
-    }
-  }
+    },
+    openTeacherSessions(row) {
+      if (!row || !row.teacherId) return;
+      this.showSessionsModal = true;
+      this.sessionsModal.teacherId = row.teacherId;
+      this.sessionsModal.teacherName = row.teacherName || 'Professeur';
+      this.sessionsModal.loading = true;
+      this.sessionsModal.error = null;
+      this.sessionsModal.items = [];
+      this.sessionsModal.total = { count: 0, hours: 0 };
+
+      const params = {
+        teacherId: row.teacherId,
+        startDate: this.filterStartDate,
+        endDate: this.filterEndDate,
+      };
+      if (this.filterClassType)  params.classType  = this.filterClassType;
+      if (this.filterSpeciality) params.speciality = this.filterSpeciality;
+      if (this.filterSchoolYear) params.schoolYear = this.filterSchoolYear;
+
+      axios
+          .get("/dashboard/api/teacher-sessions", { params })
+          .then(({ data }) => {
+            this.sessionsModal.items = data.sessions || [];
+            this.sessionsModal.total = data.total || { count: 0, hours: 0 };
+            if (!this.sessionsModal.teacherName && data.teacherName) {
+              this.sessionsModal.teacherName = data.teacherName;
+            }
+          })
+          .catch(() => {
+            this.sessionsModal.error = "Impossible de récupérer les sessions.";
+          })
+          .finally(() => {
+            this.sessionsModal.loading = false;
+          });
+    },
+
+    closeSessionsModal() {
+      this.showSessionsModal = false;
+    },
+
+    formatDate(iso) {
+      const d = new Date(iso);
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    },
+
+    formatTime(iso) {
+      const d = new Date(iso);
+      const hh = String(d.getHours()).padStart(2,'0');
+      const ii = String(d.getMinutes()).padStart(2,'0');
+      return `${hh}h${ii}`;
+    },
+
+    pad(n) { return String(n).padStart(2, "0"); },
+
+    formatYmd(d) {
+      return `${d.getFullYear()}-${this.pad(d.getMonth() + 1)}-${this.pad(d.getDate())}`;
+    },
+
+    getPreviousMonthRange() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+
+      const prevMonth = month === 0 ? 11 : month;
+      const prevYear = month === 0 ? year - 1 : year;
+
+      const start = new Date(prevYear, prevMonth, 1);
+      const end = new Date(prevYear, prevMonth + 1, 0);
+
+      return { start: this.formatYmd(start), end: this.formatYmd(end) };
+    },
+
+    resetFilters() {
+      const { start, end } = this.getPreviousMonthRange();
+      this.filterStartDate = start;
+      this.filterEndDate = end;
+      this.filterClassType = "";
+      this.filterSpeciality = "";
+      this.filterSchoolYear = this.defaultSchoolYear;
+      this.filterTeacherId = null;
+    },
+
+    debouncedFetch(delay = 300) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = setTimeout(() => this.fetchStatistics(), delay);
+    },
+
+    fetchStatistics() {
+      this.loading = true;
+      this.error = null;
+
+      const params = {};
+      if (this.filterStartDate)  params.startDate  = this.filterStartDate;
+      if (this.filterEndDate)    params.endDate    = this.filterEndDate;
+      if (this.filterClassType)  params.classType  = this.filterClassType;
+      if (this.filterSpeciality) params.speciality = this.filterSpeciality;
+      if (this.filterSchoolYear) params.schoolYear = this.filterSchoolYear;
+      if (this.filterTeacherId)  params.teacherId  = this.filterTeacherId;
+
+      axios
+          .get("/dashboard/api/stats", { params })
+          .then(({ data }) => {
+            this.totals = data.totals;
+            this.byTeacher = data.byTeacher || [];
+            this.available.classTypes = data.available?.classTypes || [];
+            this.available.specialities = data.available?.specialities || [];
+            this.available.teachers = data.available?.teachers || [];
+            this.available.schoolYears = data.available?.schoolYears || [];
+          })
+          .catch(() => {
+            this.error = "Impossible de récupérer les statistiques.";
+          })
+          .finally(() => {
+            this.loading = false;
+          });
+    },
+    getInitials(name) {
+      return name
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
+    },
+
+    getPercentage(hours) {
+      return (Number(hours) / this.maxHours) * 100;
+    },
+
+    formatDateWithWeekday(iso) {
+      const d = new Date(iso);
+      // 0=Dimanche, 1=Lundi, ... 6=Samedi
+      const weekdays = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+      const dayName = weekdays[d.getDay()];
+
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yyyy = d.getFullYear();
+
+      return `${dayName} ${dd}/${mm}/${yyyy}`;
+    },
+
+  },
 };
 </script>
 
 <style scoped>
-.card {
-  border-radius: 10px;
+* {
+  box-sizing: border-box;
 }
-/* Styles pour le modal personnalisé */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+
+.dashboard-container {
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Header */
+.dashboard-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.dashboard-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 1050;
+  gap: 1rem;
+  margin: 0;
 }
 
-/* Utiliser 90% de la largeur de la fenêtre */
-.modal-dialog {
-  max-width: 90vw;
-  width: auto;
+.icon-wrapper {
+  font-size: 2.5rem;
+  animation: float 3s ease-in-out infinite;
 }
 
-.modal-content {
-  background-color: #fff;
-  border-radius: 5px;
-  overflow: hidden;
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.header-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-pill {
+  background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  box-shadow: 0 10px 30px rgba(46, 125, 50, 0.3);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Filters Section */
+.filters-section {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.filters-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+}
+
+.btn-reset {
+  background: linear-gradient(135deg, #00695c 0%, #26a69a 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 105, 92, 0.3);
+}
+
+.btn-reset:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 105, 92, 0.4);
+}
+
+.btn-reset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reset-icon {
+  font-size: 1.2rem;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.btn-reset:hover:not(:disabled) .reset-icon {
+  transform: rotate(180deg);
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.date-range-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  grid-column: span 2;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-input {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: white;
   width: 100%;
 }
 
-.modal-header,
-.modal-footer {
-  padding: 1rem;
-  border-bottom: 1px solid #e9ecef;
+.filter-input:focus {
+  outline: none;
+  border-color: #66bb6a;
+  box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.1);
 }
 
-.modal-header {
+.filter-select {
+  cursor: pointer;
+}
+
+/* Loading State */
+.loading-state {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 4rem 2rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(102, 187, 106, 0.2);
+  border-top-color: #2e7d32;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Results Section */
+.results-section {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-modern {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.card-header-modern {
+  background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);
+  color: white;
+  padding: 1.5rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* Ajout d'un scroll vertical si le contenu dépasse 600px de hauteur */
-.modal-body {
-  padding: 1rem;
-  max-height: 600px;
-  overflow-y: auto;
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
 }
 
-/* Mise en forme avec CSS Grid pour afficher toutes les infos sur une seule ligne */
-.parent-label {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  align-items: center;
+.card-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Table */
+.table-container {
+  overflow-x: auto;
+}
+
+.modern-table {
   width: 100%;
-  font-size: 0.9rem;
+  border-collapse: collapse;
+}
+
+.modern-table thead {
+  background: #f7fafc;
+}
+
+.modern-table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.th-number {
+  text-align: right;
+}
+
+.th-chart {
+  text-align: right;
+}
+
+.table-row {
+  border-bottom: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  animation: slideIn 0.5s ease backwards;
+  animation-delay: calc(var(--row-index) * 0.05s);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.table-row:hover {
+  background: #f7fafc;
+  transform: scale(1.01);
+}
+
+.modern-table td {
+  padding: 1.25rem 1.5rem;
+}
+
+.teacher-cell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.teacher-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.teacher-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.td-number {
+  text-align: left;
+}
+
+.number-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.number-badge.hours {
+  background: linear-gradient(135deg, #2e7d3220, #66bb6a20);
+  color: #2e7d32;
+}
+
+.number-badge.sessions {
+  background: linear-gradient(135deg, #00695c20, #26a69a20);
+  color: #00695c;
+}
+
+.td-chart {
+  text-align: right;
+  width: 200px;
+}
+
+.chart-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.chart-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2e7d32 0%, #66bb6a 100%);
+  border-radius: 50px;
+  transition: width 0.5s ease;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.empty-state h3 {
+  color: #2d3748;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: #718096;
+}
+
+/* Error Message */
+.error-message {
+  background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 10px 30px rgba(245, 101, 101, 0.3);
+}
+
+.error-icon {
+  font-size: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .dashboard-title {
+    font-size: 1.75rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .date-range-group {
+    grid-column: span 1;
+    grid-template-columns: 1fr;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .td-chart {
+    display: none;
+  }
+}
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: grid;
+  place-items: center;
+  z-index: 999;
+}
+
+/* Modal card */
+.modal-card {
+  width: min(900px, 92vw);
+  max-height: 88vh;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header / footer */
+.modal-header, .modal-footer {
+  padding: 1rem 1.25rem;
+  background: #f7fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1rem 1.25rem;
+  overflow: auto;
+}
+
+.modal-loading {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+/* Summary */
+.modal-summary {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+
+.badge {
+  background: #e6fffa;
+  color: #00695c;
+  padding: .35rem .6rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: .85rem;
+}
+
+/* Sessions list */
+.session-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.session-item {
+  padding: .9rem;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  margin-bottom: .75rem;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
+  background: #fff;
+}
+
+.session-time .session-date {
+  font-weight: 700;
+  color: #2d3748;
+}
+.session-time .session-hours {
+  color: #4a5568;
+  font-size: .95rem;
+  margin-top: .25rem;
+}
+
+.session-meta .meta-line { margin-bottom: .25rem; }
+.pill {
+  display: inline-block;
+  background: #eefbf1;
+  color: #2e7d32;
+  padding: .25rem .5rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 600;
+  margin-right: .35rem;
+}
+.weak { color: #718096; }
+
+.clickable { cursor: pointer; }
+.clickable:hover { background: #f0fff4; }
+
+@media (max-width: 640px) {
+  .session-item { grid-template-columns: 1fr; }
+}
+
+.session-date {
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.parent-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.parent-contact {
+  font-size: 0.85rem;
+  color: #4a5568;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.number-badge.unpaid-badge {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #b91c1c;
+}
+
+.number-badge.unpaid-badge.unpaid-high {
+  background: linear-gradient(135deg, #fecaca, #fca5a5);
+  color: #7f1d1d;
+}
+
+/* --- NOUVEAUX STYLES POUR LE TABLEAU DES PAIEMENTS --- */
+
+/* Bandeau de résumé sous le titre */
+.unpaid-summary-banner {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #edf2f7;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-item .lbl {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #718096;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.summary-item .val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.summary-item .val.success { color: #059669; }
+.summary-item .val.danger { color: #e53e3e; }
+
+
+/* Styles des cellules */
+.bg-gray-50 {
+  background-color: #f8fafc; /* Légère teinte pour séparer les services */
+}
+
+.th-center, .td-center {
+  text-align: center;
+}
+
+.th-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Cellule de contact */
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #4a5568;
+  margin-bottom: 0.15rem;
+}
+.contact-row .icon { opacity: 0.7; }
+
+/* Cellule Service (Arabe / Soutien) */
+.service-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.service-detail.inactive {
+  opacity: 0.4;
+}
+
+.badge-count {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-count.soutien {
+  background-color: #e0f2fe; /* Bleu très clair pour soutien */
+  color: #0369a1;
+}
+
+.service-price {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+
+.dash {
+  color: #cbd5e0;
+  font-weight: bold;
+}
+
+.font-bold {
+  font-weight: 700;
+  color: #2d3748;
+}
+
+/* Badges Monétaires */
+.number-badge.paid-badge {
+  background-color: #ecfdf5;
+  color: #047857; /* Vert foncé */
+}
+
+.number-badge.unpaid-badge {
+  background-color: #fff1f2;
+  color: #be123c; /* Rouge */
+  box-shadow: 0 0 0 1px rgba(190, 18, 60, 0.1);
+}
+
+.number-badge.unpaid-high {
+  background-color: #ffe4e6;
+  color: #9f1239;
+  font-weight: 800;
+  box-shadow: 0 0 0 1px rgba(159, 18, 57, 0.2);
+}
+
+.price-split {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+}
+
+.split-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 80px;
+  gap: 0.5rem;
+}
+
+.split-row .lbl {
+  color: #718096;
+  font-size: 0.75rem;
+}
+
+.split-row .val {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.split-row.success .val {
+  color: #059669; /* Vert pour l'argent reçu */
+}
+
+.split-row.success .lbl {
+  color: #059669;
+  opacity: 0.8;
 }
 </style>

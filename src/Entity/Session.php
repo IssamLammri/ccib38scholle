@@ -11,30 +11,30 @@ class Session
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read_session'])]
+    #[Groups(['read_session','presence_session'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['read_session'])]
+    #[Groups(['read_session','presence_session'])]
     private ?\DateTimeImmutable $startTime = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['read_session'])]
+    #[Groups(['read_session','presence_session'])]
     private ?\DateTimeImmutable $endTime = null;
 
     #[ORM\ManyToOne(targetEntity: Room::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read_session'])]
+    #[ORM\JoinColumn(name: 'room_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[Groups(['read_session','presence_session'])]
     private ?Room $room = null;
 
     #[ORM\ManyToOne(targetEntity: StudyClass::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read_session'])]
+    #[Groups(['read_session','presence_session'])]
     private ?StudyClass $studyClass = null;
 
     #[ORM\ManyToOne(targetEntity: Teacher::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read_session'])]
+    #[Groups(['read_session','presence_session'])]
     private ?Teacher $teacher = null;
 
     // Getters and Setters

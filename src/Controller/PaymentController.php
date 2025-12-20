@@ -40,29 +40,46 @@ class PaymentController extends AbstractController
     #[Route('/list', name: 'payments_list', options: ['expose' => true])]
     public function allPayment(Request $request): Response
     {
-        $allPayments = $this->paymentRepository->findAll();
-        $parents = $this->parentsRepository->findAll();
-
         return $this->render('payment/list.html.twig', [
-            'allPayments' => $allPayments,
-            'parents' => $parents,
             'books' => $this->bookRepository->findAll(),
             'currentUser' => $this->getUser(),
         ]);
     }
 
     #[Route('/all', name: 'all_payments', options: ['expose' => true], methods: ['GET'])]
-    public function getAllPayments(): JsonResponse
+    public function getAllPayments(Request $request): JsonResponse
     {
-        $payments = $this->paymentRepository->findBy([], ['paymentDate' => 'DESC']);
-        $parents = $this->parentsRepository->findAll();
+        $page  = max(1, (int) $request->query->get('page', 1));
+        $limit = 100;
+        $offset = ($page - 1) * $limit;
+
+        // On récupère limit + 1 paiements pour savoir s'il y a une page suivante
+        $payments = $this->paymentRepository->findBy(
+            [],
+            ['paymentDate' => 'DESC'],
+            $limit + 1,
+            $offset
+        );
+
+        $hasMore = count($payments) > $limit;
+
+        if ($hasMore) {
+            array_pop($payments); // on enlève le 101e
+        }
+
+        // Les parents, on peut les renvoyer seulement à la première page (souvent suffisant)
+        $parents = [];
+        if ($page === 1) {
+            $parents = $this->parentsRepository->findAll();
+        }
 
         return $this->json([
             'payments' => $payments,
-            'parents' => $parents,
+            'parents'  => $parents,
+            'page'     => $page,
+            'hasMore'  => $hasMore,
         ], 200, [], ['groups' => 'read_payment']);
     }
-
 
     #[Route('/new', name: 'payment_new', options: ['expose' => true], methods: ['POST'])]
     public function newPayment(Request $request): Response

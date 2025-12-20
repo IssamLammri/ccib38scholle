@@ -76,4 +76,18 @@ class StudentClassRegisteredRepository extends ServiceEntityRepository
             ->andWhere('r.active = true')
             ->getQuery()->getResult();
     }
+
+    public function findStudentsActiveInStudyClassBySchoolYear($schoolYear): array
+    {
+        return $this->createQueryBuilder('r')
+            ->join('r.student', 'st')->addSelect('st')
+            ->join('st.parent', 'p')->addSelect('p')
+            ->join('r.studyClass', 'sc')->addSelect('sc')
+            ->andWhere('sc.schoolYear = :sy')
+            ->andWhere('sc.classType IN (:types)')
+            ->setParameter('sy', $schoolYear)
+            ->setParameter('types', [StudyClass::CLASS_TYPE_SOUTIEN, StudyClass::CLASS_TYPE_ARABE])
+            ->getQuery()
+            ->getResult();
+    }
 }

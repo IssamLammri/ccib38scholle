@@ -54,6 +54,12 @@ class SessionController extends AbstractController
         return $this->render('session/index.html.twig');
     }
 
+    #[Route('/presences', name: 'app_session_presences', options: ['expose' => true], methods: ['GET'])]
+    public function presencesAllSessions(): Response
+    {
+        return $this->render('session/presences_sessions.html.twig');
+    }
+
     /**
      * Retourne toutes les sessions filtrées (sans pagination) et les statistiques par mois.
      *
@@ -212,6 +218,231 @@ class SessionController extends AbstractController
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
         ]);
     }
+    private function resolveTeacherIdIfOnlyTeacher(TeacherRepository $teacherRepo): ?int
+    {
+        // ✅ si admin/superadmin => accès global
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_SUPER_ADMIN')) {
+            return null;
+        }
+
+        // ✅ si teacher (et pas admin) => filtre
+        if ($this->isGranted('ROLE_TEACHER')) {
+            $user = $this->getUser();
+            if (!$user) {
+                return null;
+            }
+
+            /** @var Teacher|null $teacher */
+            $teacher = $teacherRepo->findOneBy(['user' => $user]);
+            if (!$teacher) {
+                throw $this->createAccessDeniedException("Aucun teacher lié à cet utilisateur.");
+            }
+
+            return $teacher->getId();
+        }
+
+        return null;
+    }
+
+    private function parseFromTo(Request $request): array
+    {
+        $fromRaw = $request->query->get('from');
+        $toRaw   = $request->query->get('to');
+
+        $from = null;
+        $to   = null;
+
+        if ($fromRaw !== null && trim((string)$fromRaw) !== '') {
+            $from = new \DateTimeImmutable(trim((string)$fromRaw) . ' 00:00:00');
+        }
+        if ($toRaw !== null && trim((string)$toRaw) !== '') {
+            $to = new \DateTimeImmutable(trim((string)$toRaw) . ' 23:59:59');
+        }
+
+        return ['from' => $from, 'to' => $to];
+    }
+
+    #[Route(
+        '/sessions-presences/by-student',
+        name: 'api_presences_sessions_by_student',
+        options: ['expose' => true],
+        methods: ['GET']
+    )]
+    public function getPresencesByStudent(
+        Request $request,
+        SessionStudyClassPresenceRepository $repo,
+        TeacherRepository $teacherRepo
+    ): Response {
+        $page  = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(1, (int) $request->query->get('limit', 30)));
+
+        // studyClassId (optionnel)
+        $studyClassIdRaw = $request->query->get('studyClassId');
+        $studyClassId = ($studyClassIdRaw !== null && (string)$studyClassIdRaw !== '')
+            ? (int) $studyClassIdRaw
+            : null;
+
+        // classType (optionnel)
+        $classTypeRaw = $request->query->get('classType');
+        $classType = ($classTypeRaw !== null && trim((string)$classTypeRaw) !== '')
+            ? trim((string)$classTypeRaw)
+            : null;
+
+        // q (optionnel) => recherche nom/prénom
+        $qRaw = $request->query->get('q');
+        $q = ($qRaw !== null && trim((string)$qRaw) !== '')
+            ? trim((string)$qRaw)
+            : null;
+
+        // ✅ teacher filter si ROLE_TEACHER only
+        $teacherId = $this->resolveTeacherIdIfOnlyTeacher($teacherRepo);
+
+        // ✅ filtre date
+        ['from' => $from, 'to' => $to] = $this->parseFromTo($request);
+
+        // ✅ IMPORTANT: si pas de classe choisie => regrouper par service (classType)
+        if ($studyClassId === null) {
+            $result = $repo->paginateByStudentServiceStats(
+                $page,
+                $limit,
+                $classType,
+                $q,
+                $teacherId,
+                $from,
+                $to
+            );
+        } else {
+            // regroupement par classe (student + studyClass)
+            $result = $repo->paginateByStudentStats(
+                $page,
+                $limit,
+                $studyClassId,
+                $classType,
+                $q,
+                $teacherId,
+                $from,
+                $to
+            );
+        }
+
+        $total = (int) ($result['total'] ?? 0);
+        $pages = (int) max(1, ceil($total / $limit));
+
+        return $this->json([
+            'students' => $result['items'] ?? [],
+            'meta' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'pages' => $pages,
+                'hasNext' => $page < $pages,
+                'hasPrev' => $page > 1,
+            ],
+        ]);
+    }
+
+    #[Route(
+        '/sessions-presences/by-student/{studentId}/history',
+        name: 'api_presences_student_history',
+        requirements: ['studentId' => '\d+'],
+        options: ['expose' => true],
+        methods: ['GET']
+    )]
+    public function getStudentPresenceHistory(
+        int $studentId,
+        Request $request,
+        SessionStudyClassPresenceRepository $repo,
+        TeacherRepository $teacherRepo
+    ): Response {
+        $page  = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(1, (int) $request->query->get('limit', 20)));
+
+        $classTypeRaw = $request->query->get('classType');
+        $classType = ($classTypeRaw !== null && trim((string)$classTypeRaw) !== '')
+            ? trim((string)$classTypeRaw)
+            : null;
+
+        $teacherId = $this->resolveTeacherIdIfOnlyTeacher($teacherRepo);
+
+        ['from' => $from, 'to' => $to] = $this->parseFromTo($request);
+
+        $result = $repo->paginateHistoryByStudent(
+            $studentId,
+            $page,
+            $limit,
+            $classType,
+            $teacherId,
+            $from,
+            $to
+        );
+
+        $total = (int) ($result['total'] ?? 0);
+        $pages = (int) max(1, ceil($total / $limit));
+
+        return $this->json([
+            'items' => $result['items'] ?? [],
+            'meta' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'pages' => $pages,
+                'hasNext' => $page < $pages,
+                'hasPrev' => $page > 1,
+            ],
+        ]);
+    }
+
+    #[Route(
+        '/study-classes',
+        name: 'api_studyclass_index',
+        options: ['expose' => true],
+        methods: ['GET']
+    )]
+    public function listStudyClasses(
+        Request $request,
+        StudyClassRepository $studyClassRepo,
+        TeacherRepository $teacherRepo
+    ): Response {
+        $schoolYear = StudyClass::SCHOOL_YEAR_ACTIVE; // "2025/2026"
+
+        $classTypeRaw = $request->query->get('classType');
+        $classType = ($classTypeRaw !== null && trim((string)$classTypeRaw) !== '')
+            ? trim((string)$classTypeRaw)
+            : null;
+
+        $teacherId = $this->resolveTeacherIdIfOnlyTeacher($teacherRepo);
+
+        // ✅ Option simple: si teacher only -> classes où il est principalTeacher
+        $criteria = ['schoolYear' => $schoolYear];
+        if ($classType !== null) {
+            $criteria['classType'] = $classType;
+        }
+        if ($teacherId !== null) {
+            $criteria['principalTeacher'] = $teacherId;
+        }
+
+        $classes = $studyClassRepo->findBy($criteria, ['name' => 'ASC']);
+
+        $items = array_map(static function (StudyClass $c) {
+            return [
+                'id' => $c->getId(),
+                'name' => $c->getName(),
+                'level' => $c->getLevel(),
+                'speciality' => $c->getSpeciality(),
+                'classType' => $c->getClassType(),
+                'schoolYear' => $c->getSchoolYear(),
+            ];
+        }, $classes);
+
+        return $this->json([
+            'items' => $items,
+            'meta' => [
+                'schoolYear' => $schoolYear,
+                'classType' => $classType,
+                'count' => count($items),
+            ],
+        ]);
+    }
 
 
     /**
@@ -282,7 +513,7 @@ class SessionController extends AbstractController
     ): Response
     {
         $rooms = $roomRepository->findAll();
-        $classes = $classRepository->findAll();
+        $classes = $classRepository->findBy(['schoolYear' => StudyClass::SCHOOL_YEAR_ACTIVE]);
         $teachers = $teacherRepository->findAll();
 
         $roomsArray = array_map(fn(Room $r) => [
@@ -294,12 +525,15 @@ class SessionController extends AbstractController
             'id' => $c->getId(),
             'name' => $c->getName(),
             'level' => $c->getLevel(),
-            'speciality' => $c->getSpeciality()
+            'speciality' => $c->getSpeciality(),
+            'principal_teacher' => $c->getPrincipalTeacher()?->getId(),
+            'school_year' => $c->getSchoolYear()
         ], $classes);
 
         $teachersArray = array_map(fn(Teacher $t) => [
             'id' => $t->getId(),
-            'fullName' => $t->getFirstName() . ' ' . $t->getLastName()
+            'fullName' => $t->getFirstName() . ' ' . $t->getLastName(),
+            'speciality' => $t->getSpecialities()
         ], $teachers);
 
         return $this->json([

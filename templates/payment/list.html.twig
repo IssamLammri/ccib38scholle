@@ -22,8 +22,6 @@
 
     <div id="app">
         <list-payments
-            :payments="{{ allPayments | serialize('json', {'groups': 'read_payment'}) }}"
-            :parents="{{ parents | serialize('json', {'groups': 'read_payment'}) }}"
             :books="{{ books | serialize('json', {'groups': 'read_book'}) }}"
             :current-user="{{ currentUser | serialize('json', {'groups': 'read_user'}) }}"
         ></list-payments> <!-- Utilisez le nouveau composant de page Vue -->

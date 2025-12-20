@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fiche de remboursement{% endblock %}
+
+{% block body %}
+
+    <div id="app">
+        <show-refund
+                :refund="{{ refund | serialize('json', {'groups': 'read_refund'}) }}"
+        ></show-refund>
+    </div>
+{% endblock %}

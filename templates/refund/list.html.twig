@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}List des remboursements{% endblock %}
+
+{% block body %}
+        <list-refund
+                :current-user="{{ currentUser | serialize('json', {'groups': 'read_user'}) }}"
+        ></list-refund>
+
+{% endblock %}

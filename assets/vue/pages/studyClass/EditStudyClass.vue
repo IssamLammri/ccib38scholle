@@ -176,6 +176,31 @@
           </div>
         </div>
 
+        <!-- >>> NOUVEAU : URL du groupe WhatsApp -->
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <label for="whatsappUrl" class="form-label">
+              Lien du groupe WhatsApp (optionnel)
+            </label>
+            <div class="input-group">
+      <span class="input-group-text">
+        <i class="fab fa-whatsapp"></i>
+      </span>
+              <input
+                  type="url"
+                  id="whatsappUrl"
+                  class="form-control"
+                  v-model="form.whatsappUrl"
+                  :disabled="!canEditClass"
+                  placeholder="https://chat.whatsapp.com/… ou https://wa.me/…"
+              />
+            </div>
+            <small class="text-muted">
+              Collez ici le lien d’invitation vers le groupe WhatsApp de cette classe.
+            </small>
+          </div>
+        </div>
+
         <div class="row">
           <!-- Heure de Début -->
           <div class="col-md-6 mb-3">
@@ -270,8 +295,7 @@ export default {
         'N4_1','N4_2','N5_1','N5_2','N6_1','N6_2','Adolescent','Adult'
       ],
       levelOptionsSupport: [
-        'CP','CE1','CE2','CM1','CM2','6ème','5ème','4ème','3ème',
-        '2nde','1ère','Terminale'
+        'Primaire','Lycée','Collège','Gestion soutien scolaire'
       ],
       isFormReady: false,
       messageAlert: null,
@@ -289,6 +313,7 @@ export default {
         // nouveaux champs
         schoolYear: '',
         principalRoomId: null,
+        whatsappUrl: '',
       },
       days: ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'],
       teachers: this.allTeachers,
@@ -392,6 +417,7 @@ export default {
         // nouveaux champs
         schoolYear: s.schoolYear || '2025/2026',                 // défaut si absent
         principalRoomId: s.principalRoom?.id ?? null,
+        whatsappUrl: s.whatsappUrl || '',
       };
 
       // si la valeur backend n'est pas dans la liste autorisée, on force un des choix
@@ -421,6 +447,7 @@ export default {
           // >>> ajout au payload
           schoolYear: this.form.schoolYear,
           principalRoomId: this.form.principalRoomId, // peut être null
+          whatsappUrl: this.form.whatsappUrl?.trim() || null,
         };
 
         this.axios

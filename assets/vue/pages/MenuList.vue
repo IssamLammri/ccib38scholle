@@ -33,27 +33,13 @@
 
       <ul class="sidebar-menu list-unstyled">
         <!-- Tableau de bord -->
-        <template v-if="isAdmin || isManager">
+        <template v-if="isManager">
           <li>
             <a
                 :href="$routing.generate('app_dashboard')"
                 class="menu-link"
                 :class="{ active: isActiveRoute('app_dashboard') }"
                 :aria-current="isActiveRoute('app_dashboard') ? 'page' : null"
-            >
-              <i class="fa-solid fa-chart-line menu-icon"></i>
-              <span class="menu-text">Tableau de bord</span>
-            </a>
-          </li>
-        </template>
-
-        <template v-else-if="isParent">
-          <li>
-            <a
-                :href="$routing.generate('app_dashboard_parent')"
-                class="menu-link"
-                :class="{ active: isActiveRoute('app_dashboard_parent') }"
-                :aria-current="isActiveRoute('app_dashboard_parent') ? 'page' : null"
             >
               <i class="fa-solid fa-chart-line menu-icon"></i>
               <span class="menu-text">Tableau de bord</span>
@@ -218,6 +204,15 @@
                   <span class="submenu-dot"></span>Factures
                 </a>
               </li>
+              <li>
+                <a
+                    :href="$routing.generate('app_refund_index')"
+                    :class="{ active: isActiveRoute('app_refund_index') }"
+                    :aria-current="isActiveRoute('app_refund_index') ? 'page' : null"
+                >
+                  <span class="submenu-dot"></span> Remboursements
+                </a>
+              </li>
             </ul>
           </li>
         </template>
@@ -249,6 +244,17 @@
               <span class="menu-text">Sessions du jour</span>
             </a>
           </li>
+          <li>
+            <a
+                :href="$routing.generate('app_session_presences')"
+                class="menu-link"
+                :class="{ active: isActiveRoute('app_session_presences') }"
+                :aria-current="isActiveRoute('app_session_presences') ? 'page' : null"
+            >
+              <i class="fas fa-calendar-day menu-icon"></i>
+              <span class="menu-text">Présences</span>
+            </a>
+          </li>
         </template>
 
         <!-- Espace Parent -->
@@ -262,7 +268,7 @@
                 :aria-current="isActiveRoute('app_dashboard_parent') ? 'page' : null"
             >
               <i class="fas fa-home menu-icon"></i>
-              <span class="menu-text">Tableau de bord</span>
+              <span class="menu-text">Tableau de bord Parent</span>
             </a>
           </li>
         </template>

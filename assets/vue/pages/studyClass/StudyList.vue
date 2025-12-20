@@ -602,9 +602,11 @@ export default {
     },
 
     classNames(student) {
-      if (!student || !student.registrations) return [];
+      if (!student?.registrations) return [];
+
       return student.registrations
-          .map(r => r && r.studyClass && r.studyClass.name)
+          .filter(r => r?.active === true)
+          .map(r => r?.studyClass?.name)
           .filter(Boolean);
     },
 

@@ -19,7 +19,7 @@ class StudentClassRegistered
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'registrations')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     #[Groups(['read_student_class_registered'])]
     private ?Student $student = null; // Relation Many-to-One avec Student
 
@@ -29,7 +29,7 @@ class StudentClassRegistered
     private ?StudyClass $studyClass = null; // Relation Many-to-One avec StudyClass
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => null])]
-    #[Groups(['read_student_class_registered','read_payment'])]
+    #[Groups(['read_student_class_registered','read_payment','read_student'])]
     private ?bool $active = null;
 
     public function __construct(StudyClass $studyClass, Student $student)

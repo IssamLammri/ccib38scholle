@@ -1,0 +1,115 @@
+name: Tests & Coverage
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  phpunit:
+    name: PHPUnit (coverage)
+    runs-on: ubuntu-latest
+
+    env:
+      # --- Symfony & App env ---
+      APP_ENV: test
+      APP_DEBUG: 1
+      APP_SECRET: testing
+      APP_URL: http://localhost
+
+      # --- DB test: SQLite rapide & sans service externe ---
+      DATABASE_URL: 'sqlite:///%kernel.project_dir%/var/test.db'
+
+      # --- Couverture (générée par phpunit) ---
+      XDEBUG_MODE: coverage
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: xdebug
+          extensions: mbstring, intl, pdo_sqlite, dom, json, ctype, tokenizer
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      # IMPORTANT: --no-scripts pour éviter cache:clear prod & autres recettes en CI
+      - name: Install dependencies (no scripts)
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      # Optionnel: si tes tests ont besoin d'autowarmers (rarement nécessaire)
+      # - name: Cache warmup (test)
+      #   run: php bin/console cache:warmup --env=test
+
+      - name: Prepare test DB schema (SQLite)
+        run: |
+          mkdir -p var
+          php bin/console doctrine:database:create --env=test --if-not-exists || true
+          php bin/console doctrine:schema:update --force --env=test
+
+      - name: Stub Webpack Encore assets (manifest / entrypoints)
+        run: |
+          mkdir -p public/build
+          cat > public/build/entrypoints.json <<'JSON'
+          {"entrypoints":{"app":{"js":[],"css":[]}}}
+          JSON
+          echo '{}' > public/build/manifest.json
+
+      - name: Install Importmap vendor assets (Stimulus)
+        run: php bin/console importmap:install --env=test --no-interaction || true
+
+      - name: Ensure @hotwired/stimulus is present
+        run: php bin/console importmap:require @hotwired/stimulus --env=test --no-interaction || true
+
+      - name: Run PHPUnit (with coverage)
+        run: |
+          vendor/bin/phpunit \
+            --colors=always \
+            --log-junit junit.xml \
+            --coverage-clover coverage.xml
+
+      - name: Upload coverage.xml as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-clover
+          path: coverage.xml
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload JUnit report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-junit
+          path: junit.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+      # ---- Optionnel : envoi à Codecov (recommandé) ----
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          flags: php
+          name: phpunit-coverage
+          fail_ci_if_error: false
+        env:
+          # Requis pour les dépôts privés, optionnel pour les publics
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

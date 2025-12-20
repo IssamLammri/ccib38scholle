@@ -614,7 +614,6 @@ class SendMailCompanyHajj2025Command extends Command
             [ 'id'=> 565, 'fullName'=> 'NASRI Amel ', 'email'=> 'benelhadj_amel@hotmail.fr'],*/
         ];
         foreach ($contacts as $contact) {
-            dump($contact['email']);
             $email = $contact['email'];
             $this->mailService->sendEmail(
                 to: $email,
