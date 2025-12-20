@@ -1,44 +1,24 @@
-
 # Makefile for schollccib project
 
 # Variables
 COMPOSE = docker compose
 EXEC_APP = $(COMPOSE) exec app
 
-# Commands
+# ------------------------------------------------------------
+# Docker
+# ------------------------------------------------------------
+
 .PHONY: build
 build:
 	$(COMPOSE) up --build
 
-.PHONY: install-composer
-install-composer:
-	$(EXEC_APP) composer install
+.PHONY: start
+start:
+	$(COMPOSE) up -d
 
-.PHONY: update-structure
-update-structure:
-	$(EXEC_APP) php bin/console doctrine:migrations:diff
-
-.PHONY: migrate
-migrate:
-	$(EXEC_APP) php bin/console doctrine:migrations:migrate
-
-.PHONY: install-node-modules
-install-node-modules:
-	$(EXEC_APP) yarn install
-	$(EXEC_APP) npm install @popperjs/core
-
-.PHONY: dev
-dev:
-	$(EXEC_APP) php bin/console fos:js-routing:dump --format=json --target=public/js/fos_js_routes.json
-	$(EXEC_APP) yarn run dev --watch
-
-.PHONY: clear-cache
-clear-cache:
-	$(EXEC_APP) php bin/console cache:clear
-
-.PHONY: test
-test:
-	$(EXEC_APP) php bin/phpunit
+.PHONY: stop
+stop:
+	$(COMPOSE) down
 
 .PHONY: ps
 ps:
@@ -52,25 +32,62 @@ down:
 prune:
 	docker system prune -af
 
-.PHONY: clean-node-modules
-clean-node-modules:
-	$(EXEC_APP) rm -rf node_modules yarn.lock
+.PHONY: bash
+bash:
+	$(COMPOSE) exec app bash
+
+# ------------------------------------------------------------
+# PHP / Symfony
+# ------------------------------------------------------------
+
+.PHONY: install-composer
+install-composer:
+	$(EXEC_APP) composer install
+
+.PHONY: clear-cache
+clear-cache:
+	$(EXEC_APP) php bin/console cache:clear
+
+.PHONY: update-structure
+update-structure:
+	$(EXEC_APP) php bin/console doctrine:migrations:diff
 
 .PHONY: make-migration
 make-migration:
 	$(EXEC_APP) php bin/console make:migration
 
+.PHONY: migrate
+migrate:
+	$(EXEC_APP) php bin/console doctrine:migrations:migrate
+
+.PHONY: test
+test:
+	$(EXEC_APP) php bin/phpunit
+
+# ------------------------------------------------------------
+# Front (Node/Yarn)
+# ------------------------------------------------------------
+
+.PHONY: install-node-modules
+install-node-modules:
+	$(EXEC_APP) yarn install
+	$(EXEC_APP) yarn add @popperjs/core
+
+.PHONY: clean-node-modules
+clean-node-modules:
+	$(EXEC_APP) rm -rf node_modules yarn.lock package-lock.json
+
+.PHONY: dev
+dev:
+	$(EXEC_APP) php bin/console fos:js-routing:dump --format=json --target=public/js/fos_js_routes.json
+	$(EXEC_APP) yarn run dev --watch
+
+# ------------------------------------------------------------
 # Default target
+# ------------------------------------------------------------
+
 .PHONY: all
 all: build install-composer migrate install-node-modules dev
-
-.PHONY: start
-start:
-	$(COMPOSE) up -d
-
-.PHONY: stop
-stop:
-	$(COMPOSE) down
 
 # ------------------------------------------------------------
 # 📊 Coverage helpers
@@ -92,13 +109,15 @@ open-coverage:
 		start var/coverage/html/index.html; \
 	fi
 
-# Résumé texte (si défini dans phpunit.xml.dist)
 .PHONY: coverage-text
 coverage-text:
 	$(EXEC_APP) sh -lc 'XDEBUG_MODE=coverage php -d xdebug.start_with_request=0 bin/phpunit'
 	@echo "\nOuvre: var/coverage/html/index.html"
 
-# Allumer/éteindre Xdebug par défaut dans le conteneur (utile pour le debug IDE)
+# ------------------------------------------------------------
+# Xdebug helpers
+# ------------------------------------------------------------
+
 .PHONY: xdebug-on
 xdebug-on:
 	$(EXEC_APP) bash -lc 'echo "XDEBUG_MODE=debug,develop" > /tmp/xdebug_mode && printenv | grep -v ^XDEBUG_MODE= >> /tmp/env && echo "XDEBUG_MODE=debug,develop" >> /tmp/env && cat /tmp/env > /proc/1/environ || true'
@@ -107,17 +126,3 @@ xdebug-on:
 .PHONY: xdebug-off
 xdebug-off:
 	@echo "Xdebug sera off par défaut; de toute façon nos cibles coverage l’activent à la volée."
-
-.PHONY: bash
-bash:
-	$(COMPOSE) exec app bash
-
-
-.PHONY: clean-node-modules
-clean-node-modules:
-	$(EXEC_APP) rm -rf node_modules yarn.lock package-lock.json
-
-.PHONY: install-node-modules
-install-node-modules:
-	$(EXEC_APP) yarn install
-	$(EXEC_APP) yarn add @popperjs/core
