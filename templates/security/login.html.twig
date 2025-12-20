@@ -1,53 +1,320 @@
 {% extends 'base.guest.html.twig' %}
 
 {% block title %}Se connecter{% endblock %}
+
 {% block body %}
-    <section class="h-100 gradient-form" style="background-color: #eee; min-height: 100vh;">
+    <style>
+        @keyframes blob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+
+        .animation-delay-2s {
+            animation-delay: 2s;
+        }
+
+        .animation-delay-4s {
+            animation-delay: 4s;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        .input-modern {
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+
+        .input-modern:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            transition: color 0.3s ease;
+        }
+
+        .input-wrapper:focus-within .input-icon {
+            color: #667eea;
+        }
+
+        .input-with-icon {
+            padding-left: 48px !important;
+        }
+
+        .btn-modern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px 0 rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(102, 126, 234, 0.6);
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 48px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            background: white;
+            padding: 0 8px;
+        }
+
+        .input-modern:focus ~ .floating-label,
+        .input-modern:not(:placeholder-shown) ~ .floating-label {
+            top: 0;
+            font-size: 12px;
+            color: #667eea;
+            left: 40px;
+        }
+
+        .logo-container {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .alert-modern {
+            border-left: 4px solid #667eea;
+            border-radius: 12px;
+            background: rgba(102, 126, 234, 0.05);
+            padding: 16px;
+            margin-bottom: 24px;
+            animation: slideInDown 0.5s ease;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .checkbox-modern {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-modern:checked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+
+        .link-modern {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .link-modern::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        .link-modern:hover::after {
+            width: 100%;
+        }
+
+        .image-side {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-side::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            animation: blob 7s infinite;
+        }
+
+        .image-side::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            bottom: -50px;
+            left: -50px;
+            animation: blob 7s infinite;
+            animation-delay: 2s;
+        }
+    </style>
+
+    <section style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; position: relative; overflow: hidden;">
+        <!-- Animated background blobs -->
+        <div style="position: absolute; top: 20%; left: 10%; width: 300px; height: 300px; background: rgba(102, 126, 234, 0.2); border-radius: 50%; filter: blur(60px); pointer-events: none;" class="animate-blob"></div>
+        <div style="position: absolute; top: 40%; right: 10%; width: 300px; height: 300px; background: rgba(118, 75, 162, 0.2); border-radius: 50%; filter: blur(60px); pointer-events: none;" class="animate-blob animation-delay-2s"></div>
+        <div style="position: absolute; bottom: 10%; left: 50%; width: 300px; height: 300px; background: rgba(102, 126, 234, 0.15); border-radius: 50%; filter: blur(60px); pointer-events: none;" class="animate-blob animation-delay-4s"></div>
+
         {% for type, messages in app.flashes %}
-            <div class="alert alert-{{ type }} alert-dismissible fade show alert-centered" role="alert">
+            <div class="alert alert-{{ type }} alert-modern alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; max-width: 400px;" role="alert">
                 {% for message in messages %}
-                    {{ message }}
+                    <strong>{{ message }}</strong>
                 {% endfor %}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% endfor %}
-        <div class="container-fluid py-5 h-100">
-            <div class="row d-flex justify-content-center align-items-center h-100">
-                <div class="col-md-10 col-sm-12">
-                    <div class="card rounded-3 text-black">
+
+        <div class="container py-5" style="min-height: 100vh; display: flex; align-items: center;">
+            <div class="row w-100 justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-9">
+                    <div class="card glass-effect border-0" style="border-radius: 24px; overflow: hidden;">
                         <div class="row g-0">
-                            <!-- Partie gauche : Formulaire -->
+                            <!-- Formulaire de connexion -->
                             <div class="col-lg-6 col-md-12">
-                                <div class="card-body p-md-5 mx-md-4">
-                                    <div class="text-center">
-                                        <img src="{{ asset('static/icons/logoccib38.webp') }}"
-                                             style="max-width: 100%; height: auto;" alt="logo">
-                                        <h4 class="mt-1 mb-5 pb-1">Bienvenu au CCIB38-------------</h4>
+                                <div class="p-4 p-md-5">
+                                    <!-- Logo et titre -->
+                                    <div class="text-center mb-4">
+                                        <div class="logo-container">
+                                            <img src="{{ asset('static/icons/logoccib38.webp') }}"
+                                                 style="max-width: 50px; max-height: 50px; object-fit: contain;"
+                                                 alt="CCIB38 Logo">
+                                        </div>
+                                        <h2 class="fw-bold mb-2" style="color: #1e293b;">Bienvenue au CCIB38</h2>
+                                        <p class="text-muted">Connectez-vous pour accéder à votre espace</p>
                                     </div>
+
+                                    <!-- Formulaire -->
                                     <form method="post">
-                                        <div class="form-outline mb-4">
-                                            <input type="email" id="inputEmail" value="{{ last_username }}" name="email" class="form-control border" autocomplete="email" required />
-                                            <label class="form-label" for="inputEmail">Email</label>
+                                        <!-- Email -->
+                                        <div class="mb-4 input-wrapper" style="position: relative;">
+                                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                                <polyline points="22,6 12,13 2,6"></polyline>
+                                            </svg>
+                                            <input type="email"
+                                                   id="inputEmail"
+                                                   value="{{ last_username }}"
+                                                   name="email"
+                                                   class="form-control input-modern input-with-icon"
+                                                   autocomplete="email"
+                                                   placeholder=" "
+                                                   required />
+                                            <label class="floating-label" for="inputEmail">Adresse email</label>
                                         </div>
-                                        <div class="form-outline mb-4">
-                                            <input type="password" id="inputPassword" name="password" class="form-control border" autocomplete="current-password" required />
-                                            <label class="form-label" for="inputPassword">Password</label>
+
+                                        <!-- Mot de passe -->
+                                        <div class="mb-4 input-wrapper" style="position: relative;">
+                                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                            </svg>
+                                            <input type="password"
+                                                   id="inputPassword"
+                                                   name="password"
+                                                   class="form-control input-modern input-with-icon"
+                                                   autocomplete="current-password"
+                                                   placeholder=" "
+                                                   required />
+                                            <label class="floating-label" for="inputPassword">Mot de passe</label>
                                         </div>
+
                                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}" />
-                                        <div class="text-center pt-1 mb-5 pb-1">
-                                            <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">Se connecter</button>
+
+                                        <!-- Remember me -->
+                                        <div class="form-check mb-4">
+                                            <input class="form-check-input checkbox-modern"
+                                                   type="checkbox"
+                                                   id="remember_me"
+                                                   name="_remember_me">
+                                            <label class="form-check-label" for="remember_me" style="color: #64748b; margin-left: 8px;">
+                                                Se souvenir de moi
+                                            </label>
                                         </div>
+
+                                        <!-- Bouton de connexion -->
+                                        <div class="mb-4">
+                                            <button class="btn btn-primary w-100 btn-modern text-white" type="submit">
+                                                Se connecter
+                                            </button>
+                                        </div>
+
+                                        <!-- Mot de passe oublié -->
                                         <div class="text-center">
-                                            <a href="{{ path('forgot_password') }}" class="text-muted">Mot de passe oublié ?</a>
+                                            <a href="{{ path('forgot_password') }}" class="link-modern">
+                                                Mot de passe oublié ?
+                                            </a>
                                         </div>
                                     </form>
                                 </div>
                             </div>
-                            <!-- Partie droite : Image -->
-                            <div class="col-lg-6 d-none d-md-flex align-items-center gradient-custom-2">
-                                <div class="text-center w-100">
+
+                            <!-- Image/Illustration -->
+                            <div class="col-lg-6 d-none d-lg-flex image-side align-items-center justify-content-center p-5" style="position: relative;">
+                                <div style="position: relative; z-index: 2; text-align: center;">
                                     <img src="{{ asset('static/images/login_picture.webp') }}"
-                                         style="width: 100%; height: auto;" alt="image">
+                                         style="max-width: 100%; height: auto; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);"
+                                         alt="Illustration de connexion">
+                                    <div class="mt-4 text-white">
+                                        <h3 class="fw-bold mb-3">Accédez à votre espace</h3>
+                                        <p style="opacity: 0.9;">Gérez vos activités et restez connecté avec votre communauté</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
