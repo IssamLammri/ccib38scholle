@@ -1,0 +1,180 @@
+{# templates/email/newsletters/youth_workshops_holidays.html.twig #}
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject|default('Ateliers éducatifs pour les enfants — vacances scolaires 2025/2026') }}</title>
+    <!--[if mso]>
+    <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+    <![endif]-->
+    <style>
+        @media (max-width: 600px) {
+            .container { width: 100% !important; }
+            .px-24 { padding-left: 16px !important; padding-right: 16px !important; }
+            .hero-title { font-size: 22px !important; line-height: 1.25 !important; }
+            .btn { width: 100% !important; }
+        }
+        a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; }
+    </style>
+</head>
+<body style="margin:0; padding:0; background:#f4f5f7;">
+
+{# Preheader neutre et informatif #}
+<div style="display:none; overflow:hidden; line-height:1px; opacity:0; max-height:0; max-width:0;">
+    Ateliers éducatifs gratuits pour les enfants (+8 ans) pendant les jours fériés.
+</div>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f5f7;">
+    <tr>
+        <td align="center" style="padding:24px 12px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container"
+                   style="width:600px; max-width:100%; background:#ffffff; border-radius:12px; overflow:hidden;">
+
+                {# Header #}
+                <tr>
+                    <td style="background:#1f2937; padding:24px; text-align:center;">
+                        <div style="font:600 18px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#ffffff;">
+                            {{ siteName|default('CCIB38') }}
+                        </div>
+                        <div style="font:400 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#cbd5e1; margin-top:6px;">
+                            Centre Culturel Ibn Badis – Grenoble
+                        </div>
+                    </td>
+                </tr>
+
+                {# Hero #}
+                <tr>
+                    <td class="px-24" style="padding:28px 24px 0 24px;">
+                        <div class="hero-title" style="font:700 24px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                            Ateliers éducatifs pour les enfants — vacances scolaires 2025/2026
+                        </div>
+
+                        <div style="font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; margin-top:12px;">
+                            Bonjour {{ fullName|default('chers parents') }},<br><br>
+
+                            Dans le cadre de nos actions éducatives, le <strong>Centre Culturel Ibn Badis de Grenoble</strong>
+                            organise plusieurs <strong>ateliers pédagogiques</strong> destinés aux enfants
+                            de <strong>plus de 8 ans</strong>, pendant les <strong>jours fériés</strong>.
+                        </div>
+                    </td>
+                </tr>
+
+                {# Programme #}
+                <tr>
+                    <td class="px-24" style="padding:16px 24px 0 24px;">
+                        <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:14px;">
+                            <div style="font:700 15px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                                Programme des ateliers
+                            </div>
+
+                            <div style="margin-top:10px; font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                                <strong>Jeudi 25 décembre 2025 de 9h00 jusqu'à 12h00</strong>
+                                <ul style="margin:6px 0 12px 18px; padding:0;">
+                                    <li>Atelier de <strong>programmation informatique</strong></li>
+                                    <li>Atelier de <strong>prise de parole en public (Public Speaking)</strong></li>
+                                </ul>
+
+                                <strong>Jeudi 01 janvier 2026 de 9h00 jusqu'à 12h00</strong>
+                                <ul style="margin:6px 0 0 18px; padding:0;">
+                                    <li>Atelier de <strong>photographie</strong></li>
+                                    <li>Atelier de <strong>jeux d’échecs</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                {# Infos pratiques #}
+                <tr>
+                    <td class="px-24" style="padding:16px 24px 0 24px;">
+                        <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                            Ces ateliers sont <strong>entièrement pris en charge par le Centre</strong>.
+                            Il n’y a donc <strong>aucun frais à prévoir</strong> pour les familles.<br><br>
+
+                            L’objectif est d’offrir aux enfants un cadre enrichissant, favorisant l’apprentissage,
+                            la confiance en soi et le développement de nouvelles compétences, dans une ambiance bienveillante.
+                        </div>
+                    </td>
+                </tr>
+
+                {# CTA sobre #}
+                <tr>
+                    <td align="center" style="padding:22px 24px;">
+                        {% set ctaUrl = registrationUrl|default('https://forms.gle/M4X9boHTQJZbtund7') %}
+
+                        <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ ctaUrl }}"
+              style="height:48px; v-text-anchor:middle; width:340px;" arcsize="12%" stroke="f" fillcolor="#4f46e5">
+              <w:anchorlock/>
+              <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:700;">
+                Accéder au formulaire d’inscription
+              </center>
+            </v:roundrect>
+            <![endif]-->
+
+                        <!-- -->
+                        <a href="{{ ctaUrl }}"
+                           class="btn"
+                           style="display:inline-block; background:#4f46e5; color:#ffffff; text-decoration:none;
+                      font:600 15px/48px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+                      padding:0 24px; border-radius:10px; min-width:260px; text-align:center;">
+                            Accéder au formulaire d’inscription
+                        </a>
+                        <!--<![endif]-->
+                    </td>
+                </tr>
+
+                {# Lien de secours #}
+                <tr>
+                    <td class="px-24" style="padding:0 24px 0 24px;">
+                        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+                            <div style="font:600 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                                En cas de difficulté avec le lien
+                            </div>
+                            <div style="font:400 13px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; word-break:break-all; margin-top:4px;">
+                                Vous pouvez ouvrir directement :
+                                <a href="{{ ctaUrl }}" style="color:#4f46e5; text-decoration:underline;">{{ ctaUrl }}</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                {# Signature #}
+                <tr>
+                    <td class="px-24" style="padding:20px 24px 8px 24px;">
+                        <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                            En restant à votre écoute,<br>
+                            <strong>{{ senderName|default('L’équipe du Centre Culturel Ibn Badis') }}</strong>
+                        </div>
+                    </td>
+                </tr>
+
+                {# Footer #}
+                <tr>
+                    <td style="padding:20px 24px 24px 24px; background:#f9fafb;">
+                        <div style="font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#6b7280; text-align:center;">
+                            Centre Culturel Ibn Badis • 18 Rue des Trembles, 38100 Grenoble • Tél. : +33 4 58 00 89 73<br>
+                            <a href="https://www.ccib38.fr" style="color:#4f46e5; text-decoration:underline;">www.ccib38.fr</a> •
+                            <a href="mailto:ccib38.contact@gmail.com" style="color:#4f46e5; text-decoration:underline;">ccib38.contact@gmail.com</a><br><br>
+
+                            {% if unsubscribeUrl is defined and unsubscribeUrl %}
+                                Vous ne souhaitez plus recevoir nos emails ?
+                                <a href="{{ unsubscribeUrl }}" style="color:#4f46e5; text-decoration:underline;">Se désabonner</a>.
+                            {% else %}
+                                Pour vous désabonner, répondez avec l’objet « DÉSABONNEMENT ».
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+
+            <div style="height:24px; line-height:24px; font-size:24px;">&nbsp;</div>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

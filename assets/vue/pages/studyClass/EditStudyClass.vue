@@ -13,6 +13,30 @@
     <!-- Formulaire -->
     <div class="card shadow-sm p-4">
       <form @submit.prevent="save">
+        <!-- >>> NOUVEAU : Statut actif -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label d-block">Statut</label>
+
+            <div class="form-check form-switch">
+              <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="active"
+                  v-model="form.active"
+                  :disabled="!canEditClass"
+              />
+              <label class="form-check-label" for="active">
+                {{ form.active ? 'Classe active' : 'Classe désactivée' }}
+              </label>
+            </div>
+
+            <small class="text-muted">
+              Si désactivée, la classe n’apparaît plus.
+            </small>
+          </div>
+        </div>
+
         <div class="row">
           <!-- Nom -->
           <div class="col-md-6 mb-3">
@@ -314,6 +338,7 @@ export default {
         schoolYear: '',
         principalRoomId: null,
         whatsappUrl: '',
+        active: true,
       },
       days: ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'],
       teachers: this.allTeachers,
@@ -413,6 +438,7 @@ export default {
         startHour: this.extractTimeFromISOString(s.startHour),
         endHour: this.extractTimeFromISOString(s.endHour),
         principalTeacherId: s.principalTeacher?.id ?? null,
+        active: s.active ?? true,
 
         // nouveaux champs
         schoolYear: s.schoolYear || '2025/2026',                 // défaut si absent
@@ -444,10 +470,11 @@ export default {
           endHour: this.form.endHour,
           principalTeacherId: this.form.principalTeacherId,
 
-          // >>> ajout au payload
           schoolYear: this.form.schoolYear,
-          principalRoomId: this.form.principalRoomId, // peut être null
+          principalRoomId: this.form.principalRoomId,
           whatsappUrl: this.form.whatsappUrl?.trim() || null,
+
+          active: this.form.active,
         };
 
         this.axios

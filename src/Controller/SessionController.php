@@ -108,10 +108,11 @@ class SessionController extends AbstractController
 
         // Récupération dynamique des classes et enseignants
         $classesArray = [];
-        foreach ($studyClassRepository->findAll() as $studyClass) {
+        foreach ($studyClassRepository->findBy([  'active'     => true,]) as $studyClass) {
             $classesArray[] = [
                 'id' => $studyClass->getId(),
-                'name' => $studyClass->getName()
+                'name' => $studyClass->getName(),
+                'speciality' => $studyClass->getSpeciality()
             ];
         }
         $teachersArray = [];
@@ -196,7 +197,7 @@ class SessionController extends AbstractController
 
         // (facultatif) listes pour UI
         $classesArray = [];
-        foreach ($studyClassRepository->findAll() as $studyClass) {
+        foreach ($studyClassRepository->findBy([  'active'     => true,]) as $studyClass) {
             $classesArray[] = [
                 'id' => $studyClass->getId(),
                 'name' => $studyClass->getName()
@@ -400,7 +401,7 @@ class SessionController extends AbstractController
     )]
     public function listStudyClasses(
         Request $request,
-        StudyClassRepository $studyClassRepo,
+        StudyClassRepository $studyClassRepository,
         TeacherRepository $teacherRepo
     ): Response {
         $schoolYear = StudyClass::SCHOOL_YEAR_ACTIVE; // "2025/2026"
@@ -421,7 +422,7 @@ class SessionController extends AbstractController
             $criteria['principalTeacher'] = $teacherId;
         }
 
-        $classes = $studyClassRepo->findBy($criteria, ['name' => 'ASC']);
+        $classes = $studyClassRepository->findBy($criteria, ['name' => 'ASC',  'active'     => true,]);
 
         $items = array_map(static function (StudyClass $c) {
             return [
@@ -508,12 +509,12 @@ class SessionController extends AbstractController
     #[Route('/session/api/data', name: 'app_session_create_data',options: ['expose' => true], methods: ['GET'])]
     public function getCreateData(
         RoomRepository $roomRepository,
-        StudyClassRepository $classRepository,
+        StudyClassRepository $studyClassRepository,
         TeacherRepository $teacherRepository
     ): Response
     {
         $rooms = $roomRepository->findAll();
-        $classes = $classRepository->findBy(['schoolYear' => StudyClass::SCHOOL_YEAR_ACTIVE]);
+        $classes = $studyClassRepository->findBy(['schoolYear' => StudyClass::SCHOOL_YEAR_ACTIVE,  'active'     => true,]);
         $teachers = $teacherRepository->findAll();
 
         $roomsArray = array_map(fn(Room $r) => [
@@ -550,7 +551,7 @@ class SessionController extends AbstractController
         EntityManagerInterface $entityManager,
         StudentClassRegisteredRepository $studentClassRegisteredRepository,
         RoomRepository $roomRepository,
-        StudyClassRepository $classRepository,
+        StudyClassRepository $studyClassRepository,
         TeacherRepository $teacherRepository
     ): Response
     {
@@ -573,7 +574,7 @@ class SessionController extends AbstractController
 
         // Récupération de la classe
         if (!empty($data['studyClassId'])) {
-            $studyClass = $classRepository->find($data['studyClassId']);
+            $studyClass = $studyClassRepository->find($data['studyClassId']);
             $session->setStudyClass($studyClass);
         }
 

@@ -108,6 +108,7 @@ class SendInvitationWhatsappToParentsCommand extends Command
             // ⚠️ Ici on ne filtre PAS par spécialité, c’est vraiment « toutes les classes de ce jour ».
             $studyClasses = $this->studyClassRepository->findBy([
                 'day' => $targetDay,
+                'active'     => true,
                 'classType'  => StudyClass::CLASS_TYPE_ARABE,
                 'schoolYear' => StudyClass::SCHOOL_YEAR_2025_2026,
             ]);

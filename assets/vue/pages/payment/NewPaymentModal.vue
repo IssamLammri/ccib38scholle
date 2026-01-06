@@ -258,7 +258,7 @@
                             @change="calculateTotal"
                         />
                         <div class="subject-info">
-                          <span class="subject-name">{{ r.studyClass.speciality }}</span>
+                          <span class="subject-name">{{ r.studyClass }}</span>
                           <span class="subject-price-tag">25€/mois</span>
                         </div>
                       </label>

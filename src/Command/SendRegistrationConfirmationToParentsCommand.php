@@ -162,6 +162,7 @@ class SendRegistrationConfirmationToParentsCommand extends Command
             $studyClasses = $this->studyClassRepository->findBy([
                 'speciality' => StudyClass::CLASS_TYPE_ARABE,
                 'day'        => $targetDay,
+                'active'     => true,
             ]);
         }
 

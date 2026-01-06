@@ -1,12 +1,11 @@
-{# templates/email/newsletters/academic_support_open_modern.html.twig #}
+{# templates/email/newsletters/english_competition_open.html.twig #}
 <!DOCTYPE html>
 <html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="x-apple-disable-message-reformatting">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {# Objet plus conversationnel, sans emoji/termes marketing #}
-    <title>{{ subject|default('Question rapide au sujet du soutien scolaire 2025/2026') }}</title>
+    <title>{{ subject|default('Compétition d’anglais — inscription gratuite (CCIB38 Grenoble)') }}</title>
     <!--[if mso]>
     <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
     <![endif]-->
@@ -22,16 +21,18 @@
 </head>
 <body style="margin:0; padding:0; background:#f4f5f7;">
 
-{# PREHEADER discret et conversationnel #}
+{# Preheader discret #}
 <div style="display:none; overflow:hidden; line-height:1px; opacity:0; max-height:0; max-width:0;">
-    Puis-je vous réserver un créneau pour 2025/2026 ? Dites-moi semaine ou week-end.
+    Une compétition d’anglais gratuite + accompagnement pendant les vacances, puis présentation finale.
 </div>
 
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f5f7;">
     <tr>
         <td align="center" style="padding:24px 12px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container" style="width:600px; max-width:100%; background:#ffffff; border-radius:12px; overflow:hidden;">
-                <!-- En-tête -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container"
+                   style="width:600px; max-width:100%; background:#ffffff; border-radius:12px; overflow:hidden;">
+
+                {# Header #}
                 <tr>
                     <td style="background:#1f2937; padding:24px; text-align:center;">
                         <div style="font:600 18px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#ffffff;">
@@ -43,98 +44,114 @@
                     </td>
                 </tr>
 
-                <!-- Hero / Titre (sans "inscriptions ouvertes" ni emoji) -->
+                {# Hero #}
                 <tr>
                     <td class="px-24" style="padding:28px 24px 0 24px;">
                         <div class="hero-title" style="font:700 24px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
-                            Soutien scolaire 2025/2026 — petite question pour vous
+                            Compétition d’anglais — inscription ouverte (gratuit)
                         </div>
+
                         <div style="font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; margin-top:12px;">
-                            Bonjour {{ fullName|default('cher parent') }},<br>
-                            Nous organisons les groupes de soutien scolaire pour l’année 2025/2026.
-                            Afin de réserver une place pour votre enfant, pourriez-vous nous indiquer les <strong>matières</strong> qui vous intéressent ainsi que le <strong>niveau</strong> de l’élève ?
+                            Bonjour {{ fullName|default('cher parent') }},<br><br>
+
+                            Nous sommes heureux de vous annoncer l’ouverture d’une <strong>compétition d’anglais</strong> destinée à
+                            <strong>tous nos enfants et élèves</strong> du Centre Culturel Ibn Badis de Grenoble.<br><br>
+
+                            L’objectif est simple : <strong>motiver les élèves</strong>, les aider à <strong>progresser</strong>
+                            et <strong>améliorer leur niveau d’anglais</strong> à travers un projet concret et stimulant.
                         </div>
                     </td>
                 </tr>
 
-                <!-- Bouton principal (libellé neutre) -->
+                {# Bloc infos pratiques #}
                 <tr>
-                    <td align="center" style="padding:24px;">
-                        {% set ctaUrl = registrationUrl|default('https://ecole.ccib38.fr/soutien-scolaire/inscription') %}
+                    <td class="px-24" style="padding:16px 24px 0 24px;">
+                        <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:14px;">
+                            <div style="font:700 15px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                                Comment ça se passe ?
+                            </div>
+                            <ul style="margin:10px 0 0 18px; padding:0; font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                                <li><strong>Participation gratuite</strong> : entièrement prise en charge par le Centre.</li>
+                                <li><strong>Accompagnement</strong> durant la période des <strong>vacances scolaires</strong> (encadrement + suivi).</li>
+                                <li>Les élèves réalisent un travail/projet avec des <strong>accompagnateurs</strong>.</li>
+                                <li>À la fin : une <strong>présentation</strong> (soutenance) pour valoriser leurs efforts et leurs progrès.</li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+
+                {# CTA #}
+                <tr>
+                    <td align="center" style="padding:22px 24px;">
+                        {% set ctaUrl = registrationUrl|default('https://forms.gle/4fuUm69pwQrna5g9A') %}
+
                         <!--[if mso]>
-              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ ctaUrl }}" style="height:48px; v-text-anchor:middle; width:320px;" arcsize="12%" stroke="f" fillcolor="#4f46e5">
-                <w:anchorlock/>
-                <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:700;">
-                  Voir les créneaux disponibles
-                </center>
-              </v:roundrect>
-              <![endif]-->
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ ctaUrl }}"
+              style="height:48px; v-text-anchor:middle; width:340px;" arcsize="12%" stroke="f" fillcolor="#4f46e5">
+              <w:anchorlock/>
+              <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:700;">
+                Faire la demande d’inscription
+              </center>
+            </v:roundrect>
+            <![endif]-->
+
                         <!-- -->
                         <a href="{{ ctaUrl }}"
                            class="btn"
                            style="display:inline-block; background:#4f46e5; color:#ffffff; text-decoration:none;
-                        font:700 15px/48px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-                        padding:0 24px; border-radius:10px; min-width:220px; text-align:center;">
-                            Faire la demande d'inscription
+                      font:700 15px/48px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+                      padding:0 24px; border-radius:10px; min-width:240px; text-align:center;">
+                            Faire la demande d’inscription
                         </a>
                         <!--<![endif]-->
                     </td>
                 </tr>
 
-                <!-- Arguments / points clés (moins “marketing”) -->
+                {# Message motivation #}
                 <tr>
-                    <td class="px-24" style="padding:0 24px 4px 24px;">
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                            <tr>
-                                <td style="padding:0 0 16px 0;">
-                                    <div style="font:600 16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827; margin:8px 0;">
-                                        Informations pratiques
-                                    </div>
-                                    <ul style="margin:8px 0 0 18px; padding:0; font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
-                                        <li>Groupes par niveau, suivi régulier.</li>
-                                        <li>Méthodologie, révisions et accompagnement.</li>
-                                        <li>Ambiance bienveillante, progrès mesurables.</li>
-                                    </ul>
-                                    <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; margin-top:10px;">
-                                        Si vous préférez, répondez simplement à ce message avec vos cordonnées et besoins.
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
+                    <td class="px-24" style="padding:0 24px 0 24px;">
+                        <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                            Cette compétition est une belle occasion de <strong>prendre confiance</strong>, d’oser s’exprimer,
+                            et de progresser en anglais dans une ambiance positive.<br><br>
+
+                            <strong>Nous vous invitons à profiter de cette opportunité</strong> et à inscrire votre enfant dès maintenant.
+                            Ensemble, essayons d’augmenter le niveau d’anglais de nos enfants.
+                        </div>
                     </td>
                 </tr>
 
-                <!-- Lien de secours -->
+                {# Lien de secours #}
                 <tr>
-                    <td class="px-24" style="padding:4px 24px 0 24px;">
-                        <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+                    <td class="px-24" style="padding:16px 24px 0 24px;">
+                        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
                             <div style="font:600 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
-                                Problème d’affichage du bouton ?
+                                Si le bouton ne fonctionne pas
                             </div>
                             <div style="font:400 13px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; word-break:break-all; margin-top:4px;">
-                                Ouvrez directement : <a href="{{ ctaUrl }}" style="color:#4f46e5; text-decoration:underline;">{{ ctaUrl }}</a>
+                                Ouvrez ce lien : <a href="{{ ctaUrl }}" style="color:#4f46e5; text-decoration:underline;">{{ ctaUrl }}</a>
                             </div>
                         </div>
                     </td>
                 </tr>
 
-                <!-- Signature -->
+                {# Signature #}
                 <tr>
                     <td class="px-24" style="padding:20px 24px 8px 24px;">
                         <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
-                            Merci pour votre retour,<br>
+                            Merci pour votre confiance,<br>
                             <strong>{{ senderName|default('Équipe CCIB38') }}</strong>
                         </div>
                     </td>
                 </tr>
 
-                <!-- Pied de page (inchangé, mais sobre) -->
+                {# Footer #}
                 <tr>
                     <td style="padding:20px 24px 24px 24px; background:#f9fafb;">
                         <div style="font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#6b7280; text-align:center;">
                             Centre Culturel Ibn Badis • 18 Rue des Trembles, 38100 Grenoble • Tél. : +33 4 58 00 89 73<br>
                             <a href="https://www.ccib38.fr" style="color:#4f46e5; text-decoration:underline;">www.ccib38.fr</a> •
                             <a href="mailto:ccib38.contact@gmail.com" style="color:#4f46e5; text-decoration:underline;">ccib38.contact@gmail.com</a><br><br>
+
                             {% if unsubscribeUrl is defined and unsubscribeUrl %}
                                 Vous ne souhaitez plus recevoir nos emails ?
                                 <a href="{{ unsubscribeUrl }}" style="color:#4f46e5; text-decoration:underline;">Se désabonner</a>.
@@ -144,11 +161,13 @@
                         </div>
                     </td>
                 </tr>
+
             </table>
 
             <div style="height:24px; line-height:24px; font-size:24px;">&nbsp;</div>
         </td>
     </tr>
 </table>
+
 </body>
 </html>

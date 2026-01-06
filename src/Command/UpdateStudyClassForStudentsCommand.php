@@ -52,6 +52,7 @@ class UpdateStudyClassForStudentsCommand extends Command
 
         $studysClass = $this->studyClassRepository->findBy([
             'speciality' => 'Arabe',
+            'active' => true
         ]);
 
         if (empty($studysClass)) {

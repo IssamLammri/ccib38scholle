@@ -54,7 +54,7 @@
             <label class="form-label fw-bold">Classe</label>
             <select v-model="selectedClassId" @change="applyFilters" class="form-select">
               <option value="">Toutes</option>
-              <option v-for="cls in classes" :key="cls.id" :value="cls.id">{{ cls.name }}</option>
+              <option v-for="cls in classes" :key="cls.id" :value="cls.id">{{ cls.name }} - [{{ cls.speciality }}]</option>
             </select>
           </div>
           <!-- Filtre par spécialité -->

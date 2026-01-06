@@ -45,6 +45,10 @@ class StudyClassService
         if (isset($data['day'])) {
             $studyClass->setDay((string) $data['day']);
         }
+
+        if (isset($data['active'])) {
+            $studyClass->setActive($data['active']);
+        }
         if (!empty($data['startHour'])) {
             $studyClass->setStartHour(
                 new \DateTimeImmutable($data['startHour'], new \DateTimeZone('Europe/Paris'))

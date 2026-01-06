@@ -58,6 +58,7 @@ class StudyClassController extends AbstractController
         if (!empty($search)) {
             $queryBuilder
                 ->where('sc.name LIKE :search')
+                ->andWhere('sc.active = true')
                 ->orWhere('sc.level LIKE :search')
                 ->orWhere('sc.speciality LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
@@ -88,7 +89,7 @@ class StudyClassController extends AbstractController
     #[Route('/all-study-class', name: 'study_class_list', options: ['expose' => true], methods: ['GET'])]
     public function getAllStudyClass(): JsonResponse
     {
-        $allStudyClass = $this->studyClassRepository->findAll();
+        $allStudyClass = $this->studyClassRepository->findBy(['active' => true], ['name' => 'ASC']);
         $studentCounts = $this->studyClassRepository->getStudentCounts();
         $studentCountMap = [];
         foreach ($studentCounts as $count) {
@@ -226,7 +227,9 @@ class StudyClassController extends AbstractController
     public function listFiltered(SerializerInterface $serializer): Response
     {
         // Récupère toutes les StudyClass
-        $classes = $this->studyClassRepository->findAll();
+        $classes = $this->studyClassRepository->findBy([
+            'active'     => true,
+        ]);
 
         // Sérialise en JSON en réutilisant vos groupes de sérialisation
         $json = $serializer->serialize(

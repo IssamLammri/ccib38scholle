@@ -17,6 +17,7 @@ class StudyClassRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('sc')
             ->select('sc.id, COUNT(scr.id) as studentCount')
+            ->andWhere('sc.active = true')
             ->leftJoin('App\Entity\StudentClassRegistered', 'scr', 'WITH', 'scr.studyClass = sc')
             ->groupBy('sc.id');
 

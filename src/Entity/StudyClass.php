@@ -89,6 +89,10 @@ class StudyClass
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'studyClass')]
     private Collection $payments;
 
+    #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => true])]
+    #[Groups(['read_student_class_registered','read_payment','read_student','read_study_class'])]
+    private ?bool $active = true;
+
     public function __construct()
     {
         $this->payments = new ArrayCollection();
@@ -189,6 +193,17 @@ class StudyClass
     public function setWhatsappUrl(?string $whatsappUrl): self
     {
         $this->whatsappUrl = $whatsappUrl;
+        return $this;
+    }
+
+    public function isActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(?bool $active): self
+    {
+        $this->active = $active;
         return $this;
     }
 }

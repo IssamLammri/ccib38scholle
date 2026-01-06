@@ -51,6 +51,7 @@ class SendRegistrationConfirmationSoutienToParentsCommand extends Command
         // Récupération des classes "soutien" pour l'année 2025-2026
         $studyClasses = $this->studyClassRepository->findBy([
             'classType'  => StudyClass::CLASS_TYPE_SOUTIEN,
+            'active'     => true,
             'schoolYear' => StudyClass::SCHOOL_YEAR_2025_2026,
         ]);
 

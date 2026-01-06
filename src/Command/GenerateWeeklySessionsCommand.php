@@ -59,7 +59,7 @@ class GenerateWeeklySessionsCommand extends Command
 
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly StudyClassRepository $studyClassRepo,
+        private readonly StudyClassRepository $studyClassRepository,
         private readonly StudentClassRegisteredRepository $studentClassRegisteredRepository,
         private readonly string $timezone = 'Europe/Paris',
     ) {
@@ -173,23 +173,26 @@ class GenerateWeeklySessionsCommand extends Command
 
         if ($normalizedTypes && count($normalizedTypes) > 1) {
             // Plusieurs types -> QueryBuilder avec IN()
-            $qb = $this->studyClassRepo->createQueryBuilder('sc')
+            $qb = $this->studyClassRepository->createQueryBuilder('sc')
                 ->where('sc.schoolYear = :year')
                 ->andWhere('sc.classType IN (:types)')
+                ->andWhere('sc.active = true')
                 ->setParameter('year', $schoolYear)
                 ->setParameter('types', $normalizedTypes);
             /** @var StudyClass[] $classes */
             $classes = $qb->getQuery()->getResult();
         } elseif ($normalizedTypes && count($normalizedTypes) === 1) {
             // Un seul type -> findBy simple
-            $classes = $this->studyClassRepo->findBy([
+            $classes = $this->studyClassRepository->findBy([
                 'schoolYear' => $schoolYear,
+                 'active'     => true,
                 'classType'  => $normalizedTypes[0],
             ]);
         } else {
             // "all" -> pas de filtre classType
-            $classes = $this->studyClassRepo->findBy([
+            $classes = $this->studyClassRepository->findBy([
                 'schoolYear' => $schoolYear,
+                'active'     => true,
             ]);
         }
 
