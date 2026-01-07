@@ -501,19 +501,20 @@ export default {
       const q = norm(this.searchTerm);
 
       let filtered = this.students.filter(s => {
-        // Filtre recherche
+        const fullNP = `${norm(s.lastName)} ${norm(s.firstName)}`.trim();
+        const fullPN = `${norm(s.firstName)} ${norm(s.lastName)}`.trim();
+
         const matchName = !q ||
             norm(s.lastName).includes(q) ||
-            norm(s.firstName).includes(q);
+            norm(s.firstName).includes(q) ||
+            fullNP.includes(q) ||
+            fullPN.includes(q);
 
-        // Filtre classe
         const classes = this.classNames(s);
         const matchClass = !this.selectedClass || classes.includes(this.selectedClass);
 
-        // Filtre niveau
         const matchLevel = !this.selectedLevel || s.level === this.selectedLevel;
 
-        // Filtre âge
         let matchAge = true;
         if (this.selectedAgeRange) {
           const age = this.calculateAge(s.birthDate);

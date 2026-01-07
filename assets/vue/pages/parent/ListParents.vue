@@ -671,8 +671,11 @@ export default {
   },
 
   methods: {
-    isStudyClassActive(sc) {
-      return sc && sc.active === true;
+    isActiveRegistration(registration) {
+      return (
+          registration?.active === true &&
+          registration?.studyClass?.active === true
+      );
     },
     async fetchParents() {
       this.loading = true;
@@ -740,9 +743,10 @@ export default {
     parentStudyClasses(p) {
       const out = [];
       (p.students || []).forEach(s => {
-        (s.registrations || []).forEach(r => {
-          const sc = r?.studyClass;
-          if (sc && this.isStudyClassActive(sc)) out.push(sc);
+        (s.registrations || []).forEach(registration => {
+          if (this.isActiveRegistration(registration)) {
+            out.push(registration.studyClass);
+          }
         });
       });
       return out;
