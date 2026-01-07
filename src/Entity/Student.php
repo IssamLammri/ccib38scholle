@@ -66,7 +66,7 @@ class Student
     private Collection $payments;
 
     #[ORM\OneToMany(targetEntity: StudentClassRegistered::class, mappedBy: 'student')]
-    #[Groups(['read_payment','read_student'])]
+    #[Groups(['read_payment','read_student','read_parent'])]
     private Collection $registrations;
 
     public function __construct()

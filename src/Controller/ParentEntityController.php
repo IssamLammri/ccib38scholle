@@ -44,42 +44,6 @@ class ParentEntityController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
-//    #[Route('/', name: 'app_parent_entity_index', options: ['expose' => true], methods: ['GET'])]
-//    public function index(EntityManagerInterface $entityManager, Request $request): Response
-//    {
-//        $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
-//        $limit = 10; // Limite des résultats par page
-//        $search = $request->query->get('search', ''); // Récupère le critère de recherche
-//
-//        $queryBuilder = $entityManager->getRepository(ParentEntity::class)
-//            ->createQueryBuilder('p');
-//
-//        // Filtrage par nom, prénom, ou email
-//        if (!empty($search)) {
-//            $queryBuilder
-//                ->where('p.fatherLastName LIKE :search')
-//                ->orWhere('p.fatherFirstName LIKE :search')
-//                ->orWhere('p.fatherEmail LIKE :search')
-//                ->orWhere('p.motherLastName LIKE :search')
-//                ->orWhere('p.motherFirstName LIKE :search')
-//                ->orWhere('p.motherEmail LIKE :search')
-//                ->setParameter('search', '%' . $search . '%');
-//        }
-//
-//        $queryBuilder
-//            ->setFirstResult(($page - 1) * $limit) // Offset
-//            ->setMaxResults($limit); // Limite
-//
-//        $paginator = new Paginator($queryBuilder);
-//
-//        return $this->render('parent_entity/index.html.twig', [
-//            'parent_entities' => $paginator,
-//            'current_page' => $page,
-//            'total_pages' => ceil(count($paginator) / $limit),
-//            'search' => $search
-//        ]);
-//    }
-
     #[Route('/new', name: 'app_parent_entity_new', options: ['expose' => true], methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {

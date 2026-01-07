@@ -319,7 +319,7 @@ export default {
         'N4_1','N4_2','N5_1','N5_2','N6_1','N6_2','Adolescent','Adult'
       ],
       levelOptionsSupport: [
-        'Primaire','Lycée','Collège','Gestion soutien scolaire'
+        'Ecole Elémentaire','Lycée','Collège','Gestion soutien scolaire'
       ],
       isFormReady: false,
       messageAlert: null,

@@ -25,7 +25,7 @@ class StudentClassRegistered
 
     #[ORM\ManyToOne(targetEntity: StudyClass::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read_payment','read_student'])]
+    #[Groups(['read_payment','read_student','read_parent'])]
     private ?StudyClass $studyClass = null; // Relation Many-to-One avec StudyClass
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => null])]
