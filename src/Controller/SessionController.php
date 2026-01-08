@@ -103,6 +103,7 @@ class SessionController extends AbstractController
                     'name' => $session->getStudyClass()->getName(),
                     'speciality' => $session->getStudyClass()->getSpeciality(),
                 ],
+                'presenceCount' => $this->sessionStudyClassPresenceRepository->countWithPresenceFilled($session),
             ];
         }
 

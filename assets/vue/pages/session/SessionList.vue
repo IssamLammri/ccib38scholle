@@ -8,13 +8,19 @@
       </a>
     </div>
 
-    <!-- Carte des filtres -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="card-title mb-0">Filtres</h5>
-          <!-- Switch: masquer les sessions passées (actif par défaut) -->
-          <div class="form-check form-switch" title="Masquer les sessions passées">
+    <!-- Carte des filtres modernisée -->
+    <div class="card mb-4 border-0 shadow-sm filters-card">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="d-flex align-items-center">
+            <div class="filter-icon-wrapper me-3">
+              <i class="fas fa-filter"></i>
+            </div>
+            <h5 class="mb-0 fw-bold">Filtres de recherche</h5>
+          </div>
+
+          <!-- Switch moderne -->
+          <div class="form-check form-switch modern-switch">
             <input
                 class="form-check-input"
                 type="checkbox"
@@ -23,108 +29,143 @@
                 @change="applyFilters"
                 aria-label="Masquer les sessions passées"
             />
-            <label class="form-check-label ms-2" for="switchHidePast">
+            <label class="form-check-label" for="switchHidePast">
+              <i class="fas fa-clock me-1"></i>
               Masquer les sessions passées
             </label>
           </div>
         </div>
 
         <div class="row g-3">
-          <!-- Recherche textuelle -->
+          <!-- Recherche textuelle avec icône -->
           <div class="col-md-6 col-lg-4">
-            <label class="form-label fw-bold">Recherche</label>
-            <input
-                type="text"
-                v-model="searchInput"
-                @input="applyFilters"
-                class="form-control"
-                placeholder="Salle, enseignant, classe, spécialité ou date"
-            />
+            <label class="form-label text-muted mb-2">
+              <i class="fas fa-search me-1"></i> Recherche globale
+            </label>
+            <div class="input-group input-group-modern">
+              <span class="input-group-text bg-light border-end-0">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input
+                  type="text"
+                  v-model="searchInput"
+                  @input="applyFilters"
+                  class="form-control border-start-0 ps-0"
+                  placeholder="Salle, enseignant, classe..."
+              />
+            </div>
           </div>
+
           <!-- Filtre par mois -->
           <div class="col-md-4 col-lg-2">
-            <label class="form-label fw-bold">Mois</label>
-            <select v-model="selectedMonth" @change="applyFilters" class="form-select">
-              <option value="">Tous</option>
+            <label class="form-label text-muted mb-2">
+              <i class="fas fa-calendar-alt me-1"></i> Mois
+            </label>
+            <select v-model="selectedMonth" @change="applyFilters" class="form-select modern-select">
+              <option value="">Tous les mois</option>
               <option v-for="m in months" :key="m.value" :value="m.value">{{ m.text }}</option>
             </select>
           </div>
+
           <!-- Filtre par classe -->
           <div class="col-md-4 col-lg-2">
-            <label class="form-label fw-bold">Classe</label>
-            <select v-model="selectedClassId" @change="applyFilters" class="form-select">
+            <label class="form-label text-muted mb-2">
+              <i class="fas fa-users me-1"></i> Classe
+            </label>
+            <select v-model="selectedClassId" @change="applyFilters" class="form-select modern-select">
               <option value="">Toutes</option>
               <option v-for="cls in classes" :key="cls.id" :value="cls.id">{{ cls.name }} - [{{ cls.speciality }}]</option>
             </select>
           </div>
+
           <!-- Filtre par spécialité -->
           <div class="col-md-6 col-lg-3">
-            <label class="form-label fw-bold">Spécialité</label>
-            <input
-                type="text"
-                v-model="selectedSpeciality"
-                @input="applyFilters"
-                class="form-control"
-                placeholder="Spécialité"
-            />
+            <label class="form-label text-muted mb-2">
+              <i class="fas fa-graduation-cap me-1"></i> Spécialité
+            </label>
+            <div class="input-group input-group-modern">
+              <span class="input-group-text bg-light border-end-0">
+                <i class="fas fa-graduation-cap text-muted"></i>
+              </span>
+              <input
+                  type="text"
+                  v-model="selectedSpeciality"
+                  @input="applyFilters"
+                  class="form-control border-start-0 ps-0"
+                  placeholder="Filtrer par spécialité"
+              />
+            </div>
           </div>
+
           <!-- Filtre par enseignant (pour admin uniquement) -->
           <div v-if="isAdmin" class="col-md-6 col-lg-3">
-            <label class="form-label fw-bold">Enseignant</label>
-            <select v-model="selectedTeacherId" @change="applyFilters" class="form-select">
+            <label class="form-label text-muted mb-2">
+              <i class="fas fa-chalkboard-teacher me-1"></i> Enseignant
+            </label>
+            <select v-model="selectedTeacherId" @change="applyFilters" class="form-select modern-select">
               <option value="">Tous</option>
               <option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
                 {{ teacher.firstName }} {{ teacher.lastName }}
               </option>
             </select>
           </div>
-          <!-- Bouton Effacer les filtres -->
-          <div class="col-12 d-flex justify-content-end">
-            <button class="btn btn-outline-secondary" @click="clearFilters">
-              <i class="fas fa-eraser"></i> Effacer les filtres
-            </button>
-          </div>
+        </div>
+
+        <!-- Bouton Effacer modernisé -->
+        <div class="d-flex justify-content-end mt-3">
+          <button class="btn btn-outline-secondary btn-sm clear-filters-btn" @click="clearFilters">
+            <i class="fas fa-times-circle me-2"></i> Réinitialiser les filtres
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Statistiques des sessions sous forme d'indicateurs modernes -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title mb-3">
-          <i class="fas fa-info-circle me-2"></i> Indicateurs des Sessions par Mois
+    <div class="card mb-4 border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-3 fw-bold">
+          <i class="fas fa-chart-bar me-2 text-primary"></i> Indicateurs des Sessions par Mois
         </h5>
         <div v-if="hasStats" class="row">
           <div class="col-md-4 mb-3" v-for="(stat, month) in sessionStats" :key="month">
-            <div class="card border-0 shadow-sm">
+            <div class="card stats-card border-0 shadow-sm h-100">
               <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="card-title mb-0 text-capitalize">{{ month }}</h5>
-                  <i class="fas fa-calendar-alt fa-2x text-muted"></i>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="card-title mb-0 text-capitalize fw-bold">{{ month }}</h6>
+                  <div class="stats-icon">
+                    <i class="fas fa-calendar-check"></i>
+                  </div>
                 </div>
-                <p class="card-text mt-2">
-                  <strong>{{ stat.totalSessions }}</strong> sessions<br />
-                  <strong>{{ formatDuration(stat.totalHours) }}</strong> cumulées
-                </p>
+                <div class="stats-content">
+                  <div class="stat-item">
+                    <span class="stat-value">{{ stat.totalSessions }}</span>
+                    <span class="stat-label">sessions</span>
+                  </div>
+                  <div class="stat-divider"></div>
+                  <div class="stat-item">
+                    <span class="stat-value">{{ formatDuration(stat.totalHours) }}</span>
+                    <span class="stat-label">durée totale</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div v-else class="text-center text-muted py-5">
-          <i class="fas fa-info-circle fa-2x mb-2"></i>
-          <p>Aucune donnée disponible pour les statistiques.</p>
+          <i class="fas fa-info-circle fa-2x mb-3 opacity-50"></i>
+          <p class="mb-0">Aucune donnée disponible pour les statistiques.</p>
         </div>
       </div>
     </div>
 
     <!-- Tableau des sessions -->
-    <div class="card shadow-sm">
+    <div class="card border-0 shadow-sm">
       <div class="card-body p-0">
         <div v-if="filteredSessions.length > 0" class="table-responsive">
-          <table class="table table-hover mb-0 align-middle">
-            <thead class="table-light">
+          <table class="table table-hover mb-0 align-middle modern-table">
+            <thead class="table-header">
             <tr>
-              <th>ID</th>
+              <th>État des présences</th>
               <th>Date</th>
               <th>Heure de début</th>
               <th>Heure de fin</th>
@@ -143,11 +184,21 @@
                 :key="session.id"
                 :class="{ 'duplicate-highlight': isDuplicateSession(session) }"
             >
-              <td>{{ session.id }}</td>
+              <td>
+                <span v-if="session.presenceCount > 0" class="badge bg-success-soft text-success">
+                  <i class="fas fa-user-check me-1"></i>
+                  {{ session.presenceCount }}
+                </span>
+
+                <span v-else class="badge bg-warning-soft text-warning">
+                  <i class="fas fa-user-times me-1"></i>
+                  Non saisie
+                </span>
+              </td>
               <td>{{ session.startTime ? formatDateUTC(session.startTime) : 'N/A' }}</td>
               <td>{{ session.startTime ? formatTimeUTC(session.startTime) : 'N/A' }}</td>
               <td>{{ session.endTime ? formatTimeUTC(session.endTime) : 'N/A' }}</td>
-              <td>{{ getSessionDuration(session) }}</td>
+              <td><strong>{{ getSessionDuration(session) }}</strong></td>
               <td>
                   <span :class="['badge', statusBadgeClass(getSessionStatus(session))]">
                     {{ getSessionStatus(session) }}
@@ -158,37 +209,58 @@
               <td>{{ session.studyClass.name }}</td>
               <td>{{ session.studyClass.speciality }}</td>
               <td class="text-center">
-                <a
-                    :href="$routing.generate('app_session_show', { id: session.id })"
-                    class="btn btn-outline-info btn-sm me-2"
-                    title="Voir"
-                >
-                  <i class="fas fa-eye"></i>
-                </a>
-                <a
-                    :href="$routing.generate('app_session_edit', { id: session.id })"
-                    class="btn btn-outline-warning btn-sm me-2"
-                    title="Modifier"
-                >
-                  <i class="fas fa-edit"></i>
-                </a>
-                <button class="btn btn-outline-danger btn-sm" @click="confirmDelete(session)" title="Supprimer">
-                  <i class="fas fa-trash"></i>
-                </button>
+                <div class="dropdown">
+                  <button
+                      class="btn btn-sm btn-light action-menu-btn"
+                      type="button"
+                      :id="'actionMenu' + session.id"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      title="Actions"
+                  >
+                    <i class="fas fa-cog"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm action-dropdown" :aria-labelledby="'actionMenu' + session.id">
+                    <li>
+                      <a
+                          class="dropdown-item"
+                          :href="$routing.generate('app_session_show', { id: session.id })"
+                      >
+                        <i class="fas fa-eye text-info me-2"></i> Voir
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                          class="dropdown-item"
+                          :href="$routing.generate('app_session_edit', { id: session.id })"
+                      >
+                        <i class="fas fa-edit text-warning me-2"></i> Modifier
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a
+                          class="dropdown-item text-danger"
+                          href="#"
+                          @click.prevent="confirmDelete(session)"
+                      >
+                        <i class="fas fa-trash me-2"></i> Supprimer
+                      </a>
+                    </li>
+                  </ul>
+                </div>
               </td>
             </tr>
             </tbody>
           </table>
         </div>
         <!-- État vide -->
-        <div v-else class="p-5 text-center text-muted">
-          <img
-              src="https://via.placeholder.com/150?text=No+Data"
-              alt="Aucune session"
-              class="img-fluid mb-3"
-              style="max-width:150px"
-          />
-          <p>Aucune session trouvée.</p>
+        <div v-else class="p-5 text-center text-muted empty-state">
+          <div class="empty-state-icon mb-3">
+            <i class="fas fa-inbox fa-4x opacity-25"></i>
+          </div>
+          <h5 class="mb-2">Aucune session trouvée</h5>
+          <p class="text-muted mb-0">Essayez de modifier vos critères de recherche</p>
         </div>
       </div>
     </div>
@@ -202,16 +274,21 @@
         aria-hidden="true"
     >
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Confirmation de suppression</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        <div class="modal-content border-0 shadow">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              Confirmation de suppression
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
           </div>
-          <div class="modal-body">Êtes-vous sûr de vouloir supprimer cette session ?</div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
-            <button type="button" class="btn btn-danger btn-sm" @click="deleteSession" data-bs-dismiss="modal">
-              Confirmer
+          <div class="modal-body p-4">
+            <p class="mb-0">Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible.</p>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="button" class="btn btn-danger" @click="deleteSession" data-bs-dismiss="modal">
+              <i class="fas fa-trash me-2"></i> Confirmer la suppression
             </button>
           </div>
         </div>
@@ -237,7 +314,7 @@ export default {
       selectedClassId: "",
       selectedSpeciality: "",
       selectedTeacherId: "",
-      hidePastSessions: true, // \u2190 masque les sessions termin\u00e9es par d\u00e9faut
+      hidePastSessions: true,
       sessionToDelete: null,
       messageAlert: null,
       typeAlert: null,
@@ -282,7 +359,7 @@ export default {
         // Classe
         const classMatch = this.selectedClassId === "" || session.studyClass?.id === parseInt(this.selectedClassId);
 
-        // Sp\u00e9cialit\u00e9
+        // Spécialité
         const specialityMatch =
             this.selectedSpeciality === "" ||
             (session.studyClass?.speciality || "").toLowerCase().includes(this.selectedSpeciality.toLowerCase());
@@ -290,15 +367,14 @@ export default {
         // Enseignant
         const teacherMatch = this.selectedTeacherId === "" || session.teacher?.id === parseInt(this.selectedTeacherId);
 
-        // Masquer les pass\u00e9es si l'option est active
+        // Masquer les passées si l'option est active
         const timeMatch = (() => {
-          if (!this.hidePastSessions) return true; // afficher tout
-          // garder les sessions \u00e0 venir ou en cours
+          if (!this.hidePastSessions) return true;
           const start = session.startTime ? new Date(session.startTime) : null;
           const end = session.endTime ? new Date(session.endTime) : null;
-          if (start && end) return end >= now; // inclut en cours et futures
+          if (start && end) return end >= now;
           if (start && !end) return start >= now;
-          return true; // si pas d'infos temps, ne pas filtrer
+          return true;
         })();
 
         return searchMatch && monthMatch && classMatch && specialityMatch && teacherMatch && timeMatch;
@@ -346,7 +422,6 @@ export default {
     applyFilters() {
       // Le filtrage s'actualise automatiquement via la computed property filteredSessions.
     },
-    // Méthode pour formater la date en UTC
     formatDateUTC(datetime) {
       return new Date(datetime).toLocaleDateString("fr-FR", {
         timeZone: "UTC",
@@ -356,7 +431,6 @@ export default {
         year: "numeric"
       });
     },
-    // Méthode pour formater l'heure en UTC
     formatTimeUTC(datetime) {
       return new Date(datetime).toLocaleTimeString("fr-FR", {
         timeZone: "UTC",
@@ -383,26 +457,24 @@ export default {
       if (minutes > 0) result += (result ? " " : "") + minutes + "min";
       return result || "0min";
     },
-    // \u2192 Nouvelles m\u00e9thodes de statut
     getSessionStatus(session) {
       if (!session.startTime) return "N/A";
       const now = new Date();
       const start = new Date(session.startTime);
       const end = session.endTime ? new Date(session.endTime) : null;
-      if (now < start) return "\u00c0 venir";
-      if (end && now > end) return "Termin\u00e9e";
-      // Si pas d'endTime ou maintenant entre start et end
+      if (now < start) return "À venir";
+      if (end && now > end) return "Terminée";
       if (!end || (now >= start && now <= end)) return "En cours";
       return "N/A";
     },
     statusBadgeClass(status) {
       switch (status) {
-        case "\u00c0 venir":
-          return "bg-info";
+        case "À venir":
+          return "bg-info-soft text-info";
         case "En cours":
-          return "bg-success";
-        case "Termin\u00e9e":
-          return "bg-secondary";
+          return "bg-success-soft text-success";
+        case "Terminée":
+          return "bg-secondary-soft text-secondary";
         default:
           return "bg-light text-dark";
       }
@@ -430,10 +502,9 @@ export default {
       this.selectedClassId = "";
       this.selectedSpeciality = "";
       this.selectedTeacherId = "";
-      this.hidePastSessions = true; // on r\u00e9active le masquage par d\u00e9faut
+      this.hidePastSessions = true;
     },
     isDuplicateSession(session) {
-      // Retourne true si plus d'une session a la m\u00eame date de d\u00e9but et le m\u00eame enseignant
       return (
           this.filteredSessions.filter(
               (s) => s.startTime === session.startTime && s.teacher?.id === session.teacher?.id
@@ -448,47 +519,326 @@ export default {
 </script>
 
 <style scoped>
-/* Global */
+/* ===== Base / page ===== */
+.my-5 {
+  background: #f6f8fb;
+  padding: 1.5rem;
+  border-radius: 14px;
+}
+
+h1.text-primary {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
 .container {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Filtres */
-.card-title {
-  font-size: 1.25rem;
+/* ===== Cards ===== */
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: 12px;
 }
 
-/* Tableau */
-.table th,
-.table td {
+/* Carte des filtres modernisée */
+.filters-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.filter-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #0d6efd 0%, #084298 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+}
+
+/* ===== Switch ===== */
+.modern-switch .form-check-input {
+  width: 3rem;
+  height: 1.5rem;
+  cursor: pointer;
+}
+
+.modern-switch .form-check-input:checked {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.modern-switch label {
+  cursor: pointer;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* ===== Input groups ===== */
+.input-group-modern .input-group-text {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-right: none;
+}
+
+.input-group-modern .form-control {
+  border-left: none;
+  background-color: white;
+}
+
+.input-group-modern .form-control:focus {
+  box-shadow: none;
+  border-color: #dee2e6;
+}
+
+.input-group-modern .input-group-text + .form-control:focus {
+  border-left: none;
+}
+
+/* ===== Select ===== */
+.modern-select {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  padding: 0.55rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.modern-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* ===== Clear filters button ===== */
+.clear-filters-btn {
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+/* ===== Stats cards ===== */
+.stats-card {
+  border-radius: 12px;
+  border-left: 4px solid #0d6efd;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: white;
+}
+
+.stats-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08) !important;
+}
+
+.stats-icon {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #e7f1ff 0%, #cfe2ff 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0d6efd;
+  font-size: 1.3rem;
+}
+
+.stats-content {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #212529;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 6px;
+}
+
+.stat-divider {
+  width: 1px;
+  background: #dee2e6;
+}
+
+/* ===== Table ===== */
+.modern-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Header plus contrasté */
+.table-header {
+  background: #eef4ff;
+  border-bottom: 1px solid #dbe7ff;
+}
+
+.table-header th {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.6px;
+  color: #274c77;
+  padding: 1rem;
+  border: none;
+}
+
+/* Rows */
+.modern-table tbody tr {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.modern-table tbody tr:hover {
+  background-color: #f1f5ff;
+}
+
+.modern-table td {
+  padding: 1rem;
   vertical-align: middle;
 }
 
-/* Am\u00e9lioration du hover */
-.table-hover tbody tr:hover {
+/* ===== Badges ===== */
+.badge {
+  padding: 0.45rem 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+/* Soft badges + bordure pour contraste */
+.bg-success-soft {
+  background-color: #e8f7ee;
+  color: #0f5132;
+  border: 1px solid #b7ebcd;
+}
+
+.bg-warning-soft {
+  background-color: #fff4df;
+  color: #7a4b00;
+  border: 1px solid #ffd59a;
+}
+
+.bg-info-soft {
+  background-color: #e6f6ff;
+  color: #055160;
+  border: 1px solid #a8e1ff;
+}
+
+.bg-secondary-soft {
+  background-color: #f1f3f5;
+  color: #343a40;
+  border: 1px solid #dee2e6;
+}
+
+/* ===== Action menu button ===== */
+.action-menu-btn {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  background: white;
+  transition: all 0.2s ease;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-menu-btn:hover {
+  background: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+  transform: rotate(15deg);
+}
+
+.action-menu-btn i {
+  font-size: 1rem;
+}
+
+.action-dropdown {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  padding: 0.5rem 0;
+  min-width: 190px;
+}
+
+.action-dropdown .dropdown-item {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.92rem;
+  transition: all 0.15s ease;
+}
+
+.action-dropdown .dropdown-item:hover {
   background-color: #f8f9fa;
+  padding-left: 1.5rem;
 }
 
-/* Indicateurs modernes pour les statistiques */
-.card.border-0 {
-  border-left: 4px solid #007bff;
+.action-dropdown .dropdown-divider {
+  margin: 0.5rem 0;
 }
 
-.card.border-0 .card-body {
-  padding: 1rem;
+/* ===== Empty state ===== */
+.empty-state {
+  padding: 4rem 2rem !important;
 }
 
-.card-text strong {
-  font-size: 1.2rem;
+.empty-state-icon {
+  display: inline-block;
 }
 
-/* Illustration pour \u00e9tat vide */
-.img-fluid {
-  opacity: 0.8;
-}
-
-/* Style pour les sessions en doublon */
+/* ===== Duplicates ===== */
 .duplicate-highlight {
-  background-color: #ffe5e5; /* Rouge clair */
+  background-color: #fff4df !important;
+  border-left: 4px solid #ffc107;
+}
+
+/* ===== Buttons (bonus) ===== */
+.btn-success {
+  box-shadow: 0 8px 18px rgba(25, 135, 84, 0.18);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .filter-icon-wrapper {
+    width: 35px;
+    height: 35px;
+  }
+
+  .stats-card {
+    margin-bottom: 1rem;
+  }
+
+  .modern-switch {
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .my-5 {
+    padding: 1rem;
+  }
 }
 </style>

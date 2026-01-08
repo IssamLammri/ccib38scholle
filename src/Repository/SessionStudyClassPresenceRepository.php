@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Session;
 use App\Entity\SessionStudyClassPresence;
 use App\Entity\StudyClass;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -332,4 +333,16 @@ class SessionStudyClassPresenceRepository extends ServiceEntityRepository
 
         return ['items' => $items, 'total' => $total];
     }
+
+    public function countWithPresenceFilled(Session $session): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->andWhere('p.session = :session')
+            ->andWhere('p.isPresent IS NOT NULL')
+            ->setParameter('session', $session)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
 }
