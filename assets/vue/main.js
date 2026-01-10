@@ -1,5 +1,9 @@
 // assets/vue/main.js
 import { createApp } from 'vue';
+
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js"; // ⬅️ add th
+
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 import Hello from './components/Hello.vue';
@@ -21,6 +25,7 @@ import ListParents from './pages/parent/ListParents.vue';
 import TeacherShow from './pages/teacher/TeacherShow.vue';
 import StudyClass from './pages/studyClass/StudyClass.vue';
 import StudyList from './pages/studyClass/StudyList.vue';
+import BarcodeModal from './pages/studyClass/BarcodeModal.vue';
 import StudyClassList from './pages/studyClass/StudyClassList.vue';
 import EditStudyClass from './pages/studyClass/EditStudyClass.vue';
 import NewStudyClass from './pages/studyClass/NewStudyClass.vue';
@@ -78,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('ShowInvoice', ShowInvoice);
     app.component('StudyClass', StudyClass);
     app.component('StudyList', StudyList);
+    app.component('BarcodeModal', BarcodeModal);
     app.component('StudyClassList', StudyClassList);
     app.component('EditStudyClass', EditStudyClass);
     app.component('NewStudyClass', NewStudyClass);
