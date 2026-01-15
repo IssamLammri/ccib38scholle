@@ -57,51 +57,86 @@ class SessionRepository extends ServiceEntityRepository
         ?int $classId = null,
         ?string $speciality = null,
         ?int $teacherId = null,
-        ?User $user = null
+        ?User $user = null,
+        ?string $schoolYear = null,
+        ?string $dateFrom = null,  // "YYYY-MM-DD"
+        ?string $dateTo = null,    // "YYYY-MM-DD"
+        ?string $classType = null  // "Arabe" / "Soutien scolaire" / "Autre"
     ): array {
         $qb = $this->createQueryBuilder('s')
-            ->join('s.room', 'r')
+            ->leftJoin('s.room', 'r')
             ->join('s.teacher', 't')
             ->join('s.studyClass', 'sc');
 
-        // Recherche textuelle sur salle, enseignant, classe ou spécialité
-        if (!empty($search)) {
+        // Recherche textuelle
+        if ($search !== '') {
             $qb->andWhere('r.name LIKE :search OR t.lastName LIKE :search OR sc.name LIKE :search OR sc.speciality LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
         }
 
-        // Filtrer par mois (sur startTime)
+        // Filtre par mois (startTime)
         if ($month) {
-            // Utilisation de MONTH() si la fonction est enregistrée
             $qb->andWhere('MONTH(s.startTime) = :month')
                 ->setParameter('month', $month);
         }
 
-        // Filtrer par classe (par ID)
+        // Filtre par classe
         if ($classId) {
             $qb->andWhere('sc.id = :classId')
                 ->setParameter('classId', $classId);
         }
 
-        // Filtrer par spécialité
+        // Filtre par spécialité
         if ($speciality) {
             $qb->andWhere('sc.speciality LIKE :speciality')
                 ->setParameter('speciality', '%' . $speciality . '%');
         }
 
-        // Filtrer par enseignant (par ID)
+        // Filtre par enseignant
         if ($teacherId) {
             $qb->andWhere('t.id = :teacherId')
                 ->setParameter('teacherId', $teacherId);
         }
 
-        // Si un utilisateur est fourni, on limite aux sessions dont le teacher correspond
+        // Limiter aux sessions du teacher correspondant à l'user
         if ($user !== null) {
             $qb->andWhere('t.user = :user')
                 ->setParameter('user', $user);
         }
 
-        // Tri par date de début décroissante
+        // ✅ Filtre année scolaire
+        if ($schoolYear) {
+            $qb->andWhere('sc.schoolYear = :schoolYear')
+                ->setParameter('schoolYear', $schoolYear);
+        }
+
+        // ✅ Filtre classType
+        if ($classType) {
+            $qb->andWhere('sc.classType = :classType')
+                ->setParameter('classType', $classType);
+        }
+
+        // ✅ Filtre dateFrom/dateTo (Europe/Paris)
+        $tz = new \DateTimeZone('Europe/Paris');
+
+        if ($dateFrom) {
+            $from = \DateTimeImmutable::createFromFormat('Y-m-d', $dateFrom, $tz);
+            if ($from) {
+                $from = $from->setTime(0, 0, 0);
+                $qb->andWhere('s.startTime >= :dateFrom')
+                    ->setParameter('dateFrom', $from);
+            }
+        }
+
+        if ($dateTo) {
+            $to = \DateTimeImmutable::createFromFormat('Y-m-d', $dateTo, $tz);
+            if ($to) {
+                $to = $to->setTime(23, 59, 59);
+                $qb->andWhere('s.startTime <= :dateTo')
+                    ->setParameter('dateTo', $to);
+            }
+        }
+
         $qb->orderBy('s.startTime', 'DESC');
 
         return $qb->getQuery()->getResult();

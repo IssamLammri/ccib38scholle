@@ -67,69 +67,143 @@ class SessionController extends AbstractController
      */
     // Dans ApiSessionController.php, modifiez getSessions() :
     #[Route('/sessions', name: 'api_sessions', options: ['expose' => true], methods: ['GET'])]
-    public function getSessions(Request $request, StudyClassRepository $studyClassRepository, TeacherRepository $teacherRepository): Response
-    {
-        $search = $request->query->get('search', '');
-        $month = $request->query->getInt('month', 0) ?: null;
-        $classId = $request->query->getInt('classId', 0) ?: null;
-        $speciality = $request->query->get('speciality', '') ?: null;
-        $teacherId = $request->query->getInt('teacherId', 0) ?: null;
+    public function getSessions(
+        Request $request,
+        StudyClassRepository $studyClassRepository,
+        TeacherRepository $teacherRepository
+    ): Response {
+        // -----------------------------
+        // Filtres existants
+        // -----------------------------
+        $search = trim((string) $request->query->get('search', ''));
+
+        $monthRaw = $request->query->get('month');
+        $month = (is_numeric($monthRaw) && (int)$monthRaw >= 1 && (int)$monthRaw <= 12) ? (int)$monthRaw : null;
+
+        $classIdRaw = $request->query->get('classId');
+        $classId = (is_numeric($classIdRaw) && (int)$classIdRaw > 0) ? (int)$classIdRaw : null;
+
+        $teacherIdRaw = $request->query->get('teacherId');
+        $teacherId = (is_numeric($teacherIdRaw) && (int)$teacherIdRaw > 0) ? (int)$teacherIdRaw : null;
+
+        $speciality = trim((string) $request->query->get('speciality', ''));
+        $speciality = $speciality !== '' ? $speciality : null;
+
+        // -----------------------------
+        // ✅ Nouveaux filtres
+        // -----------------------------
+        $schoolYear = (string) ($request->query->get('schoolYear') ?: StudyClass::SCHOOL_YEAR_ACTIVE);
+
+        $dateFrom = $request->query->get('dateFrom'); // ex: "2026-01-01"
+        $dateTo   = $request->query->get('dateTo');   // ex: "2026-01-31"
+
+        // ✅ nouveau filtre classType (Arabe / Soutien scolaire / Autre)
+        $classType = trim((string) $request->query->get('classType', ''));
+        $classType = $classType !== '' ? $classType : null;
+
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_MANAGER')) {
-            $sessions = $this->sessionRepository->findSessionsWithSearch($search, $month, $classId, $speciality, $teacherId);
-        } else {
-            $sessions = $this->sessionRepository->findSessionsWithSearch($search, $month, $classId, $speciality, $teacherId, $user);
-        }
+        // -----------------------------
+        // Sessions (ROLE_MANAGER => toutes)
+        // -----------------------------
+        $sessions = $this->sessionRepository->findSessionsWithSearch(
+            $search,
+            $month,
+            $classId,
+            $speciality,
+            $teacherId,
+            $this->isGranted('ROLE_MANAGER') ? null : $user,
+            $schoolYear,
+            $dateFrom,
+            $dateTo,
+            $classType
+        );
 
+        // -----------------------------
         // Sérialisation simplifiée des sessions
+        // -----------------------------
         $sessionsArray = [];
         foreach ($sessions as $session) {
             $sessionsArray[] = [
                 'id' => $session->getId(),
                 'startTime' => $session->getStartTime() ? $session->getStartTime()->format('c') : null,
                 'endTime' => $session->getEndTime() ? $session->getEndTime()->format('c') : null,
-                'room' => [
+                'room' => $session->getRoom() ? [
                     'id' => $session->getRoom()->getId(),
                     'name' => $session->getRoom()->getName(),
-                ],
-                'teacher' => [
+                ] : null,
+                'teacher' => $session->getTeacher() ? [
                     'id' => $session->getTeacher()->getId(),
                     'firstName' => $session->getTeacher()->getFirstName(),
                     'lastName' => $session->getTeacher()->getLastName(),
-                ],
-                'studyClass' => [
+                ] : null,
+                'studyClass' => $session->getStudyClass() ? [
                     'id' => $session->getStudyClass()->getId(),
                     'name' => $session->getStudyClass()->getName(),
                     'speciality' => $session->getStudyClass()->getSpeciality(),
-                ],
+                    'schoolYear' => $session->getStudyClass()->getSchoolYear(),
+                    'classType' => $session->getStudyClass()->getClassType(),
+                ] : null,
                 'presenceCount' => $this->sessionStudyClassPresenceRepository->countWithPresenceFilled($session),
             ];
         }
 
-        // Récupération dynamique des classes et enseignants
+        // -----------------------------
+        // Récupération dynamique des classes
+        // -----------------------------
         $classesArray = [];
-        foreach ($studyClassRepository->findBy([  'active'     => true,]) as $studyClass) {
+        foreach ($studyClassRepository->findBy(['active' => true]) as $studyClass) {
             $classesArray[] = [
                 'id' => $studyClass->getId(),
                 'name' => $studyClass->getName(),
-                'speciality' => $studyClass->getSpeciality()
+                'speciality' => $studyClass->getSpeciality(),
+                'schoolYear' => $studyClass->getSchoolYear(),
+                'classType' => $studyClass->getClassType(),
             ];
         }
+
+        // -----------------------------
+        // Récupération enseignants
+        // -----------------------------
         $teachersArray = [];
         foreach ($teacherRepository->findAll() as $teacher) {
             $teachersArray[] = [
                 'id' => $teacher->getId(),
                 'firstName' => $teacher->getFirstName(),
-                'lastName' => $teacher->getLastName()
+                'lastName' => $teacher->getLastName(),
             ];
         }
 
+        // -----------------------------
+        // JSON response
+        // -----------------------------
         return $this->json([
             'sessions' => $sessionsArray,
             'classes' => $classesArray,
             'teachers' => $teachersArray,
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
+
+            'activeSchoolYear' => StudyClass::SCHOOL_YEAR_ACTIVE,
+            'schoolYears' => StudyClass::SCHOOL_YEARS,
+
+            // ✅ options front pour classType
+            'classTypes' => [
+                StudyClass::CLASS_TYPE_ARABE,
+                StudyClass::CLASS_TYPE_SOUTIEN,
+                StudyClass::CLASS_TYPE_AUTRE,
+            ],
+
+            'filters' => [
+                'search' => $search,
+                'month' => $month,
+                'classId' => $classId,
+                'speciality' => $speciality,
+                'teacherId' => $teacherId,
+                'schoolYear' => $schoolYear,
+                'dateFrom' => $dateFrom,
+                'dateTo' => $dateTo,
+                'classType' => $classType,
+            ],
         ]);
     }
 

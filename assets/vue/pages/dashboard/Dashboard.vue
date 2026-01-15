@@ -416,11 +416,19 @@ export default {
   },
 
   created() {
-    const { start, end } = this.getPreviousMonthRange();
+    const { start, end } = this.getCurrentMonthRange(); // ✅ mois courant
     this.filterStartDate = start;
     this.filterEndDate = end;
     this.filterSchoolYear = this.defaultSchoolYear;
+
+    // ✅ bloquer la sélection dans ce range
+    this.flatpickrConfig = {
+      ...this.flatpickrConfig,
+      minDate: start,
+      maxDate: end,
+    };
   },
+
 
   mounted() {
     //this.fetchStatistics();
@@ -542,10 +550,29 @@ export default {
       return { start: this.formatYmd(start), end: this.formatYmd(end) };
     },
 
+    getCurrentMonthRange() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+
+      const start = new Date(year, month, 1);
+      const end = new Date(year, month + 1, 0);
+
+      return { start: this.formatYmd(start), end: this.formatYmd(end) };
+    },
+
     resetFilters() {
-      const { start, end } = this.getPreviousMonthRange();
+      const { start, end } = this.getCurrentMonthRange();
       this.filterStartDate = start;
       this.filterEndDate = end;
+
+      // ✅ met à jour aussi la “barrière” de dates
+      this.flatpickrConfig = {
+        ...this.flatpickrConfig,
+        minDate: start,
+        maxDate: end,
+      };
+
       this.filterClassType = "";
       this.filterSpeciality = "";
       this.filterSchoolYear = this.defaultSchoolYear;
@@ -650,7 +677,6 @@ export default {
   font-weight: 800;
   background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   display: flex;
   align-items: center;
   gap: 1rem;
