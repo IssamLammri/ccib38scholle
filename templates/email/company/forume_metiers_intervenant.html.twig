@@ -1,0 +1,195 @@
+{# templates/email/newsletters/forum_metiers_orientation_2026_company.html.twig #}
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ subject|default('CCIB38 — Forum métiers & orientation (15/02/2026) : intervenants recherchés') }}</title>
+
+    <!--[if mso]>
+    <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+    <![endif]-->
+
+    <style>
+        @media (max-width: 600px) {
+            .container { width: 100% !important; }
+            .px-24 { padding-left: 16px !important; padding-right: 16px !important; }
+            .hero-title { font-size: 22px !important; line-height: 1.25 !important; }
+            .btn { width: 100% !important; }
+        }
+        a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; }
+    </style>
+</head>
+
+<body style="margin:0; padding:0; background:#f4f5f7;">
+
+<div style="display:none; overflow:hidden; line-height:1px; opacity:0; max-height:0; max-width:0;">
+    Forum des métiers & de l’orientation — Dimanche 15 février 2026 (9h00–12h00) : parents/étudiants intervenants.
+</div>
+
+{% set siteName = siteName|default('CCIB38') %}
+{% set senderName = senderName|default('Équipe CCIB38') %}
+{% set fullName = fullName|default('cher parent') %}
+{% set ctaUrl = registrationUrl|default('https://forms.gle/eCCboBUvVDeQkjjV8') %}
+
+{% set contactEmail = contactEmail|default('ccib38.contact@gmail.com') %}
+{% set phone = phone|default('+33 4 58 00 89 73') %}
+{% set address = address|default('18 Rue des Trembles, 38100 Grenoble') %}
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f5f7;">
+    <tr>
+        <td align="center" style="padding:24px 12px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container"
+                   style="width:600px; max-width:100%; background:#ffffff; border-radius:12px; overflow:hidden;">
+
+                {# Header #}
+                <tr>
+                    <td style="background:#111827; padding:18px 24px; text-align:left;">
+                        <div style="font:700 16px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#ffffff;">
+                            {{ siteName }}
+                        </div>
+                        <div style="font:400 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#cbd5e1; margin-top:6px;">
+                            Centre Culturel Ibn Badis – Grenoble
+                        </div>
+                    </td>
+                </tr>
+
+                {# Titre #}
+                <tr>
+                    <td class="px-24" style="padding:22px 24px 0 24px;">
+                        <div class="hero-title" style="font:700 22px/1.35 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                            Forum des métiers & de l’orientation — 2026
+                        </div>
+                        <div style="font:400 14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#6b7280; margin-top:8px;">
+                            Dimanche <strong>15 février 2026</strong> · <strong>9h00–12h00</strong> · Grenoble
+                        </div>
+                    </td>
+                </tr>
+
+                {# Intro (plus factuel) #}
+                <tr>
+                    <td class="px-24" style="padding:14px 24px 0 24px;">
+                        <div style="font:400 15px/1.75 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                            Bonjour {{ fullName }},<br><br>
+
+                            Dans le cadre des activités du <strong>Centre Culturel Ibn Badis</strong>, nous organisons un
+                            <strong>Forum des métiers et de l’orientation</strong> le <strong>dimanche 15 février 2026</strong>
+                            de <strong>9h00 à 12h00</strong>.<br><br>
+
+                            Pour cette matinée, nous recherchons des <strong>parents</strong> et des <strong>étudiants</strong>
+                            volontaires pour intervenir et présenter leur métier ou leur parcours d’études.
+                            L’objectif est d’aider les élèves à mieux comprendre les métiers, les formations et les débouchés.
+                        </div>
+                    </td>
+                </tr>
+
+                {# Bloc infos (plus “organisation”) #}
+                <tr>
+                    <td class="px-24" style="padding:14px 24px 0 24px;">
+                        <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:14px;">
+                            <div style="font:700 15px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                                Modalités de participation
+                            </div>
+
+                            <ul style="margin:10px 0 0 18px; padding:0; font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                                <li>Présentation sur un <strong>stand</strong> (échanges simples avec les élèves)</li>
+                                <li>Vous expliquez votre <strong>métier</strong> / votre <strong>secteur</strong> et votre <strong>parcours</strong> (études, formation)</li>
+                                <li>Questions-réponses : missions, compétences, conseils, stages, filières</li>
+                                <li>Disponibilité flexible : vous pouvez participer <strong>sur toute la matinée</strong> ou <strong>sur une partie</strong></li>
+                            </ul>
+
+                            <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; margin-top:10px;">
+                                Si vous êtes disponible, merci de vous inscrire via le formulaire ci-dessous.
+                                Nous reviendrons ensuite vers vous avec les informations pratiques (accueil, emplacement, organisation).
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                {# CTA (texte plus neutre) #}
+                <tr>
+                    <td align="center" style="padding:18px 24px;">
+                        <!--[if mso]>
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ ctaUrl }}"
+                            style="height:46px; v-text-anchor:middle; width:360px;" arcsize="10%" stroke="f" fillcolor="#1f2937">
+                            <w:anchorlock/>
+                            <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:15px; font-weight:700;">
+                                Accéder au formulaire d’inscription
+                            </center>
+                        </v:roundrect>
+                        <![endif]-->
+
+                        <!--[if !mso]><!-- -->
+                        <a href="{{ ctaUrl }}"
+                           class="btn"
+                           style="display:inline-block; background:#1f2937; color:#ffffff; text-decoration:none;
+                           font:700 15px/46px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+                           padding:0 22px; border-radius:10px; min-width:240px; text-align:center;">
+                            Accéder au formulaire d’inscription
+                        </a>
+                        <!--<![endif]-->
+                    </td>
+                </tr>
+
+                {# Note support (plus courte, “administrative”) #}
+                <tr>
+                    <td class="px-24" style="padding:0 24px 0 24px;">
+                        <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                            Pour toute question (durée, niveau des élèves, organisation), vous pouvez répondre directement à cet email.
+                        </div>
+                    </td>
+                </tr>
+
+                {# Lien de secours #}
+                <tr>
+                    <td class="px-24" style="padding:14px 24px 0 24px;">
+                        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+                            <div style="font:600 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                                Si le bouton ne fonctionne pas
+                            </div>
+                            <div style="font:400 13px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; word-break:break-all; margin-top:4px;">
+                                Copiez/collez ce lien dans votre navigateur :<br>
+                                <a href="{{ ctaUrl }}" style="color:#111827; text-decoration:underline;">{{ ctaUrl }}</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                {# Signature #}
+                <tr>
+                    <td class="px-24" style="padding:18px 24px 10px 24px;">
+                        <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                            Cordialement,<br>
+                            <strong>{{ senderName }}</strong><br>
+                        </div>
+                    </td>
+                </tr>
+
+                {# Footer #}
+                <tr>
+                    <td style="padding:16px 24px 20px 24px; background:#f9fafb;">
+                        <div style="font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#6b7280; text-align:center;">
+                            Centre Culturel Ibn Badis • {{ address }} • Tél. : {{ phone }}<br>
+                            <a href="mailto:{{ contactEmail }}" style="color:#111827; text-decoration:underline;">{{ contactEmail }}</a><br><br>
+
+                            {% if unsubscribeUrl is defined and unsubscribeUrl %}
+                                Ne plus recevoir ces messages :
+                                <a href="{{ unsubscribeUrl }}" style="color:#111827; text-decoration:underline;">se désabonner</a>.
+                            {% else %}
+                                Pour ne plus recevoir ces messages, répondez avec l’objet « DÉSABONNEMENT ».
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+
+            <div style="height:24px; line-height:24px; font-size:24px;">&nbsp;</div>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
