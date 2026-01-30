@@ -678,9 +678,6 @@ export default {
       `;
     },
   },
-  mounted() {
-    console.log("teacher.classes =", this.teacher.classes);
-  }
 };
 
 </script>
