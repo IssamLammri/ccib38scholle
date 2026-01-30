@@ -19,6 +19,8 @@ import ShowInvoice from './pages/invoice/ShowInvoice.vue';
 import ShowParent from './pages/parent/ShowParent.vue';
 import ListParents from './pages/parent/ListParents.vue';
 import TeacherShow from './pages/teacher/TeacherShow.vue';
+import TeachersList from './pages/teacher/TeachersList.vue';
+import TeacherForm from './pages/teacher/TeacherForm.vue';
 import StudyClass from './pages/studyClass/StudyClass.vue';
 import StudyList from './pages/studyClass/StudyList.vue';
 import StudyClassList from './pages/studyClass/StudyClassList.vue';
@@ -70,6 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('ListInvoiceNew', ListInvoiceNew);
     app.component('MenuList', MenuList);
     app.component('PresencesSessions', PresencesSessions);
+    app.component('TeachersList', TeachersList);
+    app.component('TeacherForm', TeacherForm);
     app.component('DashboardParent', DashboardParent);
     app.component('Dashboard', Dashboard);
     app.component('RegistrationList', RegistrationList);

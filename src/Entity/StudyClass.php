@@ -44,15 +44,15 @@ class StudyClass
     private ?string $name = null;
 
     #[ORM\Column(type: 'string')]
-    #[Groups(['read_study_class','read_session','presence_session','read_parent'])]
+    #[Groups(['read_study_class','read_session','presence_session','read_parent','read_teacher'])]
     private ?string $level = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read_study_class','read_session','read_payment','read_invoice','presence_session','read_parent'])]
+    #[Groups(['read_study_class','read_session','read_payment','read_invoice','presence_session','read_teacher','read_parent'])]
     private ?string $speciality = null;
 
     #[ORM\Column(type: 'string', length: 50)]
-    #[Groups(['read_study_class','read_session','read_parent'])]
+    #[Groups(['read_study_class','read_session','read_teacher','read_parent'])]
     private ?string $day = self::DAY_SATURDAY;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
@@ -60,15 +60,15 @@ class StudyClass
     private ?string $whatsappUrl = null;
 
     #[ORM\Column(type: 'time')]
-    #[Groups(['read_study_class','read_session'])]
+    #[Groups(['read_study_class','read_teacher','read_session'])]
     private ?\DateTimeInterface $startHour = null;
 
     #[ORM\Column(type: 'time')]
-    #[Groups(['read_study_class','read_session'])]
+    #[Groups(['read_study_class','read_teacher','read_session'])]
     private ?\DateTimeInterface $endHour = null;
 
     #[ORM\Column(type: 'string', length: 100)]
-    #[Groups(['read_study_class','read_session','read_parent'])]
+    #[Groups(['read_study_class','read_teacher','read_session','read_parent'])]
     private ?string $classType = null; // Ex: Arabe, Soutien, Autre
 
     #[ORM\ManyToOne(targetEntity: Teacher::class, inversedBy: 'classes')]
@@ -83,14 +83,14 @@ class StudyClass
     // >>> NOUVEAU : Année scolaire (2024/2025 ou 2025/2026)
     #[ORM\Column(type: 'string', length: 9)]
     #[Assert\Choice(choices: StudyClass::SCHOOL_YEARS, message: 'Année scolaire invalide.')]
-    #[Groups(['read_study_class','read_session','read_payment','read_invoice'])]
+    #[Groups(['read_study_class','read_teacher','read_session','read_payment','read_invoice'])]
     private ?string $schoolYear = self::SCHOOL_YEAR_2025_2026;
 
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'studyClass')]
     private Collection $payments;
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => true])]
-    #[Groups(['read_student_class_registered','read_payment','read_student','read_study_class','read_parent'])]
+    #[Groups(['read_student_class_registered','read_teacher','read_payment','read_student','read_study_class','read_parent'])]
     private ?bool $active = true;
 
     public function __construct()
