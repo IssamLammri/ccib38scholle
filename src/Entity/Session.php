@@ -73,10 +73,9 @@ class Session
         return $this->room;
     }
 
-    public function setRoom(Room $room): self
+    public function setRoom(?Room $room): self
     {
         $this->room = $room;
-
         return $this;
     }
 

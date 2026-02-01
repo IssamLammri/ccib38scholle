@@ -28,6 +28,7 @@ import EditStudyClass from './pages/studyClass/EditStudyClass.vue';
 import NewStudyClass from './pages/studyClass/NewStudyClass.vue';
 import PlanningStudyClass from './pages/studyClass/PlanningStudyClass.vue';
 import SessionShow from './pages/session/SessionShow.vue';
+import SessionEdit from './pages/session/SessionEdit.vue';
 import SessionList from './pages/session/SessionList.vue';
 import SessionOfDay from './pages/session/SessionOfDay.vue';
 import PresencesSessions from './pages/session/PresencesSessions.vue';
@@ -88,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('ShowParent', ShowParent);
     app.component('PlanningStudyClass', PlanningStudyClass);
     app.component('SessionShow', SessionShow);
+    app.component('SessionEdit', SessionEdit);
     app.component('SessionList', SessionList);
     app.component('SessionOfDay', SessionOfDay);
     app.component('RegistrationPageAcademicSupport', RegistrationPageAcademicSupport);

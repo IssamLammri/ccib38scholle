@@ -740,10 +740,127 @@ class SessionController extends AbstractController
 
         return $this->render('session/edit.html.twig', [
             'session' => $session,
+            'currentUser' => $user,
             'form' => $form,
             'is_manager' => $isManager, // Passer la variable pour Twig
         ]);
     }
+
+    #[Route('/api/edit-options', name: 'api_session_edit_options', options: ['expose' => true], methods: ['GET'])]
+    public function editOptions(
+        TeacherRepository $teacherRepository,
+        RoomRepository $roomRepository
+    ): Response {
+        $teachers = $teacherRepository->findAll();
+        $rooms = $roomRepository->findAll();
+
+        $teachersArray = array_map(static fn(Teacher $t) => [
+            'id' => $t->getId(),
+            'firstName' => $t->getFirstName(),
+            'lastName' => $t->getLastName(),
+        ], $teachers);
+
+        $roomsArray = array_map(static fn(Room $r) => [
+            'id' => $r->getId(),
+            'name' => $r->getName(),
+        ], $rooms);
+
+        return $this->json([
+            'teachers' => $teachersArray,
+            'rooms' => $roomsArray,
+        ]);
+    }
+
+
+    #[Route('/api/{id}', name: 'api_session_update', options: ['expose' => true], methods: ['PUT', 'PATCH'])]
+    public function updateSession(
+        Request $request,
+        Session $session,
+        TeacherRepository $teacherRepository,
+        RoomRepository $roomRepository,
+        EntityManagerInterface $entityManager,
+        Security $security
+    ): Response {
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        // --------- Sécurité : teacher ne peut modifier que ses sessions ----------
+        $isManager = $security->isGranted('ROLE_MANAGER') || $security->isGranted('ROLE_ADMIN');
+
+        if (!$isManager) {
+            $currentTeacher = $teacherRepository->findOneBy(['user' => $this->getUser()]);
+            if (!$currentTeacher || $session->getTeacher()?->getId() !== $currentTeacher->getId()) {
+                throw $this->createAccessDeniedException("Vous n'avez pas le droit de modifier cette session.");
+            }
+        }
+
+        // --------- startTime / endTime ----------
+        if (!empty($data['startTime'])) {
+            try {
+                $session->setStartTime(new \DateTimeImmutable($data['startTime']));
+            } catch (\Exception $e) {
+                return $this->json(['error' => 'startTime invalide'], 400);
+            }
+        }
+
+        if (!empty($data['endTime'])) {
+            try {
+                $session->setEndTime(new \DateTimeImmutable($data['endTime']));
+            } catch (\Exception $e) {
+                return $this->json(['error' => 'endTime invalide'], 400);
+            }
+        }
+
+        // Validation : fin > début
+        if ($session->getStartTime() && $session->getEndTime() && $session->getEndTime() <= $session->getStartTime()) {
+            return $this->json(['error' => "L'heure de fin doit être après l'heure de début."], 400);
+        }
+
+        // --------- teacherId (uniquement manager/admin) ----------
+        if ($isManager && array_key_exists('teacherId', $data)) {
+            if (!empty($data['teacherId'])) {
+                $teacher = $teacherRepository->find((int)$data['teacherId']);
+                if (!$teacher) {
+                    return $this->json(['error' => 'Teacher introuvable'], 404);
+                }
+                $session->setTeacher($teacher);
+            }
+        }
+
+        // --------- roomId (null autorisé) ----------
+        if (array_key_exists('roomId', $data)) {
+            if (empty($data['roomId'])) {
+                $session->setRoom(null);
+            } else {
+                $room = $roomRepository->find((int)$data['roomId']);
+                if (!$room) {
+                    return $this->json(['error' => 'Room introuvable'], 404);
+                }
+                $session->setRoom($room);
+            }
+        }
+
+        $entityManager->flush();
+
+        // Réponse simple (tu peux enrichir si tu veux)
+        return $this->json([
+            'success' => true,
+            'session' => [
+                'id' => $session->getId(),
+                'startTime' => $session->getStartTime()?->format('Y-m-d\TH:i:s'),
+                'endTime' => $session->getEndTime()?->format('c'),
+                'room' => $session->getRoom() ? [
+                    'id' => $session->getRoom()->getId(),
+                    'name' => $session->getRoom()->getName(),
+                ] : null,
+                'teacher' => $session->getTeacher() ? [
+                    'id' => $session->getTeacher()->getId(),
+                    'firstName' => $session->getTeacher()->getFirstName(),
+                    'lastName' => $session->getTeacher()->getLastName(),
+                ] : null,
+            ],
+        ]);
+    }
+
 
     #[Route('/{id}', name: 'app_session_delete', methods: ['POST'])]
     public function delete(Request $request, Session $session, EntityManagerInterface $entityManager): Response
