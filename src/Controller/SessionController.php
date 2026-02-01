@@ -297,7 +297,7 @@ class SessionController extends AbstractController
     private function resolveTeacherIdIfOnlyTeacher(TeacherRepository $teacherRepo): ?int
     {
         // ✅ si admin/superadmin => accès global
-        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_SUPER_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_MANAGER')) {
             return null;
         }
 

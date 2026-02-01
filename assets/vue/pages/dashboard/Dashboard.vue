@@ -416,19 +416,18 @@ export default {
   },
 
   created() {
-    const { start, end } = this.getCurrentMonthRange(); // ✅ mois courant
+    const { start, end } = this.getCurrentMonthRange(); // mois courant
     this.filterStartDate = start;
     this.filterEndDate = end;
     this.filterSchoolYear = this.defaultSchoolYear;
 
-    // ✅ bloquer la sélection dans ce range
+    // ✅ surtout ne PAS bloquer min/max
     this.flatpickrConfig = {
       ...this.flatpickrConfig,
-      minDate: start,
-      maxDate: end,
+      minDate: null,
+      maxDate: null,
     };
   },
-
 
   mounted() {
     //this.fetchStatistics();
@@ -437,7 +436,11 @@ export default {
 
 
   watch: {
-    filterStartDate() { this.debouncedFetch(); },
+    filterStartDate(newVal) {
+      // quand start change, on ajuste le minDate du end picker seulement
+      this.flatpickrConfigEnd = { ...this.flatpickrConfigEnd, minDate: newVal || null };
+      this.debouncedFetch();
+    },
     filterEndDate() { this.debouncedFetch(); },
     filterClassType() { this.debouncedFetch(); },
     filterSpeciality() { this.debouncedFetch(); },
@@ -566,11 +569,11 @@ export default {
       this.filterStartDate = start;
       this.filterEndDate = end;
 
-      // ✅ met à jour aussi la “barrière” de dates
+      // ✅ pas de barrière
       this.flatpickrConfig = {
         ...this.flatpickrConfig,
-        minDate: start,
-        maxDate: end,
+        minDate: null,
+        maxDate: null,
       };
 
       this.filterClassType = "";
