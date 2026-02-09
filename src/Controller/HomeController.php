@@ -45,8 +45,7 @@ class HomeController extends AbstractController
         ]);
     }
 
-
-    #[Route('/dashboard/api/stats', name: 'app_dashboard_stats', methods: ['GET'])]
+    #[Route('/dashboard/api/stats', name: 'app_dashboard_stats', options: ['expose' => true], methods: ['GET'])]
     public function getStatistics(
         Request $request,
         SessionRepository $sessionRepository,
