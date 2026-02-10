@@ -1,0 +1,227 @@
+{# templates/email/newsletters/forum_metiers_2026.html.twig #}
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ subject|default('Info CCIB38 : Forum métiers (15/02/2026) — présence à confirmer') }}</title>
+
+    <!--[if mso]>
+    <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+    <![endif]-->
+
+    <style>
+        @media (max-width: 600px) {
+            .container { width: 100% !important; }
+            .px-24 { padding-left: 16px !important; padding-right: 16px !important; }
+            .hero-title { font-size: 22px !important; line-height: 1.25 !important; }
+            .btn { width: 100% !important; }
+        }
+        a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; }
+    </style>
+</head>
+
+<body style="margin:0; padding:0; background:#f4f5f7;">
+
+<div style="display:none; overflow:hidden; line-height:1px; opacity:0; max-height:0; max-width:0;">
+    Forum métiers le 15/02/2026 (10:00–12:00) : professionnels, stands, présentation des métiers de l’avenir. Confirmez votre présence.
+</div>
+
+{% set siteName = siteName|default('CCIB38') %}
+{% set senderName = senderName|default('Équipe CCIB38') %}
+{% set fullName = fullName|default('cher parent') %}
+
+{# Infos événement #}
+{% set eventDateLabel = eventDateLabel|default('Dimanche 15 février 2026') %}
+{% set eventTimeLabel = eventTimeLabel|default('10:00 à 12:00') %}
+{% set eventAddress = eventAddress|default('18 Rue des Trembles, 38100 Grenoble') %}
+
+{# CTA formulaire #}
+{% set ctaUrl = registrationUrl|default('https://forms.gle/JdM6L3mhrpfcd7x3A') %}
+
+{# Images (tu peux remplacer heroImageUrl par l'URL de ton affiche si elle est en ligne) #}
+{% set heroImageUrl = heroImageUrl|default(null) %}
+{% set infoImageUrl = infoImageUrl|default('https://www.ccib38.fr/wp-content/uploads/2026/02/Gemini_Generated_Image_xpf3avxpf3avxpf3.webp') %}
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f5f7;">
+    <tr>
+        <td align="center" style="padding:24px 12px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container"
+                   style="width:600px; max-width:100%; background:#ffffff; border-radius:12px; overflow:hidden;">
+
+                {# Header #}
+                <tr>
+                    <td style="background:#1f2937; padding:20px 24px; text-align:center;">
+                        <div style="font:600 18px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#ffffff;">
+                            {{ siteName }}
+                        </div>
+                        <div style="font:400 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#cbd5e1; margin-top:6px;">
+                            Centre Culturel Ibn Badis – Grenoble
+                        </div>
+                    </td>
+                </tr>
+
+                {# Image principale (optionnelle) #}
+                {% if heroImageUrl %}
+                    <tr>
+                        <td style="padding:0; background:#ffffff;">
+                            <img src="{{ heroImageUrl }}"
+                                 width="600"
+                                 style="display:block; width:100%; max-width:600px; height:auto; border:0; margin:0; padding:0;"
+                                 alt="Affiche Forum métiers {{ siteName }}">
+                        </td>
+                    </tr>
+                {% endif %}
+
+                {# Intro #}
+                <tr>
+                    <td class="px-24" style="padding:26px 24px 0 24px;">
+                        <div class="hero-title" style="font:700 24px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                            Forum métiers — Orientation & échanges
+                        </div>
+
+                        <div style="font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; margin-top:12px;">
+                            Bonjour {{ fullName }},<br><br>
+
+                            {{ siteName }} a le plaisir de vous inviter à notre <strong>Forum métiers</strong>, qui aura lieu :<br>
+                            <strong>📅 {{ eventDateLabel }}</strong><br>
+                            <strong>🕘 {{ eventTimeLabel }}</strong><br><br>
+
+                            Lors de cette matinée, nous accueillerons des <strong>professionnels de différents domaines</strong>.
+                            Ils seront installés sur des <strong>stands</strong> pour répondre à <strong>vos questions</strong> et à celles de <strong>vos enfants</strong>,
+                            afin de vous aider à mieux vous orienter vers les <strong>formations adaptées</strong>.<br><br>
+
+                            <strong>🎯 Nouveauté :</strong> il y aura également une <strong>présentation des métiers de l’avenir</strong> durant ce forum.
+                        </div>
+                    </td>
+                </tr>
+
+                {# Bloc Infos #}
+                <tr>
+                    <td class="px-24" style="padding:14px 24px 0 24px;">
+                        <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:14px;">
+                            <div style="font:700 15px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                                Pour qui ?
+                            </div>
+
+                            <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; margin-top:8px;">
+                                Cet événement est destiné aux <strong>parents</strong> et aux élèves à partir de :
+                            </div>
+
+                            <ul style="margin:10px 0 0 18px; padding:0; font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                                <li>✅ <strong>3ème</strong></li>
+                                <li>✅ <strong>Seconde</strong></li>
+                                <li>✅ <strong>Première</strong></li>
+                                <li>✅ <strong>Terminale / BAC</strong></li>
+                            </ul>
+
+                            <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; margin-top:10px;">
+                                <strong>📍 Lieu :</strong> {{ eventAddress }}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                {# Image ajoutée (celle que tu veux intégrer) #}
+                {% if infoImageUrl %}
+                    <tr>
+                        <td class="px-24" style="padding:16px 24px 0 24px;">
+                            <div style="border-radius:12px; overflow:hidden; border:1px solid #e5e7eb;">
+                                <img src="{{ infoImageUrl }}"
+                                     width="552"
+                                     style="display:block; width:100%; max-width:552px; height:auto; border:0; margin:0; padding:0;"
+                                     alt="Illustration Forum métiers — métiers de l’avenir">
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+
+                {# CTA #}
+                <tr>
+                    <td align="center" style="padding:20px 24px;">
+                        <!--[if mso]>
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ ctaUrl }}"
+                            style="height:48px; v-text-anchor:middle; width:340px;" arcsize="12%" stroke="f" fillcolor="#4f46e5">
+                            <w:anchorlock/>
+                            <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:700;">
+                                Indiquer ma présence
+                            </center>
+                        </v:roundrect>
+                        <![endif]-->
+
+                        <!--[if !mso]><!-- -->
+                        <a href="{{ ctaUrl }}"
+                           class="btn"
+                           style="display:inline-block; background:#4f46e5; color:#ffffff; text-decoration:none;
+                           font:700 15px/48px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+                           padding:0 22px; border-radius:10px; min-width:240px; text-align:center;">
+                            Indiquer ma présence
+                        </a>
+                        <!--<![endif]-->
+                    </td>
+                </tr>
+
+                {# Phrase logistique #}
+                <tr>
+                    <td class="px-24" style="padding:0 24px 0 24px;">
+                        <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                            Merci d’indiquer votre présence via le formulaire ci-dessus afin que nous puissions <strong>préparer au mieux votre arrivée</strong>
+                            et l’organisation des stands.
+                        </div>
+                    </td>
+                </tr>
+
+                {# Lien de secours #}
+                <tr>
+                    <td class="px-24" style="padding:14px 24px 0 24px;">
+                        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+                            <div style="font:600 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+                                Si le bouton ne fonctionne pas
+                            </div>
+                            <div style="font:400 13px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151; word-break:break-all; margin-top:4px;">
+                                Copiez/collez ce lien dans votre navigateur :<br>
+                                <a href="{{ ctaUrl }}" style="color:#4f46e5; text-decoration:underline;">{{ ctaUrl }}</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                {# Signature #}
+                <tr>
+                    <td class="px-24" style="padding:18px 24px 8px 24px;">
+                        <div style="font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#374151;">
+                            Cordialement,<br>
+                            <strong>{{ senderName }}</strong><br>
+                            <span style="color:#6b7280;">Centre Culturel Ibn Badis – Grenoble</span>
+                        </div>
+                    </td>
+                </tr>
+
+                {# Footer #}
+                <tr>
+                    <td style="padding:18px 24px 22px 24px; background:#f9fafb;">
+                        <div style="font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#6b7280; text-align:center;">
+                            Centre Culturel Ibn Badis • 18 Rue des Trembles, 38100 Grenoble • Tél. : +33 4 58 00 89 73<br>
+                            <a href="mailto:ccib38.contact@gmail.com" style="color:#4f46e5; text-decoration:underline;">ccib38.contact@gmail.com</a><br><br>
+
+                            {% if unsubscribeUrl is defined and unsubscribeUrl %}
+                                Vous ne souhaitez plus recevoir nos emails ?
+                                <a href="{{ unsubscribeUrl }}" style="color:#4f46e5; text-decoration:underline;">Se désabonner</a>.
+                            {% else %}
+                                Pour vous désabonner, répondez avec l’objet « DÉSABONNEMENT ».
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+
+            <div style="height:24px; line-height:24px; font-size:24px;">&nbsp;</div>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
