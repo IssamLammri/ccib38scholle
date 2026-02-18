@@ -101,6 +101,8 @@ class RecomputeParentsDueAmountCommand extends Command
 
     /**
      * Retourne [amountDueArabic, amountDueSoutien]
+     * - Arabe : par enfant (au moins 1 inscription active en Arabe)
+     * - Soutien : 25€/mois PAR MATIÈRE (donc par StudyClass Soutien), mois complets
      */
     private function computeDueForParent(ParentEntity $parent, \DateTimeImmutable $now): array
     {
@@ -110,13 +112,16 @@ class RecomputeParentsDueAmountCommand extends Command
         // 1) ARABE : compter le nombre d'enfants ayant >=1 inscription active en Arabe
         $arabicStudentIds = [];
 
-        // 2) SOUTIEN : par enfant, prendre la plus ancienne date d'inscription active en Soutien
-        $soutienEarliestByStudent = []; // studentId => DateTimeImmutable
+        // 2) SOUTIEN : par enfant + par matière (StudyClass), prendre la plus ancienne date d'inscription active
+        // clé = "studentId|studyClassId"
+        $soutienEarliestByStudentAndClass = []; // key => DateTimeImmutable
 
         foreach ($students as $student) {
             /** @var Student $student */
             $studentId = $student->getId();
-            if (!$studentId) continue;
+            if (!$studentId) {
+                continue;
+            }
 
             /** @var iterable<StudentClassRegistered> $regs */
             $regs = $student->getRegistrations();
@@ -148,21 +153,29 @@ class RecomputeParentsDueAmountCommand extends Command
                 // 5) classType
                 $classType = (string) $studyClass->getClassType();
 
-                // --- ARABE ---
+                // --- ARABE (par enfant) ---
                 if ($classType === StudyClass::CLASS_TYPE_ARABE) {
                     $arabicStudentIds[$studentId] = true;
+                    continue;
                 }
 
-                // --- SOUTIEN ---
+                // --- SOUTIEN (par matière = par StudyClass) ---
                 if ($classType === StudyClass::CLASS_TYPE_SOUTIEN) {
-                    $createdAt = $reg->getCreatedAt(); // DateTimeImmutable
-                    if ($createdAt) {
-                        if (
-                            !isset($soutienEarliestByStudent[$studentId]) ||
-                            $createdAt < $soutienEarliestByStudent[$studentId]
-                        ) {
-                            $soutienEarliestByStudent[$studentId] = $createdAt;
-                        }
+                    $createdAt = $reg->getCreatedAt();
+                    if (!$createdAt) {
+                        continue;
+                    }
+
+                    // clé par matière : on utilise l'ID de la StudyClass si dispo
+                    $scId = $studyClass->getId();
+
+                    // si jamais id null (rare), fallback sur un "hash" stable (name + speciality)
+                    $scKey = $scId ? ('sc:' . $scId) : ('sc:' . md5((string)$studyClass->getName() . '|' . (string)$studyClass->getSpeciality()));
+
+                    $key = $studentId . '|' . $scKey;
+
+                    if (!isset($soutienEarliestByStudentAndClass[$key]) || $createdAt < $soutienEarliestByStudentAndClass[$key]) {
+                        $soutienEarliestByStudentAndClass[$key] = $createdAt;
                     }
                 }
             }
@@ -173,9 +186,10 @@ class RecomputeParentsDueAmountCommand extends Command
         $dueArabic = $this->arabicPricing($arabicCount);
 
         // --- Montant Soutien ---
-        // règle: 25€/mois, mois entiers à partir du mois suivant l'inscription
+        // 25€/mois, mois entiers à partir du mois suivant l'inscription
+        // MAIS calculé PAR matière (donc par StudyClass Soutien)
         $dueSoutien = 0;
-        foreach ($soutienEarliestByStudent as $inscriptionDate) {
+        foreach ($soutienEarliestByStudentAndClass as $inscriptionDate) {
             $months = $this->fullMonthsFromInscription($inscriptionDate, $now);
             $dueSoutien += 25 * $months;
         }
