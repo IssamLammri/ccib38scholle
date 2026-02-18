@@ -52,6 +52,12 @@ class ParentEntity
     #[ORM\Column(type: 'string', length: 20)]
     private ?string $familyStatus = null; // Married or Divorced
 
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $amountDueArabic = 0;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $amountDueSoutien = 0;
+
     #[ORM\OneToMany(targetEntity: Student::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
     #[Groups(['read_payment', 'read_parent'])]
     private Collection $students;
@@ -299,4 +305,10 @@ class ParentEntity
 
         return $this;
     }
+
+    public function getAmountDueArabic(): int { return $this->amountDueArabic; }
+    public function setAmountDueArabic(int $v): self { $this->amountDueArabic = max(0, $v); return $this; }
+
+    public function getAmountDueSoutien(): int { return $this->amountDueSoutien; }
+    public function setAmountDueSoutien(int $v): self { $this->amountDueSoutien = max(0, $v); return $this; }
 }

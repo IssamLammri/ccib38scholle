@@ -88,7 +88,7 @@
       </div>
     </div>
 
-    <!-- Panneau de filtres pliable avec design moderne -->
+    <!-- Panneau de filtres -->
     <transition name="filters-slide">
       <div v-show="showFilters" class="filters-panel">
         <div class="filters-header">
@@ -151,6 +151,7 @@
               <span class="section-icon">📞</span>
               Coordonnées
             </h4>
+
             <div class="filter-group">
               <label class="checkbox-label">
                 <input type="checkbox" v-model="fHasEmail" class="checkbox-input" />
@@ -164,6 +165,15 @@
                 <input type="checkbox" v-model="fHasPhone" class="checkbox-input" />
                 <span class="checkbox-custom"></span>
                 <span class="checkbox-text">Avec téléphone</span>
+              </label>
+            </div>
+
+            <!-- ✅ NOUVEAU : doublons uniquement -->
+            <div class="filter-group">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="fDuplicatesOnly" class="checkbox-input" />
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">Doublons uniquement</span>
               </label>
             </div>
 
@@ -203,33 +213,14 @@
                   <span class="info-tooltip" title="Les parents doivent avoir TOUTES les classes sélectionnées">ℹ️</span>
                 </label>
                 <div class="custom-multiselect">
-                  <div
-                      v-if="fStudyClasses.length > 0"
-                      class="selected-tags"
-                  >
-                    <span
-                        v-for="key in fStudyClasses"
-                        :key="key"
-                        class="selected-tag"
-                    >
+                  <div v-if="fStudyClasses.length > 0" class="selected-tags">
+                    <span v-for="key in fStudyClasses" :key="key" class="selected-tag">
                       {{ getStudyClassLabelByKey(key) }}
-                      <button
-                          class="tag-remove"
-                          @click="removeStudyClass(key)"
-                      >✕</button>
+                      <button class="tag-remove" @click="removeStudyClass(key)">✕</button>
                     </span>
                   </div>
-                  <select
-                      v-model="fStudyClasses"
-                      class="filter-multiselect"
-                      multiple
-                      size="8"
-                  >
-                    <option
-                        v-for="sc in availableStudyClasses"
-                        :key="sc.key"
-                        :value="sc.key"
-                    >
+                  <select v-model="fStudyClasses" class="filter-multiselect" multiple size="8">
+                    <option v-for="sc in availableStudyClasses" :key="sc.key" :value="sc.key">
                       {{ sc.label }}
                     </option>
                   </select>
@@ -242,35 +233,14 @@
                   <span class="info-tooltip" title="Au moins UN jour doit correspondre">ℹ️</span>
                 </label>
                 <div class="custom-multiselect">
-                  <div
-                      v-if="fDays.length > 0"
-                      class="selected-tags"
-                  >
-                    <span
-                        v-for="day in fDays"
-                        :key="day"
-                        class="selected-tag"
-                    >
+                  <div v-if="fDays.length > 0" class="selected-tags">
+                    <span v-for="day in fDays" :key="day" class="selected-tag">
                       {{ day }}
-                      <button
-                          class="tag-remove"
-                          @click="removeDay(day)"
-                      >✕</button>
+                      <button class="tag-remove" @click="removeDay(day)">✕</button>
                     </span>
                   </div>
-                  <select
-                      v-model="fDays"
-                      class="filter-multiselect"
-                      multiple
-                      size="8"
-                  >
-                    <option
-                        v-for="d in availableDays"
-                        :key="d"
-                        :value="d"
-                    >
-                      {{ d }}
-                    </option>
+                  <select v-model="fDays" class="filter-multiselect" multiple size="8">
+                    <option v-for="d in availableDays" :key="d" :value="d">{{ d }}</option>
                   </select>
                 </div>
               </div>
@@ -281,35 +251,14 @@
                   <span class="info-tooltip" title="Au moins UN type doit correspondre">ℹ️</span>
                 </label>
                 <div class="custom-multiselect">
-                  <div
-                      v-if="fClassTypes.length > 0"
-                      class="selected-tags"
-                  >
-                    <span
-                        v-for="type in fClassTypes"
-                        :key="type"
-                        class="selected-tag"
-                    >
+                  <div v-if="fClassTypes.length > 0" class="selected-tags">
+                    <span v-for="type in fClassTypes" :key="type" class="selected-tag">
                       {{ type }}
-                      <button
-                          class="tag-remove"
-                          @click="removeClassType(type)"
-                      >✕</button>
+                      <button class="tag-remove" @click="removeClassType(type)">✕</button>
                     </span>
                   </div>
-                  <select
-                      v-model="fClassTypes"
-                      class="filter-multiselect"
-                      multiple
-                      size="8"
-                  >
-                    <option
-                        v-for="t in availableClassTypes"
-                        :key="t"
-                        :value="t"
-                    >
-                      {{ t }}
-                    </option>
+                  <select v-model="fClassTypes" class="filter-multiselect" multiple size="8">
+                    <option v-for="t in availableClassTypes" :key="t" :value="t">{{ t }}</option>
                   </select>
                 </div>
               </div>
@@ -347,11 +296,13 @@
           <th class="th-actions">Actions</th>
         </tr>
         </thead>
+
         <tbody>
         <tr
             v-for="(p, index) in paginatedParents"
             :key="p.id"
             class="table-row"
+            :class="{ 'is-duplicate': duplicateParentIds.has(p.id) }"
             :style="{ '--row-index': index }"
         >
           <!-- Parent -->
@@ -359,7 +310,10 @@
             <div class="parent-cell">
               <div class="parent-avatar">{{ initials(parentDisplayName(p)) }}</div>
               <div class="parent-info">
-                <div class="parent-name">{{ parentDisplayName(p) }}</div>
+                <div class="parent-name">
+                  {{ parentDisplayName(p) }}
+                  <span v-if="duplicateParentIds.has(p.id)" class="dup-badge">Doublon</span>
+                </div>
                 <div class="parent-id">ID: {{ p.id }}</div>
               </div>
             </div>
@@ -464,10 +418,13 @@ export default {
       sortBy: "name",
       sortDir: "asc",
 
-      // nouveaux filtres (studyClass)
+      // filtres (studyClass)
       fStudyClasses: [],
       fDays: [],
       fClassTypes: [],
+
+      // ✅ doublons uniquement
+      fDuplicatesOnly: false,
 
       messageAlert: null,
       typeAlert: null,
@@ -494,6 +451,7 @@ export default {
       if (this.fStudyClasses.length > 0) count++;
       if (this.fDays.length > 0) count++;
       if (this.fClassTypes.length > 0) count++;
+      if (this.fDuplicatesOnly) count++;
       return count;
     },
 
@@ -522,12 +480,7 @@ export default {
         this.parentStudyClasses(p).forEach(sc => {
           const key = this.studyClassKey(sc);
           if (!key) return;
-          if (!map.has(key)) {
-            map.set(key, {
-              key,
-              label: this.studyClassLabel(sc),
-            });
-          }
+          if (!map.has(key)) map.set(key, { key, label: this.studyClassLabel(sc) });
         });
       });
       return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
@@ -536,9 +489,7 @@ export default {
     availableDays() {
       const set = new Set();
       this.parents.forEach(p => {
-        this.parentStudyClasses(p).forEach(sc => {
-          if (sc?.day) set.add(String(sc.day).trim());
-        });
+        this.parentStudyClasses(p).forEach(sc => sc?.day && set.add(String(sc.day).trim()));
       });
       return Array.from(set).sort((a, b) => a.localeCompare(b));
     },
@@ -546,11 +497,30 @@ export default {
     availableClassTypes() {
       const set = new Set();
       this.parents.forEach(p => {
-        this.parentStudyClasses(p).forEach(sc => {
-          if (sc?.classType) set.add(String(sc.classType).trim());
-        });
+        this.parentStudyClasses(p).forEach(sc => sc?.classType && set.add(String(sc.classType).trim()));
       });
       return Array.from(set).sort((a, b) => a.localeCompare(b));
+    },
+
+    // ✅ IDs des parents en doublon
+    duplicateParentIds() {
+      const keyToIds = new Map();
+
+      for (const p of this.parents) {
+        const keys = this.duplicateKeysForParent(p);
+        for (const key of keys) {
+          if (!keyToIds.has(key)) keyToIds.set(key, new Set());
+          keyToIds.get(key).add(p.id);
+        }
+      }
+
+      const dupIds = new Set();
+      for (const idsSet of keyToIds.values()) {
+        if (idsSet.size > 1) {
+          for (const id of idsSet) dupIds.add(id);
+        }
+      }
+      return dupIds;
     },
 
     filteredParents() {
@@ -558,6 +528,7 @@ export default {
 
       const matchSearch = (p) => {
         if (!term) return true;
+
         const parentFields = [
           p.fatherLastName, p.fatherFirstName, p.fatherEmail, p.fatherPhone,
           p.motherLastName, p.motherFirstName, p.motherEmail, p.motherPhone,
@@ -573,14 +544,9 @@ export default {
         return hitParent || hitStudent;
       };
 
-      const matchLevel = (p) =>
-          !this.fLevel || (p.students || []).some(s => String(s.level) === this.fLevel);
-
-      const matchService = (p) =>
-          !this.fServiceType || (p.students || []).some(s => this.guessServiceType(s) === this.fServiceType);
-
-      const matchCity = (p) =>
-          !this.fCity || (p.students || []).some(s => String(s.city).trim() === this.fCity);
+      const matchLevel = (p) => !this.fLevel || (p.students || []).some(s => String(s.level) === this.fLevel);
+      const matchService = (p) => !this.fServiceType || (p.students || []).some(s => this.guessServiceType(s) === this.fServiceType);
+      const matchCity = (p) => !this.fCity || (p.students || []).some(s => String(s.city).trim() === this.fCity);
 
       const matchHasEmail = (p) => !this.fHasEmail || !!p.emailContact;
       const matchHasPhone = (p) => !this.fHasPhone || !!p.phoneContact;
@@ -588,26 +554,24 @@ export default {
 
       const matchStudyClasses = (p) => {
         if (!this.fStudyClasses?.length) return true;
-        const keys = new Set(
-            this.parentStudyClasses(p).map(sc => this.studyClassKey(sc)).filter(Boolean)
-        );
+        const keys = new Set(this.parentStudyClasses(p).map(sc => this.studyClassKey(sc)).filter(Boolean));
         return this.fStudyClasses.every(k => keys.has(k));
       };
 
       const matchDayAndType = (p) => {
-        // si aucun des deux filtres n'est utilisé -> OK
         if (!this.fDays?.length && !this.fClassTypes?.length) return true;
 
         const wantedDays = new Set(this.fDays.map(d => String(d).trim()));
         const wantedTypes = new Set(this.fClassTypes.map(t => String(t).trim()));
 
-        // au moins UNE classe doit matcher les 2 conditions en même temps
         return this.parentStudyClasses(p).some(sc => {
           const dayOk = !wantedDays.size || wantedDays.has(String(sc?.day || "").trim());
           const typeOk = !wantedTypes.size || wantedTypes.has(String(sc?.classType || "").trim());
           return dayOk && typeOk;
         });
       };
+
+      const matchDuplicatesOnly = (p) => !this.fDuplicatesOnly || this.duplicateParentIds.has(p.id);
 
       let res = this.parents
           .filter(matchSearch)
@@ -618,14 +582,13 @@ export default {
           .filter(matchHasPhone)
           .filter(matchMinStudents)
           .filter(matchDayAndType)
-          .filter(matchStudyClasses);
+          .filter(matchStudyClasses)
+          .filter(matchDuplicatesOnly);
 
       const dir = this.sortDir === "desc" ? -1 : 1;
       res = res.sort((a, b) => {
         if (this.sortBy === "students") {
-          const da = (a.students?.length || 0);
-          const db = (b.students?.length || 0);
-          return (da - db) * dir;
+          return ((a.students?.length || 0) - (b.students?.length || 0)) * dir;
         }
         if (this.sortBy === "city") {
           const ca = (a.students?.[0]?.city || "").toString().toLowerCase();
@@ -664,6 +627,7 @@ export default {
     fStudyClasses() { this.page = 1; },
     fDays() { this.page = 1; },
     fClassTypes() { this.page = 1; },
+    fDuplicatesOnly() { this.page = 1; },
   },
 
   mounted() {
@@ -671,12 +635,11 @@ export default {
   },
 
   methods: {
+    // ---------- REGISTRATIONS HELPERS ----------
     isActiveRegistration(registration) {
-      return (
-          registration?.active === true &&
-          registration?.studyClass?.active === true
-      );
+      return registration?.active === true && registration?.studyClass?.active === true;
     },
+
     async fetchParents() {
       this.loading = true;
       try {
@@ -705,6 +668,7 @@ export default {
       this.fStudyClasses = [];
       this.fDays = [];
       this.fClassTypes = [];
+      this.fDuplicatesOnly = false;
     },
 
     clearAllFilters() {
@@ -717,36 +681,100 @@ export default {
       this.fStudyClasses = [];
       this.fDays = [];
       this.fClassTypes = [];
+      this.fDuplicatesOnly = false;
     },
 
-    removeStudyClass(key) {
-      this.fStudyClasses = this.fStudyClasses.filter(k => k !== key);
-    },
-
-    removeDay(day) {
-      this.fDays = this.fDays.filter(d => d !== day);
-    },
-
-    removeClassType(type) {
-      this.fClassTypes = this.fClassTypes.filter(t => t !== type);
-    },
+    removeStudyClass(key) { this.fStudyClasses = this.fStudyClasses.filter(k => k !== key); },
+    removeDay(day) { this.fDays = this.fDays.filter(d => d !== day); },
+    removeClassType(type) { this.fClassTypes = this.fClassTypes.filter(t => t !== type); },
 
     getStudyClassLabelByKey(key) {
       const found = this.availableStudyClasses.find(sc => sc.key === key);
       return found ? found.label : key;
     },
 
-    norm(v) {
+    // ---------- ✅ DUPLICATES (TOKEN STRICT) ----------
+    normName(v) {
+      return String(v ?? "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // accents
+          .toLowerCase()
+          .replace(/[’']/g, " ")           // apostrophe -> espace
+          .replace(/-/g, " ")              // tiret -> espace
+          .replace(/[^a-z0-9\s]/g, " ")     // enlève ponctuation
+          .replace(/\s+/g, " ")
+          .trim();
+    },
+
+    nameTokens(v) {
+      const s = this.normName(v);
+      if (!s) return [];
+      return s.split(" ").filter(Boolean);
+    },
+
+    tokenKey(tokens) {
+      return tokens.slice().sort().join(" ");
+    },
+
+    normEmail(v) {
       return String(v ?? "").trim().toLowerCase();
     },
 
+    normPhone(v) {
+      return String(v ?? "")
+          .replace(/[^\d+]/g, "")
+          .trim();
+    },
+
+    duplicateKeysForParent(p) {
+      const keys = new Set();
+
+      const addEmail = (e) => {
+        const v = this.normEmail(e);
+        if (v && v !== "vide") keys.add(`email:${v}`);
+      };
+
+      const addPhone = (t) => {
+        const v = this.normPhone(t);
+        if (v) keys.add(`phone:${v}`);
+      };
+
+      const addPersonName = (lastName, firstName, who) => {
+        const lnTokens = this.nameTokens(lastName);
+        const fnTokens = this.nameTokens(firstName);
+        if (!lnTokens.length || !fnTokens.length) return;
+
+        const ln = this.tokenKey(lnTokens);
+        const fn = this.tokenKey(fnTokens);
+
+        // clé stricte par mots complets (évite ADDAD vs EL HADDAD)
+        keys.add(`${who}:name:${ln}|${fn}`);
+        keys.add(`${who}:name:${fn}|${ln}`); // inversion prénom/nom
+      };
+
+      // Emails: parent + père + mère
+      addEmail(p.emailContact);
+      addEmail(p.fatherEmail);
+      addEmail(p.motherEmail);
+
+      // Phones: parent + père + mère
+      addPhone(p.phoneContact);
+      addPhone(p.fatherPhone);
+      addPhone(p.motherPhone);
+
+      // Noms (strict tokens)
+      addPersonName(p.fatherLastName, p.fatherFirstName, "father");
+      addPersonName(p.motherLastName, p.motherFirstName, "mother");
+
+      return Array.from(keys);
+    },
+
+    // ---------- STUDYCLASS FILTERS ----------
     parentStudyClasses(p) {
       const out = [];
       (p.students || []).forEach(s => {
         (s.registrations || []).forEach(registration => {
-          if (this.isActiveRegistration(registration)) {
-            out.push(registration.studyClass);
-          }
+          if (this.isActiveRegistration(registration)) out.push(registration.studyClass);
         });
       });
       return out;
@@ -755,7 +783,7 @@ export default {
     studyClassKey(sc) {
       if (!sc) return "";
       if (sc.id != null) return `id:${sc.id}`;
-      return `k:${this.norm(sc.name)}|${this.norm(sc.speciality)}`;
+      return `k:${this.normName(sc.name)}|${this.normName(sc.speciality)}`;
     },
 
     studyClassLabel(sc) {
@@ -786,12 +814,12 @@ export default {
           .split(" ")
           .filter(Boolean)
           .slice(0, 2)
-          .map((n) => n[0]?.toUpperCase())
+          .map(n => n[0]?.toUpperCase())
           .join("");
     },
 
     cleanPhone(tel) {
-      return String(tel).replace(/[^\d+]/g, "");
+      return String(tel || "").replace(/[^\d+]/g, "");
     },
 
     studentTooltip(s) {
@@ -806,19 +834,13 @@ export default {
     },
 
     showUrl(id) {
-      try {
-        return this.$routing?.generate("app_parent_entity_show", { id }) || null;
-      } catch {
-        return `/parents/${id}`;
-      }
+      try { return this.$routing?.generate("app_parent_entity_show", { id }) || null; }
+      catch { return `/parents/${id}`; }
     },
 
     editUrl(id) {
-      try {
-        return this.$routing?.generate("app_parent_entity_edit", { id }) || null;
-      } catch {
-        return `/parents/${id}/edit`;
-      }
+      try { return this.$routing?.generate("app_parent_entity_edit", { id }) || null; }
+      catch { return `/parents/${id}/edit`; }
     },
 
     askDelete(p) {
@@ -829,17 +851,13 @@ export default {
     },
 
     copyEmails() {
-      const normEmail = (e) => String(e || "").trim().toLowerCase();
-
       const emails = this.filteredParents
-          .flatMap((p) => [p.fatherEmail, p.motherEmail, p.emailContact])
-          .map(normEmail)
-          .filter((e) => e && e !== "vide"); // sécurité si tu as "Vide" dans certains champs
+          .flatMap(p => [p.fatherEmail, p.motherEmail, p.emailContact])
+          .map(this.normEmail)
+          .filter(e => e && e !== "vide");
 
       const set = new Set(emails);
-      const txt = Array.from(set).join(", ");
-
-      navigator.clipboard.writeText(txt).then(() => {
+      navigator.clipboard.writeText(Array.from(set).join(", ")).then(() => {
         this.typeAlert = "success";
         this.messageAlert = `${set.size} email(s) copié(s) dans le presse-papier.`;
       });
@@ -851,14 +869,14 @@ export default {
         const parent = this.parentDisplayName(p);
         const emails = p.emailContact || "";
         const phone = p.phoneContact || "";
-        const studentNames = (p.students || []).map((s) => `${s.firstName} ${s.lastName}`).join(" | ");
-        const studentLevels = (p.students || []).map((s) => s.level || "").join(" | ");
+        const studentNames = (p.students || []).map(s => `${s.firstName} ${s.lastName}`).join(" | ");
+        const studentLevels = (p.students || []).map(s => s.level || "").join(" | ");
         const cities = Array.from(new Set((p.students || []).map(s => s.city).filter(Boolean))).join(" | ");
         const services = Array.from(new Set((p.students || []).map(s => this.guessServiceType(s)))).join(" | ");
         return [p.id, parent, emails, phone, `"${studentNames}"`, `"${studentLevels}"`, `"${cities}"`, `"${services}"`];
       });
 
-      const csv = headers.join(";") + "\n" + rows.map((r) => r.join(";")).join("\n");
+      const csv = headers.join(";") + "\n" + rows.map(r => r.join(";")).join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -870,6 +888,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 * { box-sizing: border-box; }
@@ -1606,4 +1625,21 @@ export default {
   .table-container { box-shadow: none; }
   .table-row { break-inside: avoid; }
 }
+
+.table-row.is-duplicate {
+  background: rgba(255, 0, 0, 0.08);
+}
+.table-row.is-duplicate:hover {
+  background: rgba(255, 0, 0, 0.12);
+}
+
+.dup-badge{
+  margin-left: 8px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,0,0,0.12);
+  border: 1px solid rgba(255,0,0,0.25);
+}
+
 </style>
