@@ -635,11 +635,9 @@ export default {
   },
 
   methods: {
-    // ---------- REGISTRATIONS HELPERS ----------
-    isActiveRegistration(registration) {
-      return registration?.active === true && registration?.studyClass?.active === true;
-    },
-
+    // -------------------------
+    // API
+    // -------------------------
     async fetchParents() {
       this.loading = true;
       try {
@@ -654,6 +652,9 @@ export default {
       }
     },
 
+    // -------------------------
+    // Filters helpers
+    // -------------------------
     resetFilters() {
       this.q = "";
       this.page = 1;
@@ -684,106 +685,60 @@ export default {
       this.fDuplicatesOnly = false;
     },
 
-    removeStudyClass(key) { this.fStudyClasses = this.fStudyClasses.filter(k => k !== key); },
-    removeDay(day) { this.fDays = this.fDays.filter(d => d !== day); },
-    removeClassType(type) { this.fClassTypes = this.fClassTypes.filter(t => t !== type); },
+    removeStudyClass(key) {
+      this.fStudyClasses = this.fStudyClasses.filter(k => k !== key);
+    },
+
+    removeDay(day) {
+      this.fDays = this.fDays.filter(d => d !== day);
+    },
+
+    removeClassType(type) {
+      this.fClassTypes = this.fClassTypes.filter(t => t !== type);
+    },
 
     getStudyClassLabelByKey(key) {
       const found = this.availableStudyClasses.find(sc => sc.key === key);
       return found ? found.label : key;
     },
 
-    // ---------- ✅ DUPLICATES (TOKEN STRICT) ----------
-    normName(v) {
-      return String(v ?? "")
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "") // accents
-          .toLowerCase()
-          .replace(/[’']/g, " ")           // apostrophe -> espace
-          .replace(/-/g, " ")              // tiret -> espace
-          .replace(/[^a-z0-9\s]/g, " ")     // enlève ponctuation
-          .replace(/\s+/g, " ")
-          .trim();
+    // -------------------------
+    // Registrations / StudyClasses helpers
+    // -------------------------
+    isActiveRegistration(registration) {
+      return (
+          registration?.active === true &&
+          registration?.studyClass?.active === true
+      );
     },
 
-    nameTokens(v) {
-      const s = this.normName(v);
-      if (!s) return [];
-      return s.split(" ").filter(Boolean);
-    },
-
-    tokenKey(tokens) {
-      return tokens.slice().sort().join(" ");
-    },
-
-    normEmail(v) {
-      return String(v ?? "").trim().toLowerCase();
-    },
-
-    normPhone(v) {
-      return String(v ?? "")
-          .replace(/[^\d+]/g, "")
-          .trim();
-    },
-
-    duplicateKeysForParent(p) {
-      const keys = new Set();
-
-      const addEmail = (e) => {
-        const v = this.normEmail(e);
-        if (v && v !== "vide") keys.add(`email:${v}`);
-      };
-
-      const addPhone = (t) => {
-        const v = this.normPhone(t);
-        if (v) keys.add(`phone:${v}`);
-      };
-
-      const addPersonName = (lastName, firstName, who) => {
-        const lnTokens = this.nameTokens(lastName);
-        const fnTokens = this.nameTokens(firstName);
-        if (!lnTokens.length || !fnTokens.length) return;
-
-        const ln = this.tokenKey(lnTokens);
-        const fn = this.tokenKey(fnTokens);
-
-        // clé stricte par mots complets (évite ADDAD vs EL HADDAD)
-        keys.add(`${who}:name:${ln}|${fn}`);
-        keys.add(`${who}:name:${fn}|${ln}`); // inversion prénom/nom
-      };
-
-      // Emails: parent + père + mère
-      addEmail(p.emailContact);
-      addEmail(p.fatherEmail);
-      addEmail(p.motherEmail);
-
-      // Phones: parent + père + mère
-      addPhone(p.phoneContact);
-      addPhone(p.fatherPhone);
-      addPhone(p.motherPhone);
-
-      // Noms (strict tokens)
-      addPersonName(p.fatherLastName, p.fatherFirstName, "father");
-      addPersonName(p.motherLastName, p.motherFirstName, "mother");
-
-      return Array.from(keys);
-    },
-
-    // ---------- STUDYCLASS FILTERS ----------
     parentStudyClasses(p) {
       const out = [];
       (p.students || []).forEach(s => {
         (s.registrations || []).forEach(registration => {
-          if (this.isActiveRegistration(registration)) out.push(registration.studyClass);
+          if (this.isActiveRegistration(registration)) {
+            out.push(registration.studyClass);
+          }
         });
       });
       return out;
     },
 
+    // -------------------------
+    // StudyClass key/label + normalisation (pour filtres studyClass)
+    // -------------------------
+    norm(v) {
+      return String(v ?? "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .trim()
+          .toLowerCase();
+    },
+
     studyClassKey(sc) {
       if (!sc) return "";
       if (sc.id != null) return `id:${sc.id}`;
-      return `k:${this.normName(sc.name)}|${this.normName(sc.speciality)}`;
+      return `k:${this.norm(sc.name)}|${this.norm(sc.speciality)}`;
     },
 
     studyClassLabel(sc) {
@@ -792,6 +747,9 @@ export default {
       return `${name}${spec}`.trim();
     },
 
+    // -------------------------
+    // Guess service type (inchangé)
+    // -------------------------
     guessServiceType(s) {
       const lv = String(s.level || "").trim().toUpperCase();
       if (!lv) return "Autre";
@@ -802,6 +760,9 @@ export default {
       return "Autre";
     },
 
+    // -------------------------
+    // Display helpers
+    // -------------------------
     parentDisplayName(p) {
       if (p.fullNameParent) return p.fullNameParent;
       const father = [p.fatherLastName, p.fatherFirstName].filter(Boolean).join(" ");
@@ -834,13 +795,19 @@ export default {
     },
 
     showUrl(id) {
-      try { return this.$routing?.generate("app_parent_entity_show", { id }) || null; }
-      catch { return `/parents/${id}`; }
+      try {
+        return this.$routing?.generate("app_parent_entity_show", { id }) || null;
+      } catch {
+        return `/parents/${id}`;
+      }
     },
 
     editUrl(id) {
-      try { return this.$routing?.generate("app_parent_entity_edit", { id }) || null; }
-      catch { return `/parents/${id}/edit`; }
+      try {
+        return this.$routing?.generate("app_parent_entity_edit", { id }) || null;
+      } catch {
+        return `/parents/${id}/edit`;
+      }
     },
 
     askDelete(p) {
@@ -850,14 +817,21 @@ export default {
       }
     },
 
+    // -------------------------
+    // Copy / Export
+    // -------------------------
     copyEmails() {
+      const normEmail = (e) => String(e || "").trim().toLowerCase();
+
       const emails = this.filteredParents
-          .flatMap(p => [p.fatherEmail, p.motherEmail, p.emailContact])
-          .map(this.normEmail)
-          .filter(e => e && e !== "vide");
+          .flatMap((p) => [p.fatherEmail, p.motherEmail, p.emailContact])
+          .map(normEmail)
+          .filter((e) => e && e !== "vide");
 
       const set = new Set(emails);
-      navigator.clipboard.writeText(Array.from(set).join(", ")).then(() => {
+      const txt = Array.from(set).join(", ");
+
+      navigator.clipboard.writeText(txt).then(() => {
         this.typeAlert = "success";
         this.messageAlert = `${set.size} email(s) copié(s) dans le presse-papier.`;
       });
@@ -869,14 +843,14 @@ export default {
         const parent = this.parentDisplayName(p);
         const emails = p.emailContact || "";
         const phone = p.phoneContact || "";
-        const studentNames = (p.students || []).map(s => `${s.firstName} ${s.lastName}`).join(" | ");
-        const studentLevels = (p.students || []).map(s => s.level || "").join(" | ");
+        const studentNames = (p.students || []).map((s) => `${s.firstName} ${s.lastName}`).join(" | ");
+        const studentLevels = (p.students || []).map((s) => s.level || "").join(" | ");
         const cities = Array.from(new Set((p.students || []).map(s => s.city).filter(Boolean))).join(" | ");
         const services = Array.from(new Set((p.students || []).map(s => this.guessServiceType(s)))).join(" | ");
         return [p.id, parent, emails, phone, `"${studentNames}"`, `"${studentLevels}"`, `"${cities}"`, `"${services}"`];
       });
 
-      const csv = headers.join(";") + "\n" + rows.map(r => r.join(";")).join("\n");
+      const csv = headers.join(";") + "\n" + rows.map((r) => r.join(";")).join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -885,7 +859,105 @@ export default {
       a.click();
       URL.revokeObjectURL(url);
     },
-  },
+
+    // =========================================================
+    // ✅ DOUBLONS : STRICT TOKENS + IGNORE "Vide"
+    // + OPTION (garde-fou) pour réduire faux positifs
+    // =========================================================
+    isBlankLike(v) {
+      const s = String(v ?? "").trim().toLowerCase();
+      return !s || s === "vide" || s === "null";
+    },
+
+    normEmailStrict(v) {
+      const s = String(v ?? "").trim().toLowerCase();
+      if (!s || s === "vide" || s === "null") return "";
+      return s;
+    },
+
+    normPhoneStrict(v) {
+      if (this.isBlankLike(v)) return "";
+      const s = String(v).replace(/[^\d+]/g, "").trim();
+      if (!s || s === "0") return "";
+      return s;
+    },
+
+    normNameStrict(v) {
+      if (this.isBlankLike(v)) return "";
+
+      return String(v ?? "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // accents
+          .toLowerCase()
+          .replace(/[’']/g, " ")           // apostrophes -> espace
+          .replace(/-/g, " ")              // tirets -> espace
+          .replace(/[^a-z0-9\s]/g, " ")    // ponctuation -> espace
+          .replace(/\s+/g, " ")            // espaces multiples
+          .trim();
+    },
+
+    nameTokens(v) {
+      const s = this.normNameStrict(v);
+      if (!s) return [];
+      return s.split(" ").filter(Boolean);
+    },
+
+    tokenKey(tokens) {
+      // "el haddad" == "haddad el"
+      return tokens.slice().sort().join(" ");
+    },
+
+    duplicateKeysForParent(p) {
+      const keys = new Set();
+
+      const addEmail = (e) => {
+        const v = this.normEmailStrict(e);
+        if (v) keys.add(`email:${v}`);
+      };
+
+      const addPhone = (t) => {
+        const v = this.normPhoneStrict(t);
+        if (v) keys.add(`phone:${v}`);
+      };
+
+      const addPersonName = (lastName, firstName, who) => {
+        const lnTokens = this.nameTokens(lastName);
+        const fnTokens = this.nameTokens(firstName);
+
+        // si manque info -> pas de clé
+        if (!lnTokens.length || !fnTokens.length) return;
+
+        const ln = this.tokenKey(lnTokens);
+        const fn = this.tokenKey(fnTokens);
+
+        // ✅ OPTION garde-fou (réduit collisions sur noms/prénoms trop courts)
+        // - si nom très court (ex: "ali") et 1 seul token -> on ignore
+        if (lnTokens.length === 1 && ln.length < 5) return;
+        if (fnTokens.length === 1 && fn.length < 3) return;
+
+        // clé stricte par mots complets => évite ADDAD vs EL HADDAD
+        keys.add(`${who}:name:${ln}|${fn}`);
+        // inversion prénom/nom saisi à l’envers
+        keys.add(`${who}:name:${fn}|${ln}`);
+      };
+
+      // emails père/mère + contact
+      addEmail(p.emailContact);
+      addEmail(p.fatherEmail);
+      addEmail(p.motherEmail);
+
+      // phones père/mère + contact
+      addPhone(p.phoneContact);
+      addPhone(p.fatherPhone);
+      addPhone(p.motherPhone);
+
+      // noms stricts tokens
+      addPersonName(p.fatherLastName, p.fatherFirstName, "father");
+      addPersonName(p.motherLastName, p.motherFirstName, "mother");
+
+      return Array.from(keys);
+    },
+  }
 };
 </script>
 
