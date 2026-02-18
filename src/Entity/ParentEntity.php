@@ -53,9 +53,11 @@ class ParentEntity
     private ?string $familyStatus = null; // Married or Divorced
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private int $amountDueArabic = 0;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Groups(['read_payment', 'read_parent','read_refund'])]
     private int $amountDueSoutien = 0;
 
     #[ORM\OneToMany(targetEntity: Student::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]

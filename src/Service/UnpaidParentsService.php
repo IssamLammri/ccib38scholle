@@ -23,96 +23,84 @@ class UnpaidParentsService
     {
         $parents = [];
 
-        $registrations = $this->registrationRepository->findStudentsActiveInStudyClassBySchoolYear($schoolYear);
+        // On garde cette requête juste pour trouver les familles concernées (ayant au moins 1 inscription active)
+        $registrations = $this->registrationRepository
+            ->findStudentsActiveInStudyClassBySchoolYear($schoolYear);
+
         /** @var StudentClassRegistered $registration */
         foreach ($registrations as $registration) {
-            $student    = $registration->getStudent();
-            $parent     = $student?->getParent();
-            $studyClass = $registration->getStudyClass();
-
-            if (!$parent || !$studyClass) { continue; }
-
-            if ($registration->isActive() === false) { continue; }
-
-            $parentId  = $parent->getId();
-            $studentId = $student->getId();
-
-            if (!isset($parents[$parentId])) {
-                $parents[$parentId] = [
-                    'parentId'                  => $parentId,
-                    'parentName'                => $this->formatParentName($parent),
-                    'email'                     => $this->guessEmail($parent),
-                    'phone'                     => $this->guessPhone($parent),
-
-                    // --- Compteurs Dettes ---
-                    'arabChildrenIds'           => [],
-                    'arabChildrenCount'         => 0,
-                    'soutienRegistrationsCount' => 0,
-                    'dueArabe'                  => 0.0,
-                    'dueSoutien'                => 0.0,
-
-                    // --- Compteurs Paiements (NOUVEAU) ---
-                    'paidArabe'                 => 0.0,
-                    'paidSoutien'               => 0.0,
-
-                    // --- Totaux ---
-                    'totalDue'                  => 0.0,
-                    'totalPaid'                 => 0.0,
-                    'remaining'                 => 0.0,
-                ];
+            if ($registration->isActive() === false) {
+                continue;
             }
 
-            $type = $studyClass->getClassType();
+            $student = $registration->getStudent();
+            $parent  = $student?->getParent();
 
-            if ($type === StudyClass::CLASS_TYPE_SOUTIEN) {
-                $parents[$parentId]['soutienRegistrationsCount'] += $this->getNumberOfMonth($registration->getCreatedAt());
-            }
-            if ($type === StudyClass::CLASS_TYPE_ARABE) {
-                $parents[$parentId]['arabChildrenIds'][$studentId] = true;
-            }
-        }
-
-        foreach ($parents as $parentId => &$data) {
-            // Arabe
-            $countChildrenArabe = \count($data['arabChildrenIds']);
-            $data['arabChildrenCount'] = $countChildrenArabe;
-
-            $data['dueArabe'] = match (true) {
-                $countChildrenArabe === 1 => 240,
-                $countChildrenArabe === 2 => 450,
-                $countChildrenArabe === 3 => 630,
-                $countChildrenArabe === 4 => 780,
-                $countChildrenArabe >= 5  => 200 * $countChildrenArabe,
-                default => 0,
-            };
-
-            // Soutien
-            $data['dueSoutien'] = $data['soutienRegistrationsCount'] * 25;
-
-            // Total
-            $data['totalDue'] = $data['dueArabe'] + $data['dueSoutien'];
-        }
-        unset($data);
-
-
-        $payments = $this->paymentRepository->findAllPayementsForSchoolYear($schoolYear);
-
-        foreach ($payments as $payment) {
-            $parent = $payment->getParent();
-            if (!$parent || !isset($parents[$parent->getId()])) {
+            if (!$parent) {
                 continue;
             }
 
             $parentId = $parent->getId();
-            $amount   = (float) $payment->getAmountPaid();
+            if (!$parentId) {
+                continue;
+            }
 
+            if (!isset($parents[$parentId])) {
+                // ✅ DÛ vient UNIQUEMENT de la DB
+                $dueArabe   = (float) $parent->getAmountDueArabic();
+                $dueSoutien = (float) $parent->getAmountDueSoutien();
 
+                $parents[$parentId] = [
+                    'parentId'   => $parentId,
+                    'parentName' => $this->formatParentName($parent),
+                    'email'      => $this->guessEmail($parent),
+                    'phone'      => $this->guessPhone($parent),
+
+                    // (optionnel) tu peux garder ces champs à 0 si le front les affiche
+                    'arabChildrenCount'         => 0,
+                    'soutienRegistrationsCount' => 0,
+
+                    // ✅ DÛ DB
+                    'dueArabe'   => $dueArabe,
+                    'dueSoutien' => $dueSoutien,
+
+                    // Paiements
+                    'paidArabe'   => 0.0,
+                    'paidSoutien' => 0.0,
+
+                    // Totaux
+                    'totalDue'  => $dueArabe + $dueSoutien,
+                    'totalPaid' => 0.0,
+                    'remaining' => 0.0,
+                ];
+            }
+        }
+
+        // ✅ Paiements : inchangé, mais attention à StudyClass null
+        $payments = $this->paymentRepository->findAllPayementsForSchoolYear($schoolYear);
+
+        foreach ($payments as $payment) {
+            $parent = $payment->getParent();
+            if (!$parent) {
+                continue;
+            }
+
+            $parentId = $parent->getId();
+            if (!$parentId || !isset($parents[$parentId])) {
+                continue;
+            }
+
+            $amount = (float) $payment->getAmountPaid();
             $serviceType = (string) $payment->getServiceType();
 
+            // Sécurise studyClass
+            $paymentStudyClass = $payment->getStudyClass();
+            if ($paymentStudyClass && (string) $paymentStudyClass->getSchoolYear() !== $schoolYear) {
+                continue; // on ignore les paiements hors année
+            }
+
             if (stripos($serviceType, 'soutien') !== false) {
-                if ($payment->getStudyClass()->getSchoolYear() === $schoolYear){
-                    $parents[$parentId]['paidSoutien'] += $amount;
-                }
+                $parents[$parentId]['paidSoutien'] += $amount;
             } else {
                 $parents[$parentId]['paidArabe'] += $amount;
             }
@@ -120,19 +108,24 @@ class UnpaidParentsService
             $parents[$parentId]['totalPaid'] += $amount;
         }
 
+        // ✅ Totaux & reste
         $totalDueAll       = 0.0;
         $totalPaidAll      = 0.0;
         $totalRemainingAll = 0.0;
         $rows              = [];
 
         foreach ($parents as $parentId => $data) {
-            $remaining = $data['totalDue'] - $data['totalPaid'];
+            // Recalcul total dû (au cas où)
+            $data['totalDue'] = (float) $data['dueArabe'] + (float) $data['dueSoutien'];
 
-            if ($remaining <= 0.01) { continue; }
+            $remaining = $data['totalDue'] - (float) $data['totalPaid'];
+
+            // on garde uniquement ceux qui doivent encore
+            if ($remaining <= 0.01) {
+                continue;
+            }
 
             $data['remaining'] = $remaining;
-
-            unset($data['arabChildrenIds']);
 
             $totalDueAll       += $data['totalDue'];
             $totalPaidAll      += $data['totalPaid'];
@@ -141,13 +134,13 @@ class UnpaidParentsService
             $rows[] = $data;
         }
 
-        \usort($rows, static fn (array $a, array $b) => $b['remaining'] <=> $a['remaining']);
+        usort($rows, static fn (array $a, array $b) => $b['remaining'] <=> $a['remaining']);
 
         return [
             'schoolYear' => $schoolYear,
             'parents'    => $rows,
             'totals'     => [
-                'parentsCount'   => \count($rows),
+                'parentsCount'   => count($rows),
                 'totalDue'       => round($totalDueAll, 2),
                 'totalPaid'      => round($totalPaidAll, 2),
                 'totalRemaining' => round($totalRemainingAll, 2),
