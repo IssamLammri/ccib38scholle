@@ -5,6 +5,10 @@ on:
     branches: ["master"]
   workflow_dispatch:
 
+concurrency:
+  group: deploy-vps-master
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,31 +17,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1) Installer PHP + Composer sur le runner
+      # 1) PHP + Composer (utile si ton build front dépend de vendor/ via Symfony)
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
           tools: composer:v2
 
-      # 2) Composer install AVANT yarn build (car ton front référence vendor/)
-      - name: Composer install (build needs vendor)
+      - name: Composer install (for build)
         run: |
           set -e
           composer install --prefer-dist --no-interaction
 
-      # 3) Build front sur GitHub
+      # 2) Node + build front
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          # setup-node ne gère que npm cache nativement.
+          # On garde npm cache, et si tu es en yarn, ça aide déjà.
           cache: "npm"
 
-      - name: Install & Build (Yarn or npm)
+      - name: Install deps & Build frontend
+        env:
+          NODE_ENV: production
         run: |
-          set -e
+          set -euo pipefail
+
           if [ -f yarn.lock ]; then
-            npm install -g yarn
+            npm i -g yarn
             yarn install --frozen-lockfile
             yarn build
           else
@@ -49,7 +57,10 @@ jobs:
             npm run build
           fi
 
-      # 4) SSH
+          echo "✅ Build terminé. Contenu de public/build :"
+          ls -la public/build || true
+
+      # 3) SSH
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -59,17 +70,19 @@ jobs:
         run: |
           set -e
           mkdir -p ~/.ssh
-          ssh-keyscan -H -p 22 51.75.17.68 > ~/.ssh/known_hosts
+          ssh-keyscan -H -p 22 51.75.17.68 >> ~/.ssh/known_hosts
 
       - name: SSH connectivity test
         run: |
           set -e
-          ssh -p 22 ubuntu@51.75.17.68 "whoami && hostname"
+          ssh -p 22 ubuntu@51.75.17.68 "whoami && hostname && docker --version && docker compose version"
 
-      # 5) Rsync vers VPS (on envoie public/build généré)
-      - name: Rsync project to VPS
+      # 4) Rsync vers VPS
+      # IMPORTANT: on NE DOIT PAS exclure public/build sinon tes modifs VueJS n'arrivent jamais.
+      - name: Rsync project to VPS (including built assets)
         run: |
-          set -e
+          set -euo pipefail
+
           rsync -az --delete \
             --no-perms --no-owner --no-group --omit-dir-times \
             -e "ssh -p 22" \
@@ -78,41 +91,48 @@ jobs:
             --exclude="node_modules" \
             --exclude="vendor" \
             --exclude="var" \
-            --exclude="public/build" \
-            --exclude="public/bundles" \
             --exclude="public/uploads" \
             --exclude=".env" \
             --exclude=".env.local" \
             ./ ubuntu@51.75.17.68:~/projets/ccib38scholle/
 
-      # 6) Déploiement côté VPS (composer prod, migrations, cache)
-      - name: Deploy (docker compose)
+      # 5) Déploiement côté VPS
+      - name: Deploy (docker compose) on VPS
         run: |
           set -e
           ssh -p 22 ubuntu@51.75.17.68 "bash -s" <<'EOSH'
           set -euo pipefail
+
           cd ~/projets/ccib38scholle
 
-          docker compose up -d --build
-
-          # runtime dirs
+          # Optionnel: si tu as parfois des fichiers résiduels
           mkdir -p var/cache/prod var/log public/uploads
 
-          # permissions runtime
+          # Build/restart containers
+          docker compose up -d --build
+
+          # Permissions runtime (selon ton serveur)
           if sudo -n true 2>/dev/null; then
-            sudo chown -R www-data:www-data var public/uploads
-            sudo chmod -R ug+rwX var public/uploads
+            sudo chown -R www-data:www-data var public/uploads || true
+            sudo chmod -R ug+rwX var public/uploads || true
           else
             chmod -R 777 var public/uploads || true
           fi
 
-          # composer prod (sans scripts pour éviter soucis assets:install)
+          # Installer dépendances prod DANS le container
           docker compose exec -T --user www-data app composer install \
             --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
+          # DB + cache
           docker compose exec -T --user www-data app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
           docker compose exec -T --user www-data app php bin/console cache:clear --env=prod
           docker compose exec -T --user www-data app php bin/console cache:warmup --env=prod
+
+          # (Optionnel) petit check: afficher un hash des assets pour confirmer que ça a changé
+          if [ -d public/build ]; then
+            echo "✅ Assets présents sur VPS:"
+            ls -la public/build | head -n 50
+          fi
 
           docker image prune -f >/dev/null 2>&1 || true
           EOSH
