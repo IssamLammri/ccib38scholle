@@ -3,6 +3,7 @@
 {% block title %}Edit Parent{% endblock %}
 
 {% block body %}
+{#    <list-parents></list-parents>#}
     <div class="container mt-5">
         <!-- Bouton back to list en haut à gauche -->
         <div class="mb-3">
@@ -96,7 +97,7 @@
                     </tbody>
                 </table>
             </div>
-            {{ form_row(form._token) }} {# This explicitly includes the CSRF token #}
+            {{ form_row(form._token) }}  This explicitly includes the CSRF token
 
             <!-- Bouton de mise à jour -->
             <div class="d-flex justify-content-between mt-4">
