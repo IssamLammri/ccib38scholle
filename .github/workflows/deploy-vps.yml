@@ -2,7 +2,7 @@ name: Deploy to VPS (Docker)
 
 on:
   push:
-    branches: ["master"]   # ou "main"
+    branches: ["master"]
   workflow_dispatch:
 
 jobs:
@@ -13,15 +13,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Build front sur GitHub (comme ton ancien pipeline)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install & Build (Yarn or npm)
+        run: |
+          set -e
+          if [ -f yarn.lock ]; then
+            npm install -g yarn
+            yarn install --frozen-lockfile
+            yarn build
+          else
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+            npm run build
+          fi
+
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
-
-      - name: Verify SSH key loaded
-        run: |
-          set -e
-          ssh-add -l
 
       - name: Add VPS to known_hosts
         run: |
@@ -32,8 +50,9 @@ jobs:
       - name: SSH connectivity test
         run: |
           set -e
-          ssh -p 22 ubuntu@51.75.17.68 "whoami && hostname && pwd"
+          ssh -p 22 ubuntu@51.75.17.68 "whoami && hostname"
 
+      # RSYNC : on envoie public/build maintenant (car build fait sur GitHub)
       - name: Rsync project to VPS
         run: |
           set -e
@@ -43,8 +62,6 @@ jobs:
             --exclude="node_modules" \
             --exclude="vendor" \
             --exclude="var" \
-            --exclude="public/build" \
-            --exclude="public/bundles" \
             --exclude="public/uploads" \
             --exclude=".env" \
             --exclude=".env.local" \
@@ -55,49 +72,39 @@ jobs:
           set -e
           ssh -p 22 ubuntu@51.75.17.68 "bash -s" <<'EOSH'
           set -euo pipefail
-
           cd ~/projets/ccib38scholle
 
-          # Build + up
-          docker compose build
-          docker compose up -d
+          docker compose up -d --build
 
-          # Prépare les dossiers côté host (volume monté)
-          mkdir -p var/cache/prod var/log vendor node_modules public/build public/bundles public/uploads
+          # Prépare dossiers runtime (cache/log/uploads)
+          mkdir -p var/cache/prod var/log public/uploads
 
-          # Fix permissions Symfony (var)
+          # Fix permissions runtime (var + uploads) -> important
           if sudo -n true 2>/dev/null; then
-            sudo chown -R www-data:www-data var
-            sudo chmod -R ug+rwX var
+            sudo chown -R www-data:www-data var public/uploads
+            sudo chmod -R ug+rwX var public/uploads
           else
-            chmod -R 777 var || true
+            chmod -R 777 var public/uploads || true
           fi
 
-          # Fix permissions pour assets:install (public/bundles)
-          if sudo -n true 2>/dev/null; then
-            sudo mkdir -p public/bundles
-            sudo chown -R www-data:www-data public/bundles
-            sudo chmod -R ug+rwX public/bundles
-          else
-            mkdir -p public/bundles
-            chmod -R 777 public/bundles || true
-          fi
+          # Composer sans scripts (on évite assets:install auto qui casse sur permissions)
+          docker compose exec -T --user www-data app composer install \
+            --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
-          # Backend deps (auto-scripts inclus)
-          docker compose exec -T --user www-data app composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
-
-          # Front build
-          if [ -f yarn.lock ]; then
-            docker compose exec -T --user www-data app bash -lc "yarn install --frozen-lockfile && yarn build"
-          else
-            docker compose exec -T --user www-data app bash -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && npm run build"
-          fi
-
-          # DB + cache
+          # Migrations + cache
           docker compose exec -T --user www-data app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
           docker compose exec -T --user www-data app php bin/console cache:clear --env=prod
           docker compose exec -T --user www-data app php bin/console cache:warmup --env=prod
 
-          # Cleanup images
+          # Optionnel : si tu utilises AssetMapper (symfony/asset-mapper) et pas encore stable
+          # docker compose exec -T --user www-data app php bin/console asset-map:compile --env=prod || true
+
+          # Optionnel : si tu as besoin des assets bundles en public/bundles
+          # (si tu n'en as pas besoin, tu peux supprimer ces 2 lignes)
+          docker compose exec -T --user www-data app php bin/console assets:install public --env=prod
+
+          # Optionnel : si tu utilises fosjsrouting dump en prod
+          # docker compose exec -T --user www-data app php bin/console fos:js-routing:dump --format=json --target=public/js/fos_js_routes.json --env=prod || true
+
           docker image prune -f >/dev/null 2>&1 || true
           EOSH
