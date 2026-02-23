@@ -57,20 +57,38 @@ jobs:
 
           cd ~/projets/ccib38scholle
 
+          # Build + up
           docker compose build
           docker compose up -d
 
+          # Prépare les dossiers nécessaires côté host (volume monté)
+          mkdir -p var/cache/prod var/log vendor node_modules public/build public/bundles
+
+          # Fix permissions pour éviter les "mkdir(): Permission denied"
+          # (si sudo sans mot de passe est dispo)
+          if sudo -n true 2>/dev/null; then
+            sudo chown -R www-data:www-data var
+            sudo chmod -R ug+rwX var
+          else
+            # fallback moins propre mais évite de casser le site si sudo n'est pas possible
+            chmod -R 777 var || true
+          fi
+
+          # Backend deps
           docker compose exec -T --user www-data app composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
+          # Front build
           if [ -f yarn.lock ]; then
             docker compose exec -T --user www-data app bash -lc "yarn install --frozen-lockfile && yarn build"
           else
-            docker compose exec -T app bash -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && npm run build"
+            docker compose exec -T --user www-data app bash -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && npm run build"
           fi
 
+          # DB + cache
           docker compose exec -T --user www-data app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
           docker compose exec -T --user www-data app php bin/console cache:clear --env=prod
           docker compose exec -T --user www-data app php bin/console cache:warmup --env=prod
 
+          # Cleanup images
           docker image prune -f >/dev/null 2>&1 || true
           EOSH
