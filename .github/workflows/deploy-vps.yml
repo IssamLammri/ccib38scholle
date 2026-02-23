@@ -44,6 +44,7 @@ jobs:
             --exclude="vendor" \
             --exclude="var" \
             --exclude="public/build" \
+            --exclude="public/bundles" \
             --exclude=".env" \
             --exclude=".env.local" \
             ./ ubuntu@51.75.17.68:~/projets/ccib38scholle/

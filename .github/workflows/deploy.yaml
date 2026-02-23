@@ -10,7 +10,7 @@
 #    runs-on: [self-hosted, linux, deploy]    # labels de ton runner
 #
 #    steps:
-#      - name: Checkout tets
+#      - name: Checkout
 #        uses: actions/checkout@v4
 #
 #      # On utilise PHP/Composer déjà installés sur le runner
