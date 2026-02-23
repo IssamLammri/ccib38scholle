@@ -18,16 +18,21 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: SSH connectivity test
+      - name: Verify SSH key loaded
         run: |
           set -e
-          ssh -p 22 ubuntu@51.75.17.68 "whoami && hostname && pwd"
+          ssh-add -l
 
       - name: Add VPS to known_hosts
         run: |
           set -e
           mkdir -p ~/.ssh
-          ssh-keyscan -p 22 51.75.17.68 >> ~/.ssh/known_hosts
+          ssh-keyscan -H -p 22 51.75.17.68 > ~/.ssh/known_hosts
+
+      - name: SSH connectivity test
+        run: |
+          set -e
+          ssh -p 22 ubuntu@51.75.17.68 "whoami && hostname && pwd"
 
       - name: Rsync project to VPS
         run: |
@@ -50,25 +55,20 @@ jobs:
 
           cd ~/projets/ccib38scholle
 
-          # Pull/build & up
           docker compose build
           docker compose up -d
 
-          # Installe deps backend dans le container PHP
           docker compose exec -T app composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
-          # Build front dans le container (si yarn.lock)
           if [ -f yarn.lock ]; then
             docker compose exec -T app bash -lc "yarn install --frozen-lockfile && yarn build"
           else
             docker compose exec -T app bash -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && npm run build"
           fi
 
-          # Migrations + cache
           docker compose exec -T app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
           docker compose exec -T app php bin/console cache:clear --env=prod
           docker compose exec -T app php bin/console cache:warmup --env=prod
 
-          # Optionnel: nettoyer images inutiles
           docker image prune -f >/dev/null 2>&1 || true
           EOSH
