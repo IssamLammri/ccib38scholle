@@ -42,7 +42,8 @@ jobs:
             --exclude=".github" \
             --exclude="node_modules" \
             --exclude="vendor" \
-            --exclude="var/cache/*" \
+            --exclude="var/**" \
+            --exclude="public/build/**" \
             --exclude=".env" \
             --exclude=".env.local" \
             ./ ubuntu@51.75.17.68:~/projets/ccib38scholle/
