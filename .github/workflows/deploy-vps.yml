@@ -60,17 +60,17 @@ jobs:
           docker compose build
           docker compose up -d
 
-          docker compose exec -T app composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+          docker compose exec -T --user www-data app composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
           if [ -f yarn.lock ]; then
-            docker compose exec -T app bash -lc "yarn install --frozen-lockfile && yarn build"
+            docker compose exec -T --user www-data app bash -lc "yarn install --frozen-lockfile && yarn build"
           else
             docker compose exec -T app bash -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && npm run build"
           fi
 
-          docker compose exec -T app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
-          docker compose exec -T app php bin/console cache:clear --env=prod
-          docker compose exec -T app php bin/console cache:warmup --env=prod
+          docker compose exec -T --user www-data app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+          docker compose exec -T --user www-data app php bin/console cache:clear --env=prod
+          docker compose exec -T --user www-data app php bin/console cache:warmup --env=prod
 
           docker image prune -f >/dev/null 2>&1 || true
           EOSH
