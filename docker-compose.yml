@@ -57,7 +57,7 @@ services:
       PMA_HOST: database
       MYSQL_ROOT_PASSWORD: issam
     ports:
-      - "8082:80"
+      - "127.0.0.1:8082:80"
     depends_on:
       - database
     networks:
