@@ -11,7 +11,7 @@
     <header class="page-header">
       <div class="title-wrap">
         <h1 class="title">
-          <span class="icon">👨‍👩‍👧‍👦</span>
+          <span class="icon">👥</span>
           Parents
         </h1>
         <p class="subtitle">Gestion des contacts et des élèves rattachés</p>
