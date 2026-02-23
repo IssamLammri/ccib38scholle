@@ -74,6 +74,7 @@ jobs:
             --exclude=".git" \
             --exclude=".github" \
             --exclude="node_modules" \
+            --exclude="vendor" \
             --exclude="var" \
             --exclude="public/uploads" \
             --exclude=".env" \
