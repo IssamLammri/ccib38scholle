@@ -14,7 +14,7 @@
           <span class="icon">👥</span>
           Parents
         </h1>
-        <p class="subtitle">Gestion des contacts et des élèves rattachés</p>
+        <p class="subtitle">Gestion des parents et des élèves rattachés</p>
       </div>
 
       <div class="stats">
