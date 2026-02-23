@@ -45,6 +45,7 @@ jobs:
             --exclude="var" \
             --exclude="public/build" \
             --exclude="public/bundles" \
+            --exclude="public/uploads" \
             --exclude=".env" \
             --exclude=".env.local" \
             ./ ubuntu@51.75.17.68:~/projets/ccib38scholle/
@@ -61,20 +62,28 @@ jobs:
           docker compose build
           docker compose up -d
 
-          # Prépare les dossiers nécessaires côté host (volume monté)
-          mkdir -p var/cache/prod var/log vendor node_modules public/build public/bundles
+          # Prépare les dossiers côté host (volume monté)
+          mkdir -p var/cache/prod var/log vendor node_modules public/build public/bundles public/uploads
 
-          # Fix permissions pour éviter les "mkdir(): Permission denied"
-          # (si sudo sans mot de passe est dispo)
+          # Fix permissions Symfony (var)
           if sudo -n true 2>/dev/null; then
             sudo chown -R www-data:www-data var
             sudo chmod -R ug+rwX var
           else
-            # fallback moins propre mais évite de casser le site si sudo n'est pas possible
             chmod -R 777 var || true
           fi
 
-          # Backend deps
+          # Fix permissions pour assets:install (public/bundles)
+          if sudo -n true 2>/dev/null; then
+            sudo mkdir -p public/bundles
+            sudo chown -R www-data:www-data public/bundles
+            sudo chmod -R ug+rwX public/bundles
+          else
+            mkdir -p public/bundles
+            chmod -R 777 public/bundles || true
+          fi
+
+          # Backend deps (auto-scripts inclus)
           docker compose exec -T --user www-data app composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
           # Front build
