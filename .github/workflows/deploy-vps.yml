@@ -17,23 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          tools: composer:v2
-
-      - name: Composer install (for build)
-        run: |
-          set -euo pipefail
-          composer install --prefer-dist --no-interaction
-
+      # Node
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
+      # Yarn via Corepack (si yarn.lock existe)
       - name: Enable Corepack (Yarn)
         if: hashFiles('yarn.lock') != ''
         run: |
@@ -63,6 +54,7 @@ jobs:
           echo "✅ Build terminé :"
           ls -la public/build || true
 
+      # SSH
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -102,20 +94,34 @@ jobs:
           set -euo pipefail
           cd ~/projets/ccib38scholle
 
-          # .env for Docker Compose (UID/GID)
+          # (Optionnel) éviter les surprises: montre les fichiers compose présents
+          ls -la | grep -E "docker-compose\.yml|compose\.override\.yaml" || true
+
+          # .env pour Docker Compose (UID/GID) - nécessaire pour user: "${UID}:${GID}"
           if [ ! -f .env ]; then
             printf "UID=%s\nGID=%s\n" "$(id -u)" "$(id -g)" > .env
           fi
 
-          # Ensure uploads dir exists on host (even if excluded from rsync)
+          # uploads sur l'hôte (tu l'exclus du rsync)
           mkdir -p public/uploads
 
-          # Start prod stack WITHOUT override file
+          # Démarre la stack PROD SANS override
           docker compose -f docker-compose.yml up -d --build
 
-          # Install deps in vendor volume
+          # Vérif: vendor et var doivent être des volumes et être writables
+          docker compose -f docker-compose.yml exec -T app sh -lc '
+            set -e
+            echo "== id =="; id
+            echo "== mounts (vendor/var) =="; mount | grep -E "/var/www/html/(vendor|var)" || true
+            echo "== perms =="; ls -ld /var/www/html/vendor /var/www/html/var
+            touch /var/www/html/vendor/.write_test
+            touch /var/www/html/var/.write_test
+            echo "OK: vendor/var writable"
+          '
+
+          # Install deps PHP en prod (dans vendor volume)
           docker compose -f docker-compose.yml exec -T app composer install \
-            --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
+            --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
           # Migrations + cache
           docker compose -f docker-compose.yml exec -T app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
