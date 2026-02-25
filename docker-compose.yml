@@ -9,6 +9,8 @@ services:
     volumes:
       - .:/var/www/html
       - var_data:/var/www/html/var
+      - vendor_data:/var/www/html/vendor
+      - uploads_data:/var/www/html/public/uploads
     networks:
       - schollccib_network
     depends_on:
@@ -16,6 +18,7 @@ services:
     environment:
       DATABASE_URL: mysql://root:issam@database:3306/schollccib
       XDEBUG_MODE: "off"
+      APP_ENV: prod
     ports:
       - "9081:9000"
 
@@ -29,6 +32,8 @@ services:
     volumes:
       - .:/var/www/html
       - var_data:/var/www/html/var
+      - vendor_data:/var/www/html/vendor
+      - uploads_data:/var/www/html/public/uploads
       - ./docker/web/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - schollccib_network
@@ -66,6 +71,8 @@ services:
 volumes:
   db_data:
   var_data:
+  vendor_data:
+  uploads_data:
 
 networks:
   schollccib_network:
