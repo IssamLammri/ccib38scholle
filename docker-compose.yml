@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   app:
+    user: "${UID}:${GID}"
     build:
       context: .
       dockerfile: docker/php/Dockerfile
@@ -56,26 +57,11 @@ services:
       PMA_HOST: database
       MYSQL_ROOT_PASSWORD: issam
     ports:
-      - "8082:80"
+      - "127.0.0.1:8082:80"
     depends_on:
       - database
     networks:
       - schollccib_network
-
-  blackfire:
-    image: blackfire/blackfire:2
-    container_name: schollccib_blackfire
-    environment:
-      # Exposes BLACKFIRE_SERVER_* environment variables from the host:
-      BLACKFIRE_SERVER_ID: 1c93b0f4-9340-4e30-9f09-649dbd0b9b0d
-      BLACKFIRE_SERVER_TOKEN: 08ea583969e1d1c8ef8413ced0e42bb3746da6a85a33c70298c5d1b010b371e6
-
-      # Exposes BLACKFIRE_CLIENT_* environment variables
-      # allowing the client to communicate with Blackfire's API:
-      BLACKFIRE_CLIENT_ID: f5b72fc6-959f-4482-8404-16cbe7bb3aea
-      BLACKFIRE_CLIENT_TOKEN: e194a80e9e464059bd465b286a50d3694dcd7b2450d180c1991cc26312d06574
-    networks:
-        - schollccib_network
 
 volumes:
   db_data:
