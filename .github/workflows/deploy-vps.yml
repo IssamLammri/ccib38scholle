@@ -17,6 +17,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # PHP + Composer (nécessaire pour le build Encore qui référence vendor/)
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+
+      - name: Composer install (needed for Encore build)
+        run: |
+          set -euo pipefail
+          composer install --prefer-dist --no-interaction
+
       # Node
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -97,7 +109,7 @@ jobs:
           # (Optionnel) éviter les surprises: montre les fichiers compose présents
           ls -la | grep -E "docker-compose\.yml|compose\.override\.yaml" || true
 
-          # .env pour Docker Compose (UID/GID) - nécessaire pour user: "${UID}:${GID}"
+          # .env pour Docker Compose (UID/GID)
           if [ ! -f .env ]; then
             printf "UID=%s\nGID=%s\n" "$(id -u)" "$(id -g)" > .env
           fi
