@@ -99,29 +99,27 @@ jobs:
           set -e
           cd ~/projets/ccib38scholle
 
-          echo "Restart containers..."
           docker compose down --remove-orphans
           docker compose up -d --build
 
-          echo "Composer install (prod)..."
-          docker compose exec -T app composer install \
-            --no-dev --prefer-dist --optimize-autoloader --no-interaction
-
-          echo "Fix permissions (IMPORTANT)..."
+          # ✅ FIX DROITS AVANT TOUT (important pour asset_mapper)
           docker compose exec -T app sh -lc "
-            mkdir -p var/cache var/log public/uploads
+            set -e
+            mkdir -p var/cache/prod var/log public/uploads
             chown -R www-data:www-data var public/uploads
             chmod -R ug+rwX var public/uploads
           "
 
-          echo "Run migrations..."
+          # install deps
+          docker compose exec -T app composer install \
+            --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+          # migrations
           docker compose exec -T app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
 
-          echo "Clear & warmup cache..."
+          # cache
           docker compose exec -T app php bin/console cache:clear --env=prod
           docker compose exec -T app php bin/console cache:warmup --env=prod
-
-          echo "Deployment finished successfully"
 
           docker image prune -f >/dev/null 2>&1 || true
           EOSH
