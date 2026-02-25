@@ -1,0 +1,145 @@
+name: Deploy to VPS (Docker)
+
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vps-master
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # PHP + Composer
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+
+      - name: Composer install (for build)
+        run: |
+          set -euo pipefail
+          composer install --prefer-dist --no-interaction
+
+      # Node
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # Yarn via Corepack (recommandé avec Node 20)
+      - name: Enable Corepack (Yarn)
+        if: hashFiles('yarn.lock') != ''
+        run: |
+          set -euo pipefail
+          corepack enable
+          # optionnel: force yarn classic si ton projet est en Yarn 1
+          corepack prepare yarn@1.22.22 --activate
+          yarn -v
+
+      - name: Install deps & Build frontend
+        run: |
+          set -euo pipefail
+
+          if [ -f yarn.lock ]; then
+            corepack enable
+            corepack prepare yarn@1.22.22 --activate
+            yarn -v
+
+            # IMPORTANT: ne pas forcer NODE_ENV=production ici
+            yarn install --frozen-lockfile --non-interactive
+
+            echo "🔎 encore binary check:"
+            ls -la node_modules/.bin | grep -E 'encore|webpack' || true
+
+            # lance encore via yarn (plus robuste)
+            yarn encore production
+
+          else
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+
+            # lance encore via npx (plus robuste)
+            npx encore production
+          fi
+
+          echo "✅ Build terminé :"
+          ls -la public/build || true
+
+      # SSH
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Add VPS to known_hosts
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H -p 22 51.75.17.68 >> ~/.ssh/known_hosts
+
+      - name: SSH connectivity test
+        run: |
+          set -euo pipefail
+          ssh -p 22 ubuntu@51.75.17.68 "whoami && hostname && docker --version && docker compose version"
+
+      # IMPORTANT: on n'exclut PAS public/build (sinon ton front ne se met pas à jour)
+      - name: Rsync project to VPS (including built assets)
+        run: |
+          set -euo pipefail
+          rsync -az --delete \
+            --no-perms --no-owner --no-group --omit-dir-times \
+            -e "ssh -p 22" \
+            --exclude=".git" \
+            --exclude=".github" \
+            --exclude="node_modules" \
+            --exclude="vendor" \
+            --exclude="var" \
+            --exclude="public/uploads" \
+            --exclude=".env" \
+            --exclude=".env.local" \
+            ./ ubuntu@51.75.17.68:~/projets/ccib38scholle/
+
+      - name: Deploy (docker compose) on VPS
+        run: |
+          set -e
+          ssh -p 22 ubuntu@51.75.17.68 "bash -s" <<'EOSH'
+          set -euo pipefail
+
+          cd ~/projets/ccib38scholle
+
+          mkdir -p var/cache/prod var/log public/uploads
+
+          docker compose up -d --build
+
+          if sudo -n true 2>/dev/null; then
+            sudo chown -R www-data:www-data var public/uploads || true
+            sudo chmod -R ug+rwX var public/uploads || true
+          else
+            chmod -R 777 var public/uploads || true
+          fi
+
+          docker compose exec -T --user www-data app composer install \
+            --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
+
+          docker compose exec -T --user www-data app php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+          docker compose exec -T --user www-data app php bin/console cache:clear --env=prod
+          docker compose exec -T --user www-data app php bin/console cache:warmup --env=prod
+
+          echo "✅ Assets sur VPS:"
+          ls -la public/build | head -n 100 || true
+
+          docker image prune -f >/dev/null 2>&1 || true
+          EOSH
