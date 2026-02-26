@@ -122,6 +122,8 @@
               <option value="">-- Choisir un type --</option>
               <option value="Arabe">Arabe</option>
               <option value="Soutien scolaire">Soutien scolaire</option>
+              <option value="Soutien scolaire">Atelier</option>
+              <option value="Soutien scolaire">Compétition</option>
               <option value="Autre">Autre</option>
             </select>
           </div>
