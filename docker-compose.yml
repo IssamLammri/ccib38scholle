@@ -13,8 +13,8 @@ services:
       - database
     environment:
       DATABASE_URL: mysql://root:issam@database:3306/schollccib
-      APP_ENV: prod
       XDEBUG_MODE: "off"
+
     ports:
       - "9081:9000"
 

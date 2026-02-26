@@ -30,6 +30,7 @@ class StudyClassService
      */
     public function updateFromArray(StudyClass $studyClass, array $data): ?array
     {
+        dump($data);
         if (isset($data['name'])) {
             $studyClass->setName((string) $data['name']);
         }

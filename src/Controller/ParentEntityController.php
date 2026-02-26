@@ -74,21 +74,28 @@ class ParentEntityController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_parent_entity_edit', options: ['expose' => true], methods: ['GET', 'POST'])]
-    public function edit(Request $request, ParentEntity $parentEntity, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(ParentEntityType::class, $parentEntity);
-        $form->handleRequest($request);
+    #[Route('/{id}/edit', name: 'app_parent_entity_edit', options: ['expose' => true], methods: ['GET'])]
+    public function edit(
+        ParentEntity $parentEntity,
+        SerializerInterface $serializer
+    ): Response {
+        $students = $parentEntity->getStudents();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+        $parentJson = json_decode($serializer->serialize($parentEntity, 'json', [
+            'groups' => ['read_parent'],
+            'enable_max_depth' => true,
+            'circular_reference_handler' => fn($o) => method_exists($o, 'getId') ? $o->getId() : spl_object_id($o),
+        ]), true);
 
-            return $this->redirectToRoute('app_parent_entity_show', ['id' => $parentEntity->getId()], Response::HTTP_SEE_OTHER);
-        }
+        $studentsJson = json_decode($serializer->serialize($students, 'json', [
+            'groups' => ['read_parent'],
+            'enable_max_depth' => true,
+            'circular_reference_handler' => fn($o) => method_exists($o, 'getId') ? $o->getId() : spl_object_id($o),
+        ]), true);
 
         return $this->render('parent_entity/edit.html.twig', [
-            'parent_entity' => $parentEntity,
-            'form' => $form,
+            'parent_entity' => $parentJson,
+            'students' => $studentsJson,
         ]);
     }
 
@@ -101,5 +108,42 @@ class ParentEntityController extends AbstractController
         }
 
         return $this->redirectToRoute('app_parent_entity_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/api', name: 'api_parent_update', options: ['expose' => true], methods: ['PATCH'])]
+    public function apiUpdate(
+        Request $request,
+        ParentEntity $parentEntity,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $csrf = $request->headers->get('X-CSRF-TOKEN', '');
+        if (!$this->isCsrfTokenValid('edit_parent_'.$parentEntity->getId(), $csrf)) {
+            return $this->apiResponse(['message' => 'CSRF invalide'], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        // Mapping simple (à toi d’ajouter validation si besoin)
+        $parentEntity->setFatherLastName($data['fatherLastName'] ?? 'Vide');
+        $parentEntity->setFatherFirstName($data['fatherFirstName'] ?? 'Vide');
+        $parentEntity->setFatherEmail($data['fatherEmail'] ?? 'Vide');
+        $parentEntity->setFatherPhone($data['fatherPhone'] ?? 'Vide');
+
+        $parentEntity->setMotherLastName($data['motherLastName'] ?? 'Vide');
+        $parentEntity->setMotherFirstName($data['motherFirstName'] ?? 'Vide');
+        $parentEntity->setMotherEmail($data['motherEmail'] ?? 'Vide');
+        $parentEntity->setMotherPhone($data['motherPhone'] ?? 'Vide');
+
+        $parentEntity->setFamilyStatus($data['familyStatus'] ?? '');
+
+        // si tu veux exposer ces champs au front
+        $parentEntity->setAmountDueArabic((int)($data['amountDueArabic'] ?? 0));
+        $parentEntity->setAmountDueSoutien((int)($data['amountDueSoutien'] ?? 0));
+
+        $em->flush();
+
+        return $this->apiResponse([
+            'text' => 'Parent mis à jour avec succès.',
+        ], Response::HTTP_OK);
     }
 }

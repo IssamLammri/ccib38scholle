@@ -60,13 +60,13 @@
             <!-- Sinon : input number -->
             <input
                 v-else
-                type="number"
+                type="text"
                 id="level"
                 class="form-control"
                 v-model.number="form.level"
                 :disabled="!canEditClass"
                 required
-                placeholder="Saisir un niveau (numérique)"
+                placeholder="Saisir un niveau"
             />
           </div>
         </div>
@@ -98,8 +98,8 @@
               <option value="">-- Choisir un type --</option>
               <option value="Arabe">Arabe</option>
               <option value="Soutien scolaire">Soutien scolaire</option>
-              <option value="Soutien scolaire">Atelier</option>
-              <option value="Soutien scolaire">Compétition</option>
+              <option value="Atelier">Atelier</option>
+              <option value="Competition">Compétition</option>
               <option value="Autre">Autre</option>
             </select>
           </div>
@@ -440,7 +440,7 @@ export default {
         // Envoi des heures en ISO (choix "Option 2")
         const payload = {
           name: this.form.name,
-          level: (this.isArabic || this.isSupport) ? this.form.level : Number(this.form.level),
+          level: (this.isArabic || this.isSupport) ? this.form.level : (this.form.level),
           speciality: this.form.speciality,
           classType: this.form.classType,
           day: this.form.day,
