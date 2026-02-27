@@ -56,6 +56,15 @@ class ParentEntity
     #[Groups(['read_payment', 'read_parent','read_refund'])]
     private int $amountDueArabic = 0;
 
+    #[ORM\OneToMany(
+        targetEntity: ParentAmountDueHistory::class,
+        mappedBy: 'parent',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    #[Groups(['read_payment', 'read_parent'])]
+    private Collection $amountDueHistories;
+
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Groups(['read_payment', 'read_parent','read_refund'])]
     private int $amountDueSoutien = 0;
@@ -75,6 +84,7 @@ class ParentEntity
     {
         $this->students = new ArrayCollection();
         $this->invoices = new ArrayCollection();
+        $this->amountDueHistories = new ArrayCollection();
     }
 
 
@@ -313,4 +323,18 @@ class ParentEntity
 
     public function getAmountDueSoutien(): int { return $this->amountDueSoutien; }
     public function setAmountDueSoutien(int $v): self { $this->amountDueSoutien = max(0, $v); return $this; }
+
+    public function getAmountDueHistories(): Collection
+    {
+        return $this->amountDueHistories;
+    }
+
+    public function addAmountDueHistory(ParentAmountDueHistory $h): self
+    {
+        if (!$this->amountDueHistories->contains($h)) {
+            $this->amountDueHistories[] = $h;
+            $h->setParent($this);
+        }
+        return $this;
+    }
 }

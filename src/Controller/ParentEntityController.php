@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ParentAmountDueHistory;
 use App\Entity\ParentEntity;
 use App\Form\ParentEntityType;
 use App\Model\ApiResponseTrait;
@@ -121,9 +122,14 @@ class ParentEntityController extends AbstractController
             return $this->apiResponse(['message' => 'CSRF invalide'], Response::HTTP_FORBIDDEN);
         }
 
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return $this->apiResponse(['message' => 'JSON invalide'], Response::HTTP_BAD_REQUEST);
+        }
 
-        // Mapping simple (à toi d’ajouter validation si besoin)
+        // --------------------
+        // Mapping standard
+        // --------------------
         $parentEntity->setFatherLastName($data['fatherLastName'] ?? 'Vide');
         $parentEntity->setFatherFirstName($data['fatherFirstName'] ?? 'Vide');
         $parentEntity->setFatherEmail($data['fatherEmail'] ?? 'Vide');
@@ -136,9 +142,68 @@ class ParentEntityController extends AbstractController
 
         $parentEntity->setFamilyStatus($data['familyStatus'] ?? '');
 
-        // si tu veux exposer ces champs au front
-        $parentEntity->setAmountDueArabic((int)($data['amountDueArabic'] ?? 0));
-        $parentEntity->setAmountDueSoutien((int)($data['amountDueSoutien'] ?? 0));
+        // --------------------
+        // Sécuriser la modif des montants : uniquement si la clé est envoyée
+        // + historique si changement
+        // --------------------
+
+        $wantsToChangeAmounts =
+            array_key_exists('amountDueArabic', $data) ||
+            array_key_exists('amountDueSoutien', $data);
+
+        // amountDueArabic
+        if (array_key_exists('amountDueArabic', $data)) {
+            $old = $parentEntity->getAmountDueArabic();
+            $new = max(0, (int) $data['amountDueArabic']);
+
+            if ($old !== $new) {
+                $comment = trim((string)($data['amountDueArabicComment'] ?? ''));
+                if ($comment === '') {
+                    return $this->apiResponse([
+                        'message' => "Commentaire obligatoire pour modifier le montant dû (Arabe).",
+                    ], Response::HTTP_BAD_REQUEST);
+                }
+
+                $h = new ParentAmountDueHistory();
+                $h->setParent($parentEntity);
+                $h->setField('amountDueArabic');
+                $h->setOldValue($old);
+                $h->setNewValue($new);
+                $h->setComment($comment);
+                $h->setChangedBy($this->getUser()); // null si pas de sécurité / user anonyme
+
+                $em->persist($h);
+
+                $parentEntity->setAmountDueArabic($new);
+            }
+        }
+
+        // amountDueSoutien
+        if (array_key_exists('amountDueSoutien', $data)) {
+            $old = $parentEntity->getAmountDueSoutien();
+            $new = max(0, (int) $data['amountDueSoutien']);
+
+            if ($old !== $new) {
+                $comment = trim((string)($data['amountDueSoutienComment'] ?? ''));
+                if ($comment === '') {
+                    return $this->apiResponse([
+                        'message' => "Commentaire obligatoire pour modifier le montant dû (Soutien).",
+                    ], Response::HTTP_BAD_REQUEST);
+                }
+
+                $h = new ParentAmountDueHistory();
+                $h->setParent($parentEntity);
+                $h->setField('amountDueSoutien');
+                $h->setOldValue($old);
+                $h->setNewValue($new);
+                $h->setComment($comment);
+                $h->setChangedBy($this->getUser());
+
+                $em->persist($h);
+
+                $parentEntity->setAmountDueSoutien($new);
+            }
+        }
 
         $em->flush();
 

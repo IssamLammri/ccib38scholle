@@ -1,423 +1,409 @@
 <template>
-  <div class="container py-4" lang="fr">
-    <!-- Barre d'actions améliorée -->
-    <div class="action-bar">
-      <a :href="$routing.generate('app_parent_entity_index')" class="btn btn-outline-secondary btn-modern">
-        <i class="fas fa-arrow-left"></i>
-        <span>Retour à la liste</span>
+  <div class="sp-root" lang="fr">
+
+    <!-- ░░ TOPBAR ░░ -->
+    <div class="sp-topbar">
+      <a :href="$routing.generate('app_parent_entity_index')" class="sp-btn sp-btn--ghost">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour
       </a>
 
-      <div class="student-selector-wrapper">
-        <div class="student-selector">
-          <label for="studentForCharter" class="selector-label">
-            <i class="fas fa-user-graduate"></i>
-            Élève concerné
-          </label>
-          <select
-              id="studentForCharter"
-              class="form-select modern-select"
-              v-model.number="selectedStudentId"
-          >
-            <option :value="0">-- Sélectionnez un élève --</option>
-            <option v-for="s in normalizedStudents" :key="s.id" :value="s.id">
-              {{ s.lastName }} {{ s.firstName }} — né(e) le {{ formatDate(s.birthDate) }}
-            </option>
-          </select>
-        </div>
+      <div class="sp-topbar__center">
+        <span class="sp-topbar__breadcrumb">Parents</span>
+        <span class="sp-topbar__sep">/</span>
+        <span class="sp-topbar__current">Fiche</span>
       </div>
 
-      <div class="action-buttons">
+      <div class="sp-topbar__actions">
+        <!-- Sélecteur élève -->
+        <div class="sp-student-select-wrap">
+          <svg class="sp-select-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <select class="sp-student-select" v-model.number="selectedStudentId">
+            <option :value="0">Sélectionner un élève…</option>
+            <option v-for="s in normalizedStudents" :key="s.id" :value="s.id">
+              {{ s.lastName }} {{ s.firstName }}
+            </option>
+          </select>
+          <svg class="sp-select-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+
         <button
-            class="btn btn-print"
+            class="sp-btn sp-btn--teal"
             @click="printCharter"
             :disabled="!selectedStudent"
-            :class="{ 'disabled': !selectedStudent }"
         >
-          <i class="fas fa-print"></i>
-          <span>Imprimer la Charte</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimer la charte
         </button>
-        <a :href="$routing.generate('app_parent_entity_edit', { id: parent.id })" class="btn btn-warning btn-modern">
-          <i class="fas fa-edit"></i>
-          <span>Modifier</span>
+
+        <a :href="$routing.generate('app_parent_entity_edit', { id: parent.id })" class="sp-btn sp-btn--primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Modifier
         </a>
       </div>
     </div>
 
-    <alert v-if="messageAlert" :text="messageAlert" :type="typeAlert" class="mb-4" />
+    <!-- ░░ ALERT sélection ░░ -->
+    <transition name="sp-alert">
+      <div v-if="!selectedStudent" class="sp-info-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Sélectionnez un élève dans la liste pour générer et imprimer sa charte personnalisée.
+      </div>
+    </transition>
 
-    <!-- Alerte améliorée -->
-    <div v-if="!selectedStudent" class="alert alert-info modern-alert">
-      <div class="alert-content">
-        <div class="alert-icon">
-          <i class="fas fa-info-circle"></i>
+    <!-- ░░ BODY ░░ -->
+    <div class="sp-layout">
+
+      <!-- ── SIDEBAR ── -->
+      <aside class="sp-sidebar">
+        <div class="sp-id-card">
+          <div class="sp-avatar">{{ headerInitials }}</div>
+          <div class="sp-id-card__name">{{ headerTitle }}</div>
+          <div class="sp-id-card__sub">{{ headerSubtitle }}</div>
+          <div class="sp-id-card__pills">
+            <span class="sp-pill sp-pill--blue">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              {{ studentsCount }} enfant{{ studentsCount > 1 ? 's' : '' }}
+            </span>
+            <span v-if="primaryEmail" class="sp-pill sp-pill--slate">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Email renseigné
+            </span>
+          </div>
         </div>
-        <div class="alert-text">
-          <strong>Information</strong><br>
-          Sélectionnez un élève dans le menu déroulant ci-dessus pour générer et imprimer sa charte personnalisée.
+
+        <!-- Montants -->
+        <div class="sp-amounts-card">
+          <div class="sp-amounts-card__title">Montants dus</div>
+          <div class="sp-amount-row">
+            <span class="sp-amount-row__label">Arabe</span>
+            <span class="sp-amount-row__value">{{ parent.amountDueArabic ?? 0 }} <small>EURO</small></span>
+          </div>
+          <div class="sp-amount-divider"></div>
+          <div class="sp-amount-row">
+            <span class="sp-amount-row__label">Soutien Solaire</span>
+            <span class="sp-amount-row__value">{{ parent.amountDueSoutien ?? 0 }} <small>EURO</small></span>
+          </div>
+
+          <!-- Historique si présent -->
+          <template v-if="parent.amountDueHistories && parent.amountDueHistories.length">
+            <div class="sp-amount-divider"></div>
+            <div class="sp-amounts-card__title" style="margin-top:4px">Historique</div>
+            <div v-for="(h, i) in parent.amountDueHistories" :key="i" class="sp-history-row">
+              <span class="sp-history-row__date">{{ formatDate(h.date) }}</span>
+              <span class="sp-history-row__note">{{ h.comment || h.label || '—' }}</span>
+            </div>
+          </template>
         </div>
+
+        <!-- Élève sélectionné -->
+        <div v-if="selectedStudent" class="sp-selected-student-card">
+          <div class="sp-selected-student-card__label">Élève sélectionné</div>
+          <div class="sp-selected-student-avatar">
+            {{ selectedStudent.firstName.charAt(0) }}{{ selectedStudent.lastName.charAt(0) }}
+          </div>
+          <div class="sp-selected-student-card__name">
+            {{ selectedStudent.firstName }} {{ selectedStudent.lastName }}
+          </div>
+          <div class="sp-selected-student-card__meta">{{ displayOrNA(selectedStudent.level) }}</div>
+          <div class="sp-selected-student-card__meta">Né(e) le {{ formatDate(selectedStudent.birthDate) }}</div>
+        </div>
+      </aside>
+
+      <!-- ── MAIN ── -->
+      <main class="sp-main">
+
+        <!-- Section Père -->
+        <section class="sp-section">
+          <div class="sp-section__header">
+            <div class="sp-section__icon sp-section__icon--blue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h2 class="sp-section__title">Père</h2>
+          </div>
+          <div class="sp-info-grid">
+            <div class="sp-field">
+              <span class="sp-field__label">Nom complet</span>
+              <span class="sp-field__value">{{ fatherFullName }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__label">Email</span>
+              <span class="sp-field__value">{{ displayOrNA(clean(parent.fatherEmail)) }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__label">Téléphone</span>
+              <span class="sp-field__value">{{ displayOrNA(clean(parent.fatherPhone)) }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section Mère -->
+        <section class="sp-section">
+          <div class="sp-section__header">
+            <div class="sp-section__icon sp-section__icon--rose">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h2 class="sp-section__title">Mère</h2>
+          </div>
+          <div class="sp-info-grid">
+            <div class="sp-field">
+              <span class="sp-field__label">Nom complet</span>
+              <span class="sp-field__value">{{ motherFullName }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__label">Email</span>
+              <span class="sp-field__value">{{ displayOrNA(clean(parent.motherEmail)) }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__label">Téléphone</span>
+              <span class="sp-field__value">{{ displayOrNA(clean(parent.motherPhone)) }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section Contact principal -->
+        <section class="sp-section">
+          <div class="sp-section__header">
+            <div class="sp-section__icon sp-section__icon--green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <h2 class="sp-section__title">Contact principal</h2>
+          </div>
+          <div class="sp-info-grid">
+            <div class="sp-field">
+              <span class="sp-field__label">Nom complet</span>
+              <span class="sp-field__value">{{ displayOrNA(clean(parent.fullNameParent)) }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__label">Email</span>
+              <span class="sp-field__value">{{ displayOrNA(clean(parent.emailContact)) }}</span>
+            </div>
+            <div class="sp-field">
+              <span class="sp-field__label">Téléphone</span>
+              <span class="sp-field__value">{{ displayOrNA(clean(parent.phoneContact)) }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section Étudiants -->
+        <section class="sp-section sp-section--flat">
+          <div class="sp-section__header">
+            <div class="sp-section__icon sp-section__icon--amber">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h2 class="sp-section__title">Étudiants associés</h2>
+            <span class="sp-badge-count">{{ studentsCount }}</span>
+          </div>
+
+          <div v-if="normalizedStudents.length === 0" class="sp-empty">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <p>Aucun étudiant associé à ce parent.</p>
+          </div>
+
+          <div v-else class="sp-students-list">
+            <div
+                v-for="(s, i) in normalizedStudents"
+                :key="s.id"
+                class="sp-student-row"
+                :style="`animation-delay: ${i * 60}ms`"
+            >
+              <div class="sp-student-avatar">{{ s.lastName.charAt(0) }}{{ s.firstName.charAt(0) }}</div>
+              <div class="sp-student-info">
+                <span class="sp-student-info__name">{{ s.lastName }} {{ s.firstName }}</span>
+                <span class="sp-student-info__meta">Né(e) le {{ formatDate(s.birthDate) }}</span>
+              </div>
+              <span class="sp-student-level">{{ s.level || 'N/D' }}</span>
+              <a
+                  class="sp-btn-view"
+                  :href="$routing.generate('app_student_show', { id: s.id })"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Voir la fiche
+              </a>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- ░░░░░░░░░░░░░░░░
+         CHARTE (masquée)
+         ░░░░░░░░░░░░░░░░ -->
+    <div id="charter-sheet" class="sp-charter">
+      <div class="sp-charter__header">
+        <div class="sp-charter__branding">
+          <img class="sp-charter__logo" src="/static/icons/logoccib38.webp" alt="Logo CCIB" loading="lazy" />
+          <div>
+            <h1 class="sp-charter__h1">Charte de l'Élève et du CCIB38</h1>
+            <p class="sp-charter__subtitle">Centre Culturel Ibn Badis Grenoble</p>
+          </div>
+        </div>
+        <div class="sp-charter__meta">
+          <div class="sp-charter__meta-row">
+            <span class="sp-charter__meta-label">Date d'émission</span>
+            <span class="sp-charter__meta-value">{{ today }}</span>
+          </div>
+          <div class="sp-charter__meta-row">
+            <span class="sp-charter__meta-label">N° Dossier</span>
+            <span class="sp-charter__meta-value">{{ String(parent.id).padStart(6, '0') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-charter__body">
+
+        <!-- 1. Responsable légal -->
+        <div class="sp-charter__section">
+          <h2 class="sp-charter__section-title">
+            <span class="sp-charter__num">1</span>
+            Coordonnées du Responsable Légal
+          </h2>
+          <div class="sp-charter__info-grid">
+            <div>
+              <div class="sp-charter__field">
+                <span class="sp-charter__field-label">Nom complet</span>
+                <span class="sp-charter__field-value">{{ headerTitle }}</span>
+              </div>
+              <div class="sp-charter__field">
+                <span class="sp-charter__field-label">Adresse e-mail</span>
+                <span class="sp-charter__field-value">{{ primaryEmail || 'Non renseigné' }}</span>
+              </div>
+              <div class="sp-charter__field">
+                <span class="sp-charter__field-label">Téléphone</span>
+                <span class="sp-charter__field-value">{{ primaryPhone || 'Non renseigné' }}</span>
+              </div>
+            </div>
+            <div>
+              <span class="sp-charter__field-label">Adresse postale</span>
+              <div class="sp-charter__address-box">{{ selectedStudentPostalAddress || 'Non renseignée' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Élève -->
+        <div class="sp-charter__section">
+          <h2 class="sp-charter__section-title">
+            <span class="sp-charter__num">2</span>
+            Élève Concerné par cette Charte
+          </h2>
+          <div v-if="selectedStudent" class="sp-charter__student-block">
+            <div class="sp-charter__student-avatar">
+              {{ selectedStudent.firstName.charAt(0) }}{{ selectedStudent.lastName.charAt(0) }}
+            </div>
+            <div>
+              <div class="sp-charter__student-name">{{ selectedStudent.firstName }} {{ selectedStudent.lastName }}</div>
+              <div class="sp-charter__student-meta">
+                Né(e) le {{ formatDate(selectedStudent.birthDate) }}
+                &nbsp;·&nbsp;
+                Niveau : {{ displayOrNA(selectedStudent.level) }}
+              </div>
+            </div>
+          </div>
+          <div v-else class="sp-charter__no-student">Aucun élève sélectionné.</div>
+        </div>
+
+        <!-- 3. Règlement -->
+        <div class="sp-charter__section">
+          <h2 class="sp-charter__section-title">
+            <span class="sp-charter__num">3</span>
+            Règlement et Engagements Réciproques
+          </h2>
+          <p class="sp-charter__intro">
+            Cette charte définit les engagements mutuels entre l'élève, ses parents et l'établissement
+            afin de garantir un environnement d'apprentissage optimal et respectueux.
+          </p>
+
+          <div class="sp-charter__rules-grid">
+            <div class="sp-charter__rule-cat">
+              <h3 class="sp-charter__rule-title">Ponctualité et Assiduité</h3>
+              <ul class="sp-charter__rule-list">
+                <li><strong>Présence obligatoire :</strong> La présence à tous les cours est impérative pour assurer une progression pédagogique continue.</li>
+                <li><strong>Gestion des retards :</strong> Un retard supérieur à 20 minutes ne permettra pas l'accès à la salle de classe, sauf justification validée par la direction.</li>
+              </ul>
+            </div>
+            <div class="sp-charter__rule-cat">
+              <h3 class="sp-charter__rule-title">Respect et Comportement</h3>
+              <ul class="sp-charter__rule-list">
+                <li><strong>Respect mutuel :</strong> Le respect envers les enseignants, le personnel et les autres étudiants est fondamental.</li>
+                <li><strong>Comportement en classe :</strong> Une attitude calme et participative est attendue. Les appareils personnels doivent être éteints.</li>
+                <li><strong>Préservation du matériel :</strong> Chaque élève s'engage à prendre soin du matériel et des locaux.</li>
+              </ul>
+            </div>
+            <div class="sp-charter__rule-cat">
+              <h3 class="sp-charter__rule-title">Engagement Scolaire</h3>
+              <ul class="sp-charter__rule-list">
+                <li><strong>Matériel requis :</strong> L'étudiant doit se présenter avec l'intégralité de son matériel scolaire. En cas d'oubli répété, l'enseignant peut refuser l'accès au cours.</li>
+                <li><strong>Devoirs et travaux :</strong> Les travaux assignés doivent être réalisés dans les délais impartis.</li>
+              </ul>
+            </div>
+            <div class="sp-charter__rule-cat">
+              <h3 class="sp-charter__rule-title">Communication École-Famille</h3>
+              <ul class="sp-charter__rule-list">
+                <li><strong>Suivi personnalisé :</strong> En cas de difficultés récurrentes, un entretien tripartite sera organisé.</li>
+                <li><strong>Information régulière :</strong> Les parents seront informés des progrès et difficultés de leur enfant.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="sp-charter__payment">
+            <h3 class="sp-charter__payment-title">Modalités Financières</h3>
+            <div class="sp-charter__term"><strong>Paiement trimestriel :</strong> Les frais de scolarité sont exigibles au début de chaque trimestre.</div>
+            <div class="sp-charter__term"><strong>Droit de rétractation :</strong> Un remboursement intégral est possible après le premier cours uniquement.</div>
+            <div class="sp-charter__term sp-charter__term--important"><strong>Aucun remboursement :</strong> Une fois le deuxième cours entamé, tout trimestre commencé est dû intégralement.</div>
+          </div>
+
+          <div class="sp-charter__sanctions">
+            <h3 class="sp-charter__sanctions-title">Mesures Disciplinaires</h3>
+            <p>Le non-respect répété peut entraîner des sanctions graduelles : avertissement oral, avertissement écrit, convocation des parents, et en dernier recours, l'exclusion définitive.</p>
+          </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="sp-charter__signatures">
+          <div class="sp-charter__sig-location">
+            Établi à <strong>Grenoble</strong>, le <strong>{{ today }}</strong>
+          </div>
+          <div class="sp-charter__sig-blocks">
+            <div class="sp-charter__sig-block">
+              <div class="sp-charter__sig-title">Signature du Responsable Légal</div>
+              <div class="sp-charter__sig-area"></div>
+              <div class="sp-charter__sig-name">{{ headerTitle }}</div>
+              <div class="sp-charter__sig-note">(Précédée de « Lu et approuvé »)</div>
+            </div>
+            <div class="sp-charter__sig-block">
+              <div class="sp-charter__sig-title">Cachet et signature du centre</div>
+              <div class="sp-charter__sig-area"></div>
+              <div class="sp-charter__sig-name">Centre Culturel Ibn Badis Grenoble</div>
+              <div class="sp-charter__sig-note">Direction Pédagogique</div>
+            </div>
+          </div>
+          <div class="sp-charter__footer-text">
+            Cette charte, signée par les deux parties, engage moralement et pédagogiquement l'élève et sa famille.
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- FICHE PARENT améliorée -->
-    <div id="parent-sheet" class="parent-card">
-      <div class="parent-header">
-        <div class="header-content">
-          <div class="avatar-section">
-            <div class="avatar-circle">
-              <span>{{ headerInitials }}</span>
-            </div>
-            <div class="header-info">
-              <h1>{{ headerTitle }}</h1>
-              <p class="header-subtitle">{{ headerSubtitle }}</p>
-            </div>
-          </div>
-          <div class="header-badges">
-            <div class="badge badge-modern">
-              <i class="fas fa-user-friends"></i>
-              <span>{{ studentsCount }} enfant{{ studentsCount > 1 ? 's' : '' }}</span>
-            </div>
-            <div class="badge badge-modern" v-if="primaryEmail">
-              <i class="fas fa-envelope"></i>
-              <span>{{ primaryEmail }}</span>
-            </div>
-            <div class="badge badge-modern" v-if="primaryPhone">
-              <i class="fas fa-phone"></i>
-              <span>{{ primaryPhone }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="parent-body">
-        <!-- Cartes d'information améliorées -->
-        <div class="info-cards-grid">
-          <div class="info-card father-card">
-            <div class="card-icon">
-              <i class="fas fa-male"></i>
-            </div>
-            <div class="card-content">
-              <h3>Père</h3>
-              <h4>{{ fatherFullName }}</h4>
-              <div class="contact-info">
-                <div class="contact-item">
-                  <i class="fas fa-envelope"></i>
-                  <span>{{ displayOrNA(clean(parent.fatherEmail)) }}</span>
-                </div>
-                <div class="contact-item">
-                  <i class="fas fa-phone"></i>
-                  <span>{{ displayOrNA(clean(parent.fatherPhone)) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="info-card mother-card">
-            <div class="card-icon">
-              <i class="fas fa-female"></i>
-            </div>
-            <div class="card-content">
-              <h3>Mère</h3>
-              <h4>{{ motherFullName }}</h4>
-              <div class="contact-info">
-                <div class="contact-item">
-                  <i class="fas fa-envelope"></i>
-                  <span>{{ displayOrNA(clean(parent.motherEmail)) }}</span>
-                </div>
-                <div class="contact-item">
-                  <i class="fas fa-phone"></i>
-                  <span>{{ displayOrNA(clean(parent.motherPhone)) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="info-card contact-card">
-            <div class="card-icon">
-              <i class="fas fa-id-card"></i>
-            </div>
-            <div class="card-content">
-              <h3>Contact principal</h3>
-              <h4>{{ displayOrNA(clean(parent.fullNameParent)) }}</h4>
-              <div class="contact-info">
-                <div class="contact-item">
-                  <i class="fas fa-envelope"></i>
-                  <span>{{ displayOrNA(clean(parent.emailContact)) }}</span>
-                </div>
-                <div class="contact-item">
-                  <i class="fas fa-phone"></i>
-                  <span>{{ displayOrNA(clean(parent.phoneContact)) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tableau des étudiants amélioré -->
-        <div class="students-section">
-          <div class="section-header">
-            <h2>
-              <i class="fas fa-users"></i>
-              Étudiants associés
-            </h2>
-          </div>
-
-          <div class="students-table-wrapper">
-            <table class="students-table">
-              <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Date de naissance</th>
-                <th>Niveau</th>
-                <th>Actions</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="s in normalizedStudents" :key="s.id" class="student-row">
-                <td class="id-cell">{{ s.id }}</td>
-                <td class="name-cell">{{ s.lastName }}</td>
-                <td class="name-cell">{{ s.firstName }}</td>
-                <td class="date-cell">{{ formatDate(s.birthDate) }}</td>
-                <td class="level-cell">
-                  <span class="level-badge">{{ displayOrNA(s.level) }}</span>
-                </td>
-                <td class="actions-cell">
-                  <a class="btn btn-view" :href="$routing.generate('app_student_show', { id: s.id })">
-                    <i class="fas fa-eye"></i>
-                    <span>Voir la fiche</span>
-                  </a>
-                </td>
-              </tr>
-              <tr v-if="normalizedStudents.length === 0">
-                <td colspan="6" class="empty-state">
-                  <div class="empty-content">
-                    <i class="fas fa-users-slash"></i>
-                    <p>Aucun étudiant associé</p>
-                  </div>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CHARTE AMÉLIORÉE (pour impression/PDF) -->
-    <div id="charter-sheet" class="charter">
-      <div class="charter-header">
-        <div class="charter-branding">
-          <img
-              class="charter-logo"
-              src="/static/icons/logoccib38.webp"
-              alt="Logo CCIB"
-              loading="lazy"
-          />
-          <div class="charter-title">
-            <h1>Charte de l'Élève et du CCIB38</h1>
-            <p class="charter-subtitle">Centre Culturel Ibn Badis Grenoble</p>
-          </div>
-        </div>
-        <div class="charter-metadata">
-          <div class="metadata-item">
-            <span class="label">Date d'émission</span>
-            <span class="value">{{ today }}</span>
-          </div>
-          <div class="metadata-item">
-            <span class="label">N° Dossier Parent</span>
-            <span class="value">{{ String(parent.id).padStart(6, '0') }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="charter-content">
-        <div class="charter-section">
-          <h2><span class="section-number">1.</span> Coordonnées du Responsable Légal</h2>
-          <div class="section-content">
-            <div class="info-grid">
-              <div class="info-group">
-                <div class="field">
-                  <span class="field-label">Nom complet</span>
-                  <span class="field-value">{{ headerTitle }}</span>
-                </div>
-                <div class="field">
-                  <span class="field-label">Adresse e-mail</span>
-                  <span class="field-value">{{ primaryEmail || 'Non renseigné' }}</span>
-                </div>
-                <div class="field">
-                  <span class="field-label">Téléphone</span>
-                  <span class="field-value">{{ primaryPhone || 'Non renseigné' }}</span>
-                </div>
-              </div>
-              <div class="address-group">
-                <span class="field-label">Adresse postale complète</span>
-                <div class="address-field">
-                  {{ selectedStudentPostalAddress || 'Adresse non renseignée' }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="charter-section">
-          <h2><span class="section-number">2.</span> Élève Concerné par cette Charte</h2>
-          <div class="section-content">
-            <div v-if="selectedStudent" class="student-info">
-              <div class="student-header">
-                <div class="student-avatar">
-                  {{ selectedStudent.firstName.charAt(0) }}{{ selectedStudent.lastName.charAt(0) }}
-                </div>
-                <div class="student-details">
-                  <h3>{{ selectedStudent.firstName }} {{ selectedStudent.lastName }}</h3>
-                  <div class="student-meta">
-                    <span class="meta-item">
-                      <i class="fas fa-calendar"></i>
-                      Né(e) le {{ formatDate(selectedStudent.birthDate) }}
-                    </span>
-                    <span class="meta-item">
-                      <i class="fas fa-graduation-cap"></i>
-                      Niveau : {{ displayOrNA(selectedStudent.level) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-else class="no-student-selected">
-              <i class="fas fa-user-slash"></i>
-              <p>Aucun élève sélectionné pour cette charte</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="charter-section rules-section">
-          <h2><span class="section-number">3.</span> Règlement et Engagements Réciproques</h2>
-          <div class="section-content">
-            <p class="section-intro">
-              Cette charte définit les engagements mutuels entre l'élève, ses parents et l'établissement
-              scolaire afin de garantir un environnement d'apprentissage optimal et respectueux.
-            </p>
-
-            <div class="rules-grid">
-              <div class="rule-category">
-                <h3><i class="fas fa-clock"></i> Ponctualité et Assiduité</h3>
-                <ul class="rule-list">
-                  <li><strong>Présence obligatoire :</strong> La présence à tous les cours est impérative pour assurer une progression pédagogique continue.</li>
-                  <li><strong>Gestion des retards :</strong> Un retard supérieur à 20 minutes ne permettra pas l'accès à la salle de classe, sauf justification exceptionnelle validée par la direction.</li>
-                </ul>
-              </div>
-
-              <div class="rule-category">
-                <h3><i class="fas fa-handshake"></i> Respect et Comportement</h3>
-                <ul class="rule-list">
-                  <li><strong>Respect mutuel :</strong> Le respect envers les enseignants, le personnel administratif et les autres étudiants constitue un pilier fondamental de notre établissement.</li>
-                  <li><strong>Comportement en classe :</strong> Une attitude calme, attentive et participative est attendue. Les appareils électroniques personnels doivent être éteints et rangés.</li>
-                  <li><strong>Préservation du matériel :</strong> Chaque élève s'engage à prendre soin du matériel pédagogique et des locaux mis à disposition.</li>
-                </ul>
-              </div>
-
-              <div class="rule-category">
-                <h3><i class="fas fa-book"></i> Engagement Scolaire</h3>
-                <ul class="rule-list">
-                  <li><strong>Matériel requis :</strong> L'étudiant doit impérativement se présenter avec l'intégralité de son matériel scolaire (manuels, cahiers, exercices, etc.). En cas d'oubli répété, l'enseignant se réserve le droit de refuser l'accès au cours.</li>
-                  <li><strong>Devoirs et travaux :</strong> Les travaux assignés doivent être réalisés dans les délais impartis avec le sérieux requis.</li>
-                </ul>
-              </div>
-
-              <div class="rule-category">
-                <h3><i class="fas fa-comments"></i> Communication École-Famille</h3>
-                <ul class="rule-list">
-                  <li><strong>Suivi personnalisé :</strong> En cas de difficultés comportementales ou pédagogiques récurrentes, un entretien tripartite (élève-parents-direction) sera organisé pour définir ensemble des solutions constructives.</li>
-                  <li><strong>Information régulière :</strong> Les parents seront informés régulièrement des progrès et difficultés de leur enfant.</li>
-                </ul>
-              </div>
-            </div>
-            <br><br><br><br><br><br>
-
-            <div class="payment-terms">
-              <h3><i class="fas fa-euro-sign"></i> Modalités Financières</h3>
-              <div class="terms-content">
-                <div class="term-item">
-                  <strong>Paiement trimestriel :</strong> Les frais de scolarité sont exigibles au début de chaque trimestre.
-                </div>
-                <div class="term-item">
-                  <strong>Droit de rétractation :</strong> Un remboursement intégral est possible après le premier cours uniquement, sur demande formulée avant le deuxième cours.
-                </div>
-                <div class="term-item important">
-                  <strong>Aucun remboursement :</strong> Une fois le deuxième cours entamé, tout trimestre commencé est dû intégralement, sans possibilité de remboursement en cas d'abandon.
-                </div>
-              </div>
-            </div>
-
-            <div class="sanctions-notice">
-              <h3><i class="fas fa-exclamation-triangle"></i> Mesures Disciplinaires</h3>
-              <p>Le non-respect répété des présentes dispositions peut entraîner des sanctions graduelles : avertissement oral, avertissement écrit, convocation des parents, et en dernier recours, l'exclusion définitive de l'établissement.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="charter-signature">
-          <div class="signature-location">
-            <span class="location-label">Établi à</span>
-            <span class="location-value">Grenoble</span>
-            <span class="date-label">Le</span>
-            <span class="date-value">{{ today }}</span>
-          </div>
-
-          <div class="signature-blocks">
-            <div class="signature-block">
-              <div class="signature-title">Signature du Responsable Légal</div>
-              <div class="signature-area"></div>
-              <div class="signature-name">{{ headerTitle }}</div>
-              <div class="signature-note">(Précédée de la mention « Lu et approuvé »)</div>
-            </div>
-
-            <div class="signature-block">
-              <div class="signature-title">Cachet et signature du centre</div>
-              <div class="signature-area"></div>
-              <div class="signature-name">Centre Culturel Ibn Badis Grenoble</div>
-              <div class="signature-note">Direction Pédagogique</div>
-            </div>
-          </div>
-
-          <div class="charter-footer">
-            <p class="footer-text">
-              Cette charte, signée par les deux parties, engage moralement et pédagogiquement
-              l'élève et sa famille dans le respect du règlement intérieur de l'établissement.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import html2pdf from "html2pdf.js";
-import Alert from "../../ui/Alert.vue";
-
 export default {
   name: "ShowParent",
-  components: { Alert },
   props: {
-    parent: { type: Object, required: true },
-    students: { type: Array, required: true },
+    parent:   { type: Object, required: true },
+    students: { type: Array,  required: true },
   },
   data() {
     return {
-      messageAlert: null,
-      typeAlert: null,
       selectedStudentId: 0,
     };
   },
   computed: {
     today() {
-      return new Date().toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-      });
+      return new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
     },
     fatherFullName() {
       const ln = this.clean(this.parent.fatherLastName);
@@ -430,68 +416,50 @@ export default {
       return ln || fn ? `${ln} ${fn}`.trim() : "Non disponible";
     },
     primaryEmail() {
-      return (
-          this.clean(this.parent.emailContact) ||
-          this.clean(this.parent.fatherEmail) ||
-          this.clean(this.parent.motherEmail) ||
-          ""
-      );
+      return this.clean(this.parent.emailContact) || this.clean(this.parent.fatherEmail) || this.clean(this.parent.motherEmail) || "";
     },
     primaryPhone() {
-      return (
-          this.clean(this.parent.phoneContact) ||
-          this.clean(this.parent.fatherPhone) ||
-          this.clean(this.parent.motherPhone) ||
-          ""
-      );
+      return this.clean(this.parent.phoneContact) || this.clean(this.parent.fatherPhone) || this.clean(this.parent.motherPhone) || "";
     },
     headerTitle() {
       return this.clean(this.parent.fullNameParent) || this.fatherFullName || "Fiche Parent";
     },
     headerSubtitle() {
       const email = this.primaryEmail || "Email non renseigné";
-      const phone = this.primaryPhone || "Téléphone non renseigné";
-      return `${email} • ${phone}`;
+      const phone = this.primaryPhone || "Tél. non renseigné";
+      return `${email} · ${phone}`;
     },
     headerInitials() {
-      const name = this.headerTitle;
-      const parts = name.split(" ").filter(Boolean);
-      const initials = parts.slice(0, 2).map((p) => p[0]?.toUpperCase() || "").join("");
-      return initials || "P";
+      const parts = this.headerTitle.split(" ").filter(Boolean);
+      return parts.slice(0, 2).map(p => p[0]?.toUpperCase() || "").join("") || "P";
     },
-    studentsCount() {
-      return Array.isArray(this.students) ? this.students.length : 0;
-    },
+    studentsCount() { return Array.isArray(this.students) ? this.students.length : 0; },
     normalizedStudents() {
       if (!Array.isArray(this.students)) return [];
-      return this.students.map((s) => ({
-        id: s.id,
-        lastName: this.clean(s.lastName) || "—",
-        firstName: this.clean(s.firstName) || "—",
-        birthDate: s.birthDate || null,
-        level: this.clean(s.level) || null,
-        address: this.clean(s.address) || "",
+      return this.students.map(s => ({
+        id:         s.id,
+        lastName:   this.clean(s.lastName)   || "—",
+        firstName:  this.clean(s.firstName)  || "—",
+        birthDate:  s.birthDate || null,
+        level:      this.clean(s.level)      || null,
+        address:    this.clean(s.address)    || "",
         postalCode: this.clean(s.postalCode) || "",
-        city: this.clean(s.city) || "",
+        city:       this.clean(s.city)       || "",
       }));
     },
     selectedStudent() {
       if (!this.selectedStudentId) return null;
-      return this.normalizedStudents.find((s) => s.id === this.selectedStudentId) || null;
+      return this.normalizedStudents.find(s => s.id === this.selectedStudentId) || null;
     },
     selectedStudentPostalAddress() {
       if (this.selectedStudent) {
         const lines = [];
         if (this.selectedStudent.address) lines.push(this.selectedStudent.address);
-        const cpVille = [this.selectedStudent.postalCode, this.selectedStudent.city].filter(Boolean).join(' ');
+        const cpVille = [this.selectedStudent.postalCode, this.selectedStudent.city].filter(Boolean).join(" ");
         if (cpVille) lines.push(cpVille);
-        if (lines.length) return lines.join('\n');
+        if (lines.length) return lines.join("\n");
       }
-      const parentAddr =
-          this.clean(this.parent.address) ||
-          this.clean(this.parent.postalAddress) ||
-          this.clean(this.parent.addressLine1) || "";
-      return parentAddr || "";
+      return this.clean(this.parent.address) || this.clean(this.parent.postalAddress) || "";
     },
   },
   methods: {
@@ -505,409 +473,70 @@ export default {
     },
     formatDate(date) {
       if (!date) return "Non disponible";
-      try {
-        return new Date(date).toLocaleDateString("fr-FR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        });
-      } catch {
-        return "Non disponible";
-      }
+      try { return new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" }); }
+      catch { return "Non disponible"; }
     },
     printCharter() {
       if (!this.selectedStudent) return;
-
       const el = document.getElementById("charter-sheet");
       if (!el) return;
-
       const win = window.open("", "_blank");
-      const html = `
-        <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Charte - ${this.selectedStudent.lastName} ${this.selectedStudent.firstName}</title>
-          <style>${this.getOptimizedPrintCSS()}</style>
-        </head>
-        <body>${el.outerHTML}</body>
-        </html>
-      `;
-
+      const html = `<html><head><meta charset="utf-8"/><title>Charte - ${this.selectedStudent.lastName} ${this.selectedStudent.firstName}</title><style>${this.getPrintCSS()}</style></head><body>${el.outerHTML}</body></html>`;
       win.document.write(html);
       win.document.close();
       win.focus();
-
-      setTimeout(() => {
-        win.print();
-        win.close();
-      }, 250);
+      setTimeout(() => { win.print(); win.close(); }, 250);
     },
-    getOptimizedPrintCSS() {
+    getPrintCSS() {
       return `
-        @page {
-          size: A4;
-          margin: 15mm 12mm 12mm 12mm;
-          @bottom-center {
-            content: "Page " counter(page) " / " counter(pages);
-            font-size: 10px;
-            color: #666;
-          }
-        }
-
+        @page { size: A4; margin: 15mm 12mm; }
         * { box-sizing: border-box; }
-
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          color: #2c3e50;
-          line-height: 1.4;
-          margin: 0;
-          padding: 0;
-        }
-
-        .charter { display: block !important; }
-
-        .charter-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          padding-bottom: 15px;
-          border-bottom: 2px solid #34495e;
-          margin-bottom: 20px;
-        }
-
-        .charter-branding {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .charter-logo { height: 45px; width: auto; }
-
-        .charter-title h1 {
-          font-size: 20px;
-          font-weight: 700;
-          color: #2c3e50;
-          margin: 0;
-          line-height: 1.2;
-        }
-
-        .charter-subtitle {
-          font-size: 12px;
-          color: #7f8c8d;
-          margin: 2px 0 0 0;
-        }
-
-        .charter-metadata {
-          text-align: right;
-          font-size: 11px;
-        }
-
-        .metadata-item {
-          display: block;
-          margin-bottom: 4px;
-        }
-
-        .metadata-item .label {
-          font-weight: 600;
-          color: #7f8c8d;
-        }
-
-        .metadata-item .value {
-          font-weight: 400;
-          color: #2c3e50;
-          margin-left: 6px;
-        }
-
-        .charter-section {
-          margin-bottom: 18px;
-        }
-
-        .charter-section h2 {
-          font-size: 16px;
-          font-weight: 700;
-          color: #34495e;
-          margin: 0 0 10px 0;
-          display: flex;
-          align-items: center;
-        }
-
-        .section-number {
-          background: #3498db;
-          color: white;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          margin-right: 8px;
-        }
-
-        .info-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 15px;
-          margin-top: 8px;
-        }
-
-        .field {
-          margin-bottom: 8px;
-        }
-
-        .field-label {
-          font-weight: 600;
-          color: #7f8c8d;
-          font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          display: block;
-          margin-bottom: 2px;
-        }
-
-        .field-value {
-          color: #2c3e50;
-          font-size: 13px;
-          display: block;
-        }
-
-        .address-field {
-          border: 1px solid #bdc3c7;
-          border-radius: 4px;
-          padding: 8px;
-          min-height: 45px;
-          white-space: pre-line;
-          font-size: 13px;
-          background: #f8f9fa;
-          margin-top: 4px;
-        }
-
-        .student-info {
-          border: 1px solid #3498db;
-          border-radius: 6px;
-          padding: 12px;
-          background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
-        }
-
-        .student-header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 10px;
-        }
-
-        .student-avatar {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: #3498db;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          font-size: 14px;
-        }
-
-        .student-details h3 {
-          margin: 0;
-          font-size: 16px;
-          color: #2c3e50;
-        }
-
-        .student-meta {
-          display: flex;
-          gap: 15px;
-          margin-top: 4px;
-        }
-
-        .meta-item {
-          font-size: 12px;
-          color: #7f8c8d;
-        }
-
-        .meta-item i {
-          margin-right: 4px;
-        }
-
-        .rules-section .section-intro {
-          font-style: italic;
-          color: #7f8c8d;
-          margin-bottom: 15px;
-          font-size: 13px;
-          text-align: justify;
-        }
-
-        .rule-category {
-          margin-bottom: 12px;
-          page-break-inside: avoid;
-        }
-
-        .rule-category h3 {
-          font-size: 14px;
-          font-weight: 600;
-          color: #34495e;
-          margin: 0 0 6px 0;
-          display: flex;
-          align-items: center;
-        }
-
-        .rule-category h3 i {
-          margin-right: 6px;
-          color: #3498db;
-        }
-
-        .rule-list {
-          margin: 0;
-          padding-left: 18px;
-          list-style-type: none;
-        }
-
-        .rule-list li {
-          margin-bottom: 4px;
-          font-size: 12px;
-          line-height: 1.4;
-          position: relative;
-        }
-
-        .rule-list li::before {
-          content: "•";
-          color: #3498db;
-          font-weight: bold;
-          position: absolute;
-          left: -12px;
-        }
-
-        .payment-terms {
-          background: #fff3cd;
-          border: 1px solid #ffeaa7;
-          border-radius: 6px;
-          padding: 12px;
-          margin: 15px 30px;
-        }
-
-        .payment-terms h3 {
-          font-size: 14px;
-          color: #856404;
-          margin: 0 0 8px 0;
-          display: flex;
-          align-items: center;
-        }
-
-        .payment-terms h3 i {
-          margin-right: 6px;
-        }
-
-        .term-item {
-          font-size: 12px;
-          margin-bottom: 6px;
-          line-height: 1.4;
-        }
-
-        .term-item.important {
-          font-weight: 600;
-          color: #721c24;
-        }
-
-        .sanctions-notice {
-          background: #f8d7da;
-          border: 1px solid #f5c6cb;
-          border-radius: 6px;
-          padding: 12px;
-          margin: 15px 0;
-        }
-
-        .sanctions-notice h3 {
-          font-size: 14px;
-          color: #721c24;
-          margin: 0 0 6px 0;
-          display: flex;
-          align-items: center;
-        }
-
-        .sanctions-notice h3 i {
-          margin-right: 6px;
-        }
-
-        .sanctions-notice p {
-          font-size: 12px;
-          margin: 0;
-          line-height: 1.4;
-          color: #721c24;
-        }
-
-        .charter-signature {
-          margin-top: 25px;
-          page-break-inside: avoid;
-        }
-
-        .signature-location {
-          text-align: right;
-          margin-bottom: 20px;
-          font-size: 12px;
-        }
-
-        .location-label, .date-label {
-          font-weight: 600;
-          color: #7f8c8d;
-        }
-
-        .location-value, .date-value {
-          color: #2c3e50;
-          margin-left: 4px;
-          margin-right: 15px;
-        }
-
-        .signature-blocks {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-        }
-
-        .signature-block {
-          text-align: center;
-        }
-
-        .signature-title {
-          font-weight: 600;
-          font-size: 12px;
-          color: #34495e;
-          margin-bottom: 15px;
-        }
-
-        .signature-area {
-          height: 50px;
-          border-bottom: 1px solid #2c3e50;
-          margin: 15px 0 8px 0;
-        }
-
-        .signature-name {
-          font-weight: 600;
-          font-size: 11px;
-          color: #2c3e50;
-        }
-
-        .signature-note {
-          font-size: 10px;
-          color: #7f8c8d;
-          font-style: italic;
-          margin-top: 4px;
-        }
-
-        .charter-footer {
-          margin-top: 20px;
-          padding-top: 15px;
-          border-top: 1px solid #ecf0f1;
-          text-align: center;
-        }
-
-        .footer-text {
-          font-size: 11px;
-          color: #7f8c8d;
-          font-style: italic;
-          margin: 0;
-          line-height: 1.3;
-        }
+        body { font-family: 'Segoe UI', sans-serif; color: #2c3e50; line-height: 1.45; margin: 0; padding: 0; font-size: 13px; }
+        .sp-charter { display: block !important; }
+        .sp-charter__header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 2px solid #34495e; margin-bottom: 18px; }
+        .sp-charter__branding { display: flex; align-items: center; gap: 12px; }
+        .sp-charter__logo { height: 44px; width: auto; }
+        .sp-charter__h1 { font-size: 19px; font-weight: 700; margin: 0; }
+        .sp-charter__subtitle { font-size: 11px; color: #7f8c8d; margin: 3px 0 0; }
+        .sp-charter__meta { text-align: right; font-size: 11px; }
+        .sp-charter__meta-row { margin-bottom: 3px; }
+        .sp-charter__meta-label { font-weight: 600; color: #7f8c8d; }
+        .sp-charter__meta-value { color: #2c3e50; margin-left: 5px; }
+        .sp-charter__section { margin-bottom: 16px; }
+        .sp-charter__section-title { font-size: 15px; font-weight: 700; color: #34495e; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+        .sp-charter__num { background: #3498db; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+        .sp-charter__info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .sp-charter__field { margin-bottom: 8px; }
+        .sp-charter__field-label { font-weight: 600; color: #7f8c8d; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 2px; }
+        .sp-charter__field-value { font-size: 13px; color: #2c3e50; }
+        .sp-charter__address-box { border: 1px solid #bdc3c7; border-radius: 4px; padding: 8px; min-height: 42px; white-space: pre-line; font-size: 12px; background: #f8f9fa; margin-top: 4px; }
+        .sp-charter__student-block { display: flex; align-items: center; gap: 12px; border: 1px solid #3498db; border-radius: 6px; padding: 12px; background: linear-gradient(135deg, #f8f9fa, #e3f2fd); }
+        .sp-charter__student-avatar { width: 38px; height: 38px; border-radius: 50%; background: #3498db; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+        .sp-charter__student-name { font-size: 15px; font-weight: 700; color: #2c3e50; }
+        .sp-charter__student-meta { font-size: 11px; color: #7f8c8d; margin-top: 3px; }
+        .sp-charter__intro { font-style: italic; color: #7f8c8d; font-size: 12px; margin-bottom: 12px; text-align: justify; }
+        .sp-charter__rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .sp-charter__rule-cat { page-break-inside: avoid; }
+        .sp-charter__rule-title { font-size: 13px; font-weight: 600; color: #34495e; margin: 0 0 5px; }
+        .sp-charter__rule-list { margin: 0; padding-left: 14px; list-style: none; }
+        .sp-charter__rule-list li { font-size: 11px; line-height: 1.4; margin-bottom: 4px; position: relative; }
+        .sp-charter__rule-list li::before { content: "•"; color: #3498db; font-weight: 700; position: absolute; left: -10px; }
+        .sp-charter__payment { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 11px; margin: 12px 0; page-break-inside: avoid; }
+        .sp-charter__payment-title { font-size: 13px; color: #856404; font-weight: 600; margin: 0 0 7px; }
+        .sp-charter__term { font-size: 11px; margin-bottom: 5px; line-height: 1.4; }
+        .sp-charter__term--important { font-weight: 600; color: #721c24; }
+        .sp-charter__sanctions { background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; padding: 11px; page-break-inside: avoid; }
+        .sp-charter__sanctions-title { font-size: 13px; color: #721c24; font-weight: 600; margin: 0 0 5px; }
+        .sp-charter__sanctions p { font-size: 11px; margin: 0; line-height: 1.4; color: #721c24; }
+        .sp-charter__signatures { margin-top: 22px; page-break-inside: avoid; }
+        .sp-charter__sig-location { text-align: right; font-size: 11px; margin-bottom: 16px; }
+        .sp-charter__sig-blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .sp-charter__sig-block { text-align: center; }
+        .sp-charter__sig-title { font-weight: 600; font-size: 11px; color: #34495e; margin-bottom: 12px; }
+        .sp-charter__sig-area { height: 48px; border-bottom: 1px solid #2c3e50; margin: 12px 0 8px; }
+        .sp-charter__sig-name { font-weight: 600; font-size: 11px; color: #2c3e50; }
+        .sp-charter__sig-note { font-size: 9px; color: #7f8c8d; font-style: italic; margin-top: 3px; }
+        .sp-charter__footer-text { margin-top: 16px; padding-top: 12px; border-top: 1px solid #ecf0f1; font-size: 10px; color: #7f8c8d; font-style: italic; text-align: center; }
       `;
     },
   },
@@ -915,543 +544,353 @@ export default {
 </script>
 
 <style scoped>
-/* Suppression des variables CSS - utilisation directe des couleurs */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
-/* Layout général */
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  background: #f8fafc;
+/* ═══════════ ROOT ═══════════ */
+.sp-root {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  color: #1a2332;
+  background: #f4f6f9;
   min-height: 100vh;
-  color: #2d3748;
+  padding: 0 0 48px;
 }
 
-/* Barre d'actions améliorée */
-.action-bar {
+/* ═══════════ TOPBAR ═══════════ */
+.sp-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
+  gap: 12px;
+  padding: 0 28px;
+  height: 60px;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 1px solid #e2e8f0;
-  color: #2d3748;
+  border-bottom: 1px solid #e4e8ef;
 }
+.sp-topbar__center { display: flex; align-items: center; gap: 6px; font-size: .85rem; }
+.sp-topbar__breadcrumb { color: #7a8899; }
+.sp-topbar__sep { color: #e4e8ef; font-size: 1rem; }
+.sp-topbar__current { font-weight: 600; }
+.sp-topbar__actions { display: flex; align-items: center; gap: 8px; }
 
-.btn-modern {
+/* Sélecteur élève inline */
+.sp-student-select-wrap {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+}
+.sp-select-icon {
+  position: absolute;
+  left: 10px;
+  color: #7a8899;
+  pointer-events: none;
+  z-index: 1;
+}
+.sp-student-select {
+  appearance: none;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: .83rem;
   font-weight: 500;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  border: none;
+  color: #1a2332;
+  background: #f4f6f9;
+  border: 1.5px solid #e4e8ef;
+  border-radius: 8px;
+  padding: 0 34px 0 32px;
+  height: 36px;
   cursor: pointer;
-  color: #2d3748;
-}
-
-.btn-modern:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  text-decoration: none;
-  color: #2d3748;
-}
-
-.btn-modern i {
-  font-size: 0.9rem;
-}
-
-.btn-print {
-  background: linear-gradient(135deg, #00d4aa, #00b894);
-  color: white;
-  border: none;
-}
-
-.btn-print:hover:not(.disabled) {
-  background: linear-gradient(135deg, #00b894, #00d4aa);
-  color: white;
-}
-
-.btn-print.disabled {
-  background: #cbd5e0;
-  color: #a0aec0;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Sélecteur d'élève */
-.student-selector-wrapper {
-  flex: 1;
-  max-width: 400px;
-}
-
-.student-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.selector-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #718096;
-  margin: 0;
-}
-
-.modern-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  background: white;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  color: #2d3748;
-}
-
-.modern-select:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transition: border-color .15s;
   outline: none;
+  min-width: 220px;
+}
+.sp-student-select:focus { border-color: #3b6ef5; background: #fff; }
+.sp-select-arrow {
+  position: absolute;
+  right: 10px;
+  color: #7a8899;
+  pointer-events: none;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-/* Alerte moderne */
-.modern-alert {
+/* ═══════════ BUTTONS ═══════════ */
+.sp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+  height: 36px;
+  border-radius: 10px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: .84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+  text-decoration: none;
+  white-space: nowrap;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
-  border-left: 4px solid #4facfe;
-  color: #2d3748;
 }
+.sp-btn--ghost { background: transparent; color: #7a8899; border: 1px solid transparent; }
+.sp-btn--ghost:hover { background: #f4f6f9; color: #1a2332; }
+.sp-btn--primary { background: #3b6ef5; color: #fff; border: 1px solid #3b6ef5; box-shadow: 0 2px 8px rgba(59,110,245,.3); }
+.sp-btn--primary:hover { background: #2d5de0; text-decoration: none; color: #fff; }
+.sp-btn--teal { background: #0fb87a; color: #fff; border: 1px solid #0fb87a; box-shadow: 0 2px 8px rgba(15,184,122,.25); }
+.sp-btn--teal:hover { background: #0aa36c; }
+.sp-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
 
-.alert-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.alert-icon {
-  color: #4facfe;
-  font-size: 1.25rem;
-  margin-top: 0.125rem;
-}
-
-.alert-text {
-  flex: 1;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: #2d3748;
-}
-
-/* Carte parent améliorée */
-.parent-card {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 2rem;
-}
-
-.parent-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
-  color: white;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-}
-
-.avatar-section {
+/* ═══════════ INFO BANNER ═══════════ */
+.sp-info-banner {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 10px;
+  margin: 16px 28px 0;
+  padding: 12px 16px;
+  background: #ebf0ff;
+  border: 1px solid #c5d5fb;
+  border-left: 4px solid #3b6ef5;
+  border-radius: 10px;
+  font-size: .87rem;
+  font-weight: 500;
+  color: #2d5de0;
 }
+.sp-alert-enter-active, .sp-alert-leave-active { transition: all .25s ease; }
+.sp-alert-enter-from, .sp-alert-leave-to { opacity: 0; transform: translateY(-6px); }
 
-.avatar-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  color: white;
-}
-
-.header-info h1 {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: white;
-}
-
-.header-subtitle {
-  margin: 0.5rem 0 0 0;
-  opacity: 0.9;
-  font-size: 0.95rem;
-  color: white;
-}
-
-.header-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: flex-start;
-}
-
-.badge-modern {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  font-size: 0.85rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.parent-body {
-  padding: 2rem;
-}
-
-/* Cartes d'information */
-.info-cards-grid {
+/* ═══════════ LAYOUT ═══════════ */
+.sp-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  max-width: 1280px;
+  margin: 24px auto 0;
+  padding: 0 28px;
+}
+@media (max-width: 900px) {
+  .sp-layout { grid-template-columns: 1fr; }
+  .sp-sidebar { display: none; }
 }
 
-.info-card {
-  display: flex;
-  gap: 1rem;
-  padding: 1.5rem;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  border: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-}
+/* ═══════════ SIDEBAR ═══════════ */
+.sp-sidebar { display: flex; flex-direction: column; gap: 16px; }
 
-.info-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+.sp-id-card {
+  background: #ffffff;
+  border: 1px solid #e4e8ef;
+  border-radius: 14px;
+  padding: 24px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+  text-align: center;
 }
-
-.card-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+.sp-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b6ef5, #764ba2);
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  color: white;
-  flex-shrink: 0;
+  margin: 0 auto 14px;
+  box-shadow: 0 4px 16px rgba(59,110,245,.3);
+  letter-spacing: 1px;
 }
-
-.father-card .card-icon {
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
-}
-
-.mother-card .card-icon {
-  background: linear-gradient(135deg, #f093fb, #f5576c);
-}
-
-.contact-card .card-icon {
-  background: linear-gradient(135deg, #43e97b, #38f9d7);
-}
-
-.card-content {
-  flex: 1;
-}
-
-.card-content h3 {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #718096;
-  margin: 0 0 0.25rem 0;
+.sp-id-card__name { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+.sp-id-card__sub { font-size: .76rem; color: #7a8899; margin-bottom: 16px; word-break: break-word; }
+.sp-id-card__pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.sp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: .76rem;
   font-weight: 600;
 }
+.sp-pill--blue  { background: #ebf0ff; color: #3b6ef5; }
+.sp-pill--slate { background: #f1f5fb; color: #5a6a7e; }
 
-.card-content h4 {
+.sp-amounts-card {
+  background: #ffffff;
+  border: 1px solid #e4e8ef;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+}
+.sp-amounts-card__title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #7a8899; margin-bottom: 10px; }
+.sp-amount-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+.sp-amount-row__label { font-size: .84rem; color: #7a8899; font-weight: 500; }
+.sp-amount-row__value { font-size: 1.05rem; font-weight: 700; }
+.sp-amount-row__value small { font-size: .7rem; color: #7a8899; margin-left: 2px; }
+.sp-amount-divider { height: 1px; background: #e4e8ef; margin: 8px 0; }
+.sp-history-row { display: flex; flex-direction: column; gap: 1px; padding: 4px 0; }
+.sp-history-row__date { font-size: .72rem; color: #7a8899; }
+.sp-history-row__note { font-size: .78rem; color: #1a2332; font-weight: 500; }
+
+.sp-selected-student-card {
+  background: #ffffff;
+  border: 1.5px solid #3b6ef5;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(59,110,245,.08);
+  text-align: center;
+}
+.sp-selected-student-card__label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #3b6ef5; margin-bottom: 10px; }
+.sp-selected-student-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b6ef5, #764ba2);
+  color: #fff;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #2d3748;
-  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+.sp-selected-student-card__name { font-weight: 700; font-size: .95rem; margin-bottom: 4px; }
+.sp-selected-student-card__meta { font-size: .78rem; color: #7a8899; }
+
+/* ═══════════ MAIN / SECTIONS ═══════════ */
+.sp-main { display: flex; flex-direction: column; gap: 20px; }
+
+.sp-section {
+  background: #ffffff;
+  border: 1px solid #e4e8ef;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+}
+.sp-section--flat { padding-bottom: 0; overflow: hidden; }
+
+.sp-section__header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.sp-section__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sp-section__icon--blue  { background: #ebf0ff; color: #3b6ef5; }
+.sp-section__icon--rose  { background: #ffeef7; color: #e84393; }
+.sp-section__icon--green { background: #e4faf3; color: #0fb87a; }
+.sp-section__icon--amber { background: #fff8eb; color: #f5a623; }
+.sp-section__title { font-size: 1rem; font-weight: 700; margin: 0; }
+.sp-badge-count {
+  margin-left: auto;
+  background: #fff8eb;
+  color: #f5a623;
+  font-size: .78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
-.contact-info {
+/* Info grid (lecture seule) */
+.sp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 680px) { .sp-info-grid { grid-template-columns: 1fr; } }
+
+.sp-field { display: flex; flex-direction: column; gap: 5px; }
+.sp-field__label {
+  font-size: .76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: #7a8899;
+}
+.sp-field__value {
+  font-size: .92rem;
+  font-weight: 500;
+  color: #1a2332;
+  background: #f4f6f9;
+  border: 1.5px solid #e4e8ef;
+  border-radius: 8px;
+  padding: 9px 13px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/* ═══════════ STUDENTS LIST ═══════════ */
+.sp-empty {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 8px;
+  padding: 40px;
+  color: #7a8899;
+  font-size: .9rem;
 }
-
-.contact-item {
+.sp-students-list { display: flex; flex-direction: column; }
+.sp-student-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #718096;
+  gap: 14px;
+  padding: 14px 24px;
+  border-top: 1px solid #e4e8ef;
+  animation: sp-slide-in .3s ease both;
+  transition: background .15s;
 }
-
-.contact-item i {
-  width: 16px;
-  color: #667eea;
+.sp-student-row:hover { background: #f4f6f9; }
+@keyframes sp-slide-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
-
-/* Section étudiants */
-.students-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-}
-
-.section-header {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #2d3748;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.section-header i {
-  color: #667eea;
-}
-
-.students-table-wrapper {
-  overflow-x: auto;
-}
-
-.students-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.students-table th {
-  background: #f8f9fa;
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: #2d3748;
-  border-bottom: 2px solid #e2e8f0;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.students-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  color: #2d3748;
-}
-
-.student-row:hover {
-  background: #f8f9fa;
-}
-
-.id-cell {
+.sp-student-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fff8eb, #fde08d);
+  color: #b07a00;
+  font-size: .85rem;
   font-weight: 700;
-  color: #667eea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-
-.name-cell {
-  font-weight: 500;
-  color: #2d3748;
+.sp-student-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sp-student-info__name { font-weight: 600; font-size: .9rem; }
+.sp-student-info__meta { font-size: .78rem; color: #7a8899; }
+.sp-student-level {
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: #e4faf3;
+  color: #0fb87a;
+  border-radius: 20px;
 }
-
-.date-cell {
-  color: #718096;
-}
-
-.level-badge {
+.sp-btn-view {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.75rem;
-  background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
-  border: 1px solid #bbdefb;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #2d3748;
-}
-
-.btn-view {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
-  color: white;
+  gap: 5px;
+  padding: 6px 14px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: .78rem;
+  font-weight: 600;
+  color: #3b6ef5;
+  background: #ebf0ff;
+  border-radius: 7px;
   text-decoration: none;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all .15s;
+  flex-shrink: 0;
 }
+.sp-btn-view:hover { background: #d1dcfd; text-decoration: none; color: #2d5de0; }
 
-.btn-view:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  color: white;
-  text-decoration: none;
-}
+/* ═══════════ CHARTE (cachée) ═══════════ */
+.sp-charter { display: none; }
 
-.empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.empty-content {
-  color: #718096;
-}
-
-.empty-content i {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.empty-content p {
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-/* Charte - Masquée par défaut */
-.charter {
-  display: none;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .action-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .student-selector-wrapper {
-    max-width: none;
-  }
-
-  .action-buttons {
-    justify-content: center;
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .info-cards-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .students-table {
-    font-size: 0.8rem;
-  }
-
-  .students-table th,
-  .students-table td {
-    padding: 0.75rem 0.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 1rem;
-  }
-
-  .parent-header,
-  .parent-body {
-    padding: 1rem;
-  }
-
-  .info-card {
-    padding: 1rem;
-  }
-
-  .avatar-circle {
-    width: 48px;
-    height: 48px;
-    font-size: 1.2rem;
-  }
-
-  .header-info h1 {
-    font-size: 1.4rem;
-  }
-}
-
-/* Styles pour l'impression */
 @media print {
-  body * {
-    visibility: hidden !important;
-  }
-
-  #charter-sheet,
-  #charter-sheet * {
-    visibility: visible !important;
-  }
-
-  #charter-sheet {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-
-  .charter {
-    display: block !important;
-  }
+  body * { visibility: hidden !important; }
+  #charter-sheet, #charter-sheet * { visibility: visible !important; }
+  #charter-sheet { position: absolute; left: 0; top: 0; width: 100%; }
+  .sp-charter { display: block !important; }
 }
-/* Dans getOptimizedPrintCSS() */
-@media print {
-  .pagebreak-before {
-    break-before: page;          /* moderne: Chrome/Edge/Firefox récents */
-    page-break-before: always;   /* compat anciens navigateurs */
-  }
-  /* (optionnel) éviter que le bloc soit re-coupé après le titre */
-  .avoid-break-inside {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-}
-
 </style>
