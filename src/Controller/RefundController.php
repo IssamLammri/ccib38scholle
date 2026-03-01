@@ -57,13 +57,13 @@ class RefundController extends AbstractController
     }
 
     #[Route('/', name: 'api_refund_list',  options: ['expose' => true], methods: ['GET'])]
-    public function index(Request $request, SerializerInterface $serializer): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $refunds = $this->refundRepo->findAll();
 
         return $this->apiResponse([
             'text'   => 'Remboursement créé avec succès.',
-            'refunds' => json_decode($serializer->serialize($refunds, 'json', [
+            'refunds' => json_decode($this->serializer->serialize($refunds, 'json', [
                 'groups' => ['read_refund'],
                 'enable_max_depth' => true,
                 'circular_reference_handler' => fn($o) => method_exists($o,'getId') ? $o->getId() : spl_object_id($o),
@@ -93,7 +93,7 @@ class RefundController extends AbstractController
      * }
      */
     #[Route('/create', name: 'app_refund_create', options: ['expose' => true], methods: ['POST'])]
-    public function create(Request $request, SerializerInterface $serializer,UrlGeneratorInterface $urlGenerator, ParentsRepository $parentsRepository, PaymentRepository $paymentRepository): Response
+    public function create(Request $request,UrlGeneratorInterface $urlGenerator, ParentsRepository $parentsRepository, PaymentRepository $paymentRepository): Response
     {
         // ---- 1) Lire / valider le payload
         $data = json_decode($request->getContent(), true);
@@ -226,14 +226,14 @@ class RefundController extends AbstractController
             'circular_reference_handler' => fn($obj) => method_exists($obj, 'getId') ? $obj->getId() : spl_object_id($obj),
         ];
 
-        $normalizedRefund = json_decode($serializer->serialize($refund, 'json', $context), true);
+        $normalizedRefund = json_decode($this->serializer->serialize($refund, 'json', $context), true);
 
         $redirectUrl = $urlGenerator->generate('api_refund_show', ['id' => $refund->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         // réponse
         return $this->apiResponse([
             'text'   => 'Remboursement créé avec succès.',
-            'refund' => json_decode($serializer->serialize($refund, 'json', [
+            'refund' => json_decode($this->serializer->serialize($refund, 'json', [
                 'groups' => ['read_refund', 'read_invoice'],
                 'enable_max_depth' => true,
                 'circular_reference_handler' => fn($o) => method_exists($o,'getId') ? $o->getId() : spl_object_id($o),

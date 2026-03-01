@@ -74,24 +74,61 @@
 
         <!-- Montants -->
         <div class="sp-amounts-card">
-          <div class="sp-amounts-card__title">Montants dus</div>
-          <div class="sp-amount-row">
-            <span class="sp-amount-row__label">Arabe</span>
-            <span class="sp-amount-row__value">{{ parent.amountDueArabic ?? 0 }} <small>EURO</small></span>
-          </div>
-          <div class="sp-amount-divider"></div>
-          <div class="sp-amount-row">
-            <span class="sp-amount-row__label">Soutien Solaire</span>
-            <span class="sp-amount-row__value">{{ parent.amountDueSoutien ?? 0 }} <small>EURO</small></span>
+          <!-- Header -->
+          <div class="sp-amounts-card__header">
+            <div class="sp-amounts-card__title">Montants dus</div>
+            <div class="sp-amounts-card__hint">€</div>
           </div>
 
-          <!-- Historique si présent -->
-          <template v-if="parent.amountDueHistories && parent.amountDueHistories.length">
+          <!-- Montants -->
+          <div class="sp-amounts-grid">
+            <div class="sp-amount-item">
+              <div class="sp-amount-item__label">Arabe</div>
+              <div class="sp-amount-item__value">{{ parent.amountDueArabic ?? 0 }}</div>
+            </div>
+
+            <div class="sp-amount-item">
+              <div class="sp-amount-item__label">Soutien Scolaire</div>
+              <div class="sp-amount-item__value">{{ parent.amountDueSoutien ?? 0 }}</div>
+            </div>
+          </div>
+
+          <!-- Historique -->
+          <template v-if="parent.amountDueHistories?.length">
             <div class="sp-amount-divider"></div>
-            <div class="sp-amounts-card__title" style="margin-top:4px">Historique</div>
-            <div v-for="(h, i) in parent.amountDueHistories" :key="i" class="sp-history-row">
-              <span class="sp-history-row__date">{{ formatDate(h.date) }}</span>
-              <span class="sp-history-row__note">{{ h.comment || h.label || '—' }}</span>
+
+            <div class="sp-amounts-card__section-title">Historique</div>
+
+            <div class="sp-history">
+              <div
+                  v-for="h in [...parent.amountDueHistories].sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt))"
+                  :key="h.id"
+                  class="sp-history-item"
+              >
+                <div class="sp-history-item__marker"></div>
+
+                <div class="sp-history-item__content">
+                  <div class="sp-history-item__top">
+            <span class="sp-history-item__tag">
+              {{ fieldLabel(h.field) }}
+            </span>
+
+                    <span class="sp-history-item__date">
+              {{ formatDate(h.createdAt) }}
+            </span>
+                  </div>
+
+                  <div class="sp-history-item__values">
+                    <span class="sp-history-item__old">{{ h.oldValue ?? 0 }} €</span>
+                    <span class="sp-history-item__arrow">→</span>
+                    <span class="sp-history-item__new">{{ h.newValue ?? 0 }} €</span>
+                  </div>
+
+                  <div v-if="h.comment || h.label" class="sp-history-item__note">
+                    {{ h.comment || h.label }}
+                  </div>
+                </div>
+              </div>
             </div>
           </template>
         </div>
@@ -463,6 +500,13 @@ export default {
     },
   },
   methods: {
+    fieldLabel(field){
+      const labels = {
+        amountDueArabic: "Arabe",
+        amountDueSoutien: "Soutien Scolaire",
+      };
+      return labels[field] || field || "Champ";
+    },
     clean(v) {
       if (v === null || v === undefined) return "";
       const s = String(v).trim();
@@ -892,5 +936,176 @@ export default {
   #charter-sheet, #charter-sheet * { visibility: visible !important; }
   #charter-sheet { position: absolute; left: 0; top: 0; width: 100%; }
   .sp-charter { display: block !important; }
+}
+.sp-amounts-card{
+  background:#fff;
+  border:1px solid #eef0f4;
+  border-radius:14px;
+  padding:14px;
+  box-shadow: 0 6px 18px rgba(16,24,40,.06);
+}
+
+.sp-amounts-card__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.sp-amounts-card__title{
+  font-weight:700;
+  font-size:14px;
+  color:#101828;
+}
+
+.sp-amounts-card__hint{
+  font-size:12px;
+  color:#667085;
+  background:#f2f4f7;
+  padding:4px 8px;
+  border-radius:999px;
+}
+
+.sp-amounts-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+.sp-amount-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 12px;
+  border:1px solid #f2f4f7;
+  border-radius:12px;
+  background:#fafbfc;
+}
+
+.sp-amount-item__label{
+  font-size:13px;
+  color:#344054;
+}
+
+.sp-amount-item__value{
+  font-weight:800;
+  font-size:14px;
+  color:#101828;
+  background:#fff;
+  border:1px solid #e4e7ec;
+  padding:6px 10px;
+  border-radius:999px;
+  min-width:72px;
+  text-align:right;
+}
+
+.sp-amount-divider{
+  height:1px;
+  background:#eef0f4;
+  margin:12px 0;
+}
+
+.sp-amounts-card__section-title{
+  font-weight:700;
+  font-size:13px;
+  color:#101828;
+  margin-bottom:10px;
+}
+
+/* Timeline */
+.sp-history{
+  position:relative;
+  padding-left:14px;
+}
+
+.sp-history:before{
+  content:"";
+  position:absolute;
+  left:6px;
+  top:0;
+  bottom:0;
+  width:2px;
+  background:#eef0f4;
+}
+
+.sp-history-item{
+  position:relative;
+  display:flex;
+  gap:10px;
+  padding:10px 0;
+}
+
+.sp-history-item__marker{
+  position:absolute;
+  left:1px;
+  top:18px;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#fff;
+  border:2px solid #d0d5dd;
+}
+
+.sp-history-item__content{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid #f2f4f7;
+  border-radius:12px;
+  background:#fff;
+}
+
+.sp-history-item__top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:6px;
+}
+
+.sp-history-item__tag{
+  font-size:12px;
+  font-weight:700;
+  color:#344054;
+  background:#f2f4f7;
+  padding:4px 8px;
+  border-radius:999px;
+}
+
+.sp-history-item__date{
+  font-size:12px;
+  color:#667085;
+  white-space:nowrap;
+}
+
+.sp-history-item__values{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  font-size:13px;
+  margin-bottom:6px;
+}
+
+.sp-history-item__old{
+  color:#667085;
+  text-decoration: line-through;
+}
+
+.sp-history-item__arrow{
+  color:#98a2b3;
+  font-weight:700;
+}
+
+.sp-history-item__new{
+  color:#101828;
+  font-weight:800;
+}
+
+.sp-history-item__note{
+  font-size:12px;
+  color:#475467;
+  background:#fafbfc;
+  border:1px solid #f2f4f7;
+  padding:8px 10px;
+  border-radius:10px;
 }
 </style>
