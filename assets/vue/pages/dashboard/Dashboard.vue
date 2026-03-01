@@ -192,8 +192,9 @@
             <tr
                 v-for="(p, index) in unpaidParents"
                 :key="p.parentId"
-                class="table-row"
+                class="table-row row-clickable"
                 :style="{'--row-index': index}"
+                @click="openParentEdit(p)"
             >
               <td>
                 <div class="parent-name">{{ p.parentName }}</div>
@@ -455,6 +456,12 @@ export default {
 
 
   methods: {
+    openParentEdit(p) {
+      if (!p?.parentId) return;
+
+      const url = this.$routing.generate('app_parent_entity_edit', { id: p.parentId });
+      window.open(url, '_blank', 'noopener,noreferrer'); // nouvel onglet
+    },
     fetchInfosNotPayed() {
       this.unpaidLoading = true;
       this.unpaidError = null;
@@ -1399,5 +1406,12 @@ export default {
 .split-row.success .lbl {
   color: #059669;
   opacity: 0.8;
+}
+.row-clickable {
+  cursor: pointer;
+}
+
+.row-clickable:hover {
+  background: #f0fff4; /* léger feedback */
 }
 </style>
