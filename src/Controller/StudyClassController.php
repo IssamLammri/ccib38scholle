@@ -306,4 +306,25 @@ class StudyClassController extends AbstractController
             'message' => 'Classe créée avec succès'
         ], Response::HTTP_CREATED);
     }
+
+    #[Route('/student-class-registered/{id}/book-name', name: '_update_book_name_registered', options: ['expose' => true], methods: ['POST'])]
+    public function updateBookName(
+        StudentClassRegistered $reg,
+        Request $request,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $bookName = isset($data['bookName']) ? trim((string)$data['bookName']) : null;
+
+        // optionnel: si vide -> null
+        if ($bookName === '') $bookName = null;
+
+        $reg->setBookName($bookName);
+        $em->flush();
+
+        return $this->json([
+            'id' => $reg->getId(),
+            'bookName' => $reg->getBookName(),
+        ]);
+    }
 }

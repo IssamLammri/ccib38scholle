@@ -21,16 +21,21 @@ class StudentClassRegistered
     #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'registrations')]
     #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     #[Groups(['read_student_class_registered'])]
-    private ?Student $student = null; // Relation Many-to-One avec Student
+    private ?Student $student = null;
 
     #[ORM\ManyToOne(targetEntity: StudyClass::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['read_payment','read_student','read_parent'])]
-    private ?StudyClass $studyClass = null; // Relation Many-to-One avec StudyClass
+    private ?StudyClass $studyClass = null;
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => null])]
     #[Groups(['read_student_class_registered','read_payment','read_student','read_parent'])]
     private ?bool $active = null;
+
+    // ✅ Nouveau champ : nom du livre pris (français/arabe OK)
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['read_student_class_registered','read_payment','read_student','read_parent'])]
+    private ?string $bookName = null;
 
     public function __construct(StudyClass $studyClass, Student $student)
     {
@@ -38,9 +43,8 @@ class StudentClassRegistered
         $this->student = $student;
         $this->active = true;
         $this->createdAt = new \DateTimeImmutable();
+        // $this->bookName = null; // optionnel
     }
-
-    // Getters et Setters
 
     public function getId(): ?int
     {
@@ -55,7 +59,6 @@ class StudentClassRegistered
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -67,7 +70,6 @@ class StudentClassRegistered
     public function setStudent(?Student $student): self
     {
         $this->student = $student;
-
         return $this;
     }
 
@@ -79,7 +81,6 @@ class StudentClassRegistered
     public function setStudyClass(?StudyClass $studyClass): self
     {
         $this->studyClass = $studyClass;
-
         return $this;
     }
 
@@ -91,7 +92,18 @@ class StudentClassRegistered
     public function setActive(?bool $active): self
     {
         $this->active = $active;
+        return $this;
+    }
 
+    // ✅ Getter/Setter du nouveau champ
+    public function getBookName(): ?string
+    {
+        return $this->bookName;
+    }
+
+    public function setBookName(?string $bookName): self
+    {
+        $this->bookName = $bookName;
         return $this;
     }
 }

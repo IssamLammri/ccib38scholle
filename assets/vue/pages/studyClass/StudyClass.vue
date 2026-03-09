@@ -1,325 +1,352 @@
 <template>
-  <div class="modern-container">
+  <div class="class-details">
 
-    <!-- Navigation flottante -->
-    <div class="floating-nav">
-      <a :href="$routing.generate('app_study_class_index')" class="nav-btn back-btn">
+    <!-- Top bar -->
+    <header class="topbar">
+      <a :href="$routing.generate('app_study_class_index')" class="btn btn-ghost">
         <i class="fas fa-arrow-left"></i>
         <span>Retour</span>
       </a>
 
-      <div class="action-buttons">
-        <button @click="printBooksReport" class="nav-btn print-btn">
+      <div class="topbar-actions">
+        <button @click="printBooksReport" class="btn btn-soft" type="button">
           <i class="fas fa-print"></i>
           <span>Imprimer Livres</span>
         </button>
-        <button @click="printClassReport" class="nav-btn print-btn">
+
+        <button @click="printClassReport" class="btn btn-soft" type="button">
           <i class="fas fa-print"></i>
           <span>Imprimer</span>
         </button>
-        <a :href="$routing.generate('app_study_class_edit', { id: studyClass.id })" class="nav-btn edit-btn">
+
+        <a
+            :href="$routing.generate('app_study_class_edit', { id: studyClass.id })"
+            class="btn btn-primary"
+        >
           <i class="fas fa-edit"></i>
           <span>Modifier</span>
         </a>
       </div>
-    </div>
+    </header>
 
-    <!-- En-tête principal -->
-    <div class="hero-header">
-      <div class="hero-content">
-        <div class="class-badge">{{ studyClass.levelClass }}</div>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-main">
+        <div class="pill">
+          <i class="fas fa-graduation-cap"></i>
+          <span>{{ studyClass.levelClass }}</span>
+        </div>
+
         <h1 class="hero-title">{{ studyClass.name }}</h1>
         <p class="hero-subtitle">{{ studyClass.speciality }}</p>
 
-        <!-- >>> Ajout: Salle + Année scolaire dans les stats -->
-        <div class="hero-stats">
-          <div class="stat-item">
+        <div class="hero-metas">
+          <div class="meta">
             <i class="fas fa-users"></i>
             <span>{{ filteredStudents.length }} étudiants {{ filterActive ? 'actifs' : 'inactifs' }}</span>
           </div>
-          <div class="stat-item">
+          <div class="meta">
             <i class="fas fa-calendar"></i>
             <span>{{ studyClass.day }}</span>
           </div>
-          <div class="stat-item">
+          <div class="meta">
             <i class="fas fa-clock"></i>
             <span>{{ formatTime(studyClass.startHour) }} - {{ formatTime(studyClass.endHour) }}</span>
           </div>
-          <div class="stat-item" v-if="studyClass.schoolYear">
-            <i class="fas fa-graduation-cap"></i>
+          <div class="meta" v-if="studyClass.schoolYear">
+            <i class="fas fa-school"></i>
             <span>{{ studyClass.schoolYear }}</span>
           </div>
-          <div class="stat-item" v-if="studyClass.principalRoom">
+          <div class="meta" v-if="studyClass.principalRoom">
             <i class="fas fa-door-open"></i>
             <span>{{ formatRoom(studyClass.principalRoom) }}</span>
           </div>
         </div>
-        <!-- <<< -->
-      </div>
-      <div class="hero-decoration">
-        <div class="floating-element element-1"></div>
-        <div class="floating-element element-2"></div>
-        <div class="floating-element element-3"></div>
-      </div>
-    </div>
-
-    <alert
-        v-if="messageAlert"
-        :text="messageAlert"
-        :type="typeAlert"
-        class="modern-alert"
-    />
-
-    <!-- Informations de la Classe -->
-    <div class="glass-card class-info-card">
-      <div class="card-header">
-        <h2><i class="fas fa-info-circle"></i> Informations de la Classe</h2>
       </div>
 
-      <div class="info-grid">
-        <div class="info-card">
-          <div class="info-icon level-icon"><i class="fas fa-graduation-cap"></i></div>
-          <div class="info-content">
-            <label>Niveau</label>
-            <value>{{ studyClass.levelClass }}</value>
-          </div>
+      <div class="hero-bg" aria-hidden="true">
+        <span class="blob b1"></span>
+        <span class="blob b2"></span>
+        <span class="blob b3"></span>
+      </div>
+    </section>
+
+    <alert v-if="messageAlert" :text="messageAlert" :type="typeAlert" class="page-alert" />
+
+    <!-- Content grid -->
+    <div class="grid">
+      <!-- Left: infos -->
+      <section class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-info-circle"></i> Informations</h2>
         </div>
 
-        <div class="info-card">
-          <div class="info-icon specialty-icon"><i class="fas fa-book"></i></div>
-          <div class="info-content">
-            <label>Spécialité</label>
-            <value>{{ studyClass.speciality }}</value>
+        <div class="info-list">
+          <div class="info-item">
+            <div class="info-label">Niveau</div>
+            <div class="info-value">{{ studyClass.levelClass }}</div>
           </div>
-        </div>
 
-        <div class="info-card">
-          <div class="info-icon type-icon"><i class="fas fa-tag"></i></div>
-          <div class="info-content">
-            <label>Type</label>
-            <value>{{ studyClass.classType }}</value>
+          <div class="info-item">
+            <div class="info-label">Spécialité</div>
+            <div class="info-value">{{ studyClass.speciality }}</div>
           </div>
-        </div>
 
-        <div class="info-card">
-          <div class="info-icon schedule-icon"><i class="fas fa-calendar-alt"></i></div>
-          <div class="info-content">
-            <label>Planning</label>
-            <value>{{ studyClass.day }}</value>
+          <div class="info-item">
+            <div class="info-label">Type</div>
+            <div class="info-value">{{ studyClass.classType }}</div>
           </div>
-        </div>
 
-        <div class="info-card">
-          <div class="info-icon time-icon"><i class="fas fa-clock"></i></div>
-          <div class="info-content">
-            <label>Horaires</label>
-            <value>{{ formatTime(studyClass.startHour) }} - {{ formatTime(studyClass.endHour) }}</value>
+          <div class="info-item">
+            <div class="info-label">Jour</div>
+            <div class="info-value">{{ studyClass.day }}</div>
           </div>
-        </div>
 
-        <div class="info-card" v-if="studyClass.principalTeacher">
-          <div class="info-icon teacher-icon"><i class="fas fa-user-tie"></i></div>
-          <div class="info-content">
-            <label>Professeur</label>
-            <value>{{ studyClass.principalTeacher.firstName }} {{ studyClass.principalTeacher.lastName }}</value>
-          </div>
-        </div>
-
-        <!-- >>> Ajout: Année scolaire -->
-        <div class="info-card" v-if="studyClass.schoolYear">
-          <div class="info-icon level-icon"><i class="fas fa-graduation-cap"></i></div>
-          <div class="info-content">
-            <label>Année scolaire</label>
-            <value>{{ studyClass.schoolYear }}</value>
-          </div>
-        </div>
-
-        <!-- >>> Ajout: Salle principale -->
-        <div class="info-card" v-if="studyClass.principalRoom">
-          <div class="info-icon time-icon"><i class="fas fa-door-open"></i></div>
-          <div class="info-content">
-            <label>Salle principale</label>
-            <value>{{ formatRoom(studyClass.principalRoom) }}</value>
-          </div>
-        </div>
-        <!-- <<< -->
-        <!-- >>> Ajout: Groupe WhatsApp -->
-        <div class="info-card" v-if="studyClass.whatsappUrl">
-          <div class="info-icon whatsapp-icon">
-            <i class="fab fa-whatsapp"></i>
-          </div>
-          <div class="info-content">
-            <label>Groupe WhatsApp</label>
-
-            <div class="whatsapp-actions">
-              <!-- Bouton pour ouvrir le groupe -->
-              <a
-                  :href="normalizedWhatsappUrl"
-                  target="_blank"
-                  rel="noopener"
-                  class="whatsapp-open-btn"
-              >
-                <i class="fab fa-whatsapp"></i>
-                Ouvrir le groupe
-              </a>
-
-              <!-- Bouton pour copier -->
-              <button
-                  type="button"
-                  class="whatsapp-copy-btn"
-                  @click="copyWhatsappUrl"
-              >
-                <i class="fas fa-copy"></i>
-                Copier le lien
-              </button>
+          <div class="info-item">
+            <div class="info-label">Horaires</div>
+            <div class="info-value">
+              {{ formatTime(studyClass.startHour) }} - {{ formatTime(studyClass.endHour) }}
             </div>
+          </div>
 
-            <!-- Affichage du lien brut (optionnel) -->
-            <small class="whatsapp-link">
-              {{ studyClass.whatsappUrl }}
-            </small>
+          <div class="info-item" v-if="studyClass.principalTeacher">
+            <div class="info-label">Professeur</div>
+            <div class="info-value">
+              {{ studyClass.principalTeacher.firstName }} {{ studyClass.principalTeacher.lastName }}
+            </div>
+          </div>
+
+          <div class="info-item" v-if="studyClass.schoolYear">
+            <div class="info-label">Année scolaire</div>
+            <div class="info-value">{{ studyClass.schoolYear }}</div>
+          </div>
+
+          <div class="info-item" v-if="studyClass.principalRoom">
+            <div class="info-label">Salle principale</div>
+            <div class="info-value">{{ formatRoom(studyClass.principalRoom) }}</div>
           </div>
         </div>
-        <!-- <<< -->
-      </div>
-    </div>
 
-    <!-- Étudiants -->
-    <div class="glass-card students-section">
-      <div class="students-header">
-        <div class="section-title">
-          <h3><i class="fas fa-users"></i> Étudiants de la Classe</h3>
-          <div class="student-count-badge">{{ filteredStudents.length }}</div>
+        <!-- WhatsApp -->
+        <div class="divider" v-if="studyClass.whatsappUrl"></div>
+
+        <div class="whatsapp" v-if="studyClass.whatsappUrl">
+          <div class="whatsapp-head">
+            <div class="whatsapp-icon"><i class="fab fa-whatsapp"></i></div>
+            <div>
+              <div class="whatsapp-title">Groupe WhatsApp</div>
+              <div class="whatsapp-sub">Accès rapide + copie du lien</div>
+            </div>
+          </div>
+
+          <div class="whatsapp-actions">
+            <a
+                :href="normalizedWhatsappUrl"
+                target="_blank"
+                rel="noopener"
+                class="btn btn-whatsapp"
+            >
+              <i class="fab fa-whatsapp"></i>
+              Ouvrir
+            </a>
+
+            <button type="button" class="btn btn-ghost" @click="copyWhatsappUrl">
+              <i class="fas fa-copy"></i>
+              Copier le lien
+            </button>
+          </div>
+
+          <small class="whatsapp-link">{{ studyClass.whatsappUrl }}</small>
         </div>
+      </section>
 
-        <div class="controls-container">
-          <div class="filter-toggle">
-            <label class="toggle-label">
-              <input type="checkbox" v-model="filterActive" class="toggle-input">
-              <span class="toggle-slider">
-                <span class="toggle-text">{{ filterActive ? 'Actifs' : 'Inactifs' }}</span>
+      <!-- Right: students -->
+      <section class="card">
+        <div class="card-header card-header-row">
+          <h2><i class="fas fa-users"></i> Étudiants</h2>
+
+          <div class="students-controls">
+            <label class="segmented">
+              <input type="checkbox" v-model="filterActive" />
+              <span class="segmented-track">
+                <span class="segmented-option">{{ filterActive ? 'Actifs' : 'Inactifs' }}</span>
               </span>
             </label>
+
+            <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#newStudentModal"
+                type="button"
+            >
+              <i class="fas fa-plus"></i>
+              <span>Ajouter</span>
+            </button>
           </div>
-
-          <button class="add-student-btn" data-bs-toggle="modal" data-bs-target="#newStudentModal">
-            <i class="fas fa-plus"></i>
-            <span>Ajouter un étudiant</span>
-          </button>
         </div>
-      </div>
 
-      <div class="modern-table-container">
-        <div class="table-wrapper">
-          <table class="modern-table">
+        <div class="table-wrap">
+          <table class="table">
             <thead>
             <tr>
-              <th><i class="fas fa-hashtag"></i> ID</th>
-              <th><i class="fas fa-user"></i> Nom</th>
-              <th><i class="fas fa-user-circle"></i> Prénom</th>
-              <th><i class="fas fa-birthday-cake"></i> Naissance</th>
-              <th><i class="fas fa-layer-group"></i> Niveau</th>
-              <th><i class="fas fa-book"></i> Livres</th>
-
-              <th><i class="fas fa-toggle-on"></i> Statut</th>
-              <th><i class="fas fa-cog"></i> Actions</th>
+              <th class="col-id">ID</th>
+              <th>Nom</th>
+              <th>Prénom</th>
+              <th class="col-date">Naissance</th>
+              <th class="col-level">Niveau</th>
+              <th class="col-books">Livres</th>
+              <th v-if="isCompetition" class="col-bookname">Livre (Compétition)</th>
+              <th class="col-status">Statut</th>
+              <th class="col-actions">Actions</th>
             </tr>
             </thead>
+
             <tbody>
-            <tr v-for="studentClassRegistered in filteredStudents"
+            <tr
+                v-for="studentClassRegistered in filteredStudents"
                 :key="studentClassRegistered.id"
-                class="student-row"
-                :class="{ 'inactive-student': !studentClassRegistered.active }">
+                :class="['col', { inactive: !studentClassRegistered.active }]"
+            >
+              <td class="muted">{{ studentClassRegistered.student.id }}</td>
 
-              <td class="id-cell">{{ studentClassRegistered.student.id }}</td>
-              <td class="name-cell">
-                <div class="student-avatar">
-                  {{ studentClassRegistered.student.lastName.charAt(0) }}
-                </div>
-                <span>{{ studentClassRegistered.student.lastName }}</span>
-              </td>
-              <td>{{ studentClassRegistered.student.firstName }}</td>
-              <td>{{ new Date(studentClassRegistered.student.birthDate).toLocaleDateString('fr-FR') }}</td>
-              <td><span class="level-badge">{{ studentClassRegistered.student.levelClass }}</span></td>
-
-              <!-- ⬇️ AJOUT -->
               <td>
-                <span class="books-badge tooltip-badge">
-                  {{ booksIndex[studentClassRegistered.id]?.count ?? 0 }}
-                  <span class="tooltip-content" v-if="booksIndex[studentClassRegistered.id]?.count">
-                    <strong>Livres :</strong><br>
-                    <span v-for="(t, i) in booksIndex[studentClassRegistered.id].list" :key="i">
-                      • {{ t }}<br>
+                <div class="name">
+                  <div class="avatar">
+                    {{ studentClassRegistered.student.lastName?.charAt(0) }}
+                  </div>
+                  <div class="name-lines">
+                    <div class="name-main">{{ studentClassRegistered.student.lastName }}</div>
+                    <div class="name-sub">#{{ studentClassRegistered.id }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <td>{{ studentClassRegistered.student.firstName }}</td>
+              <td class="muted">
+                {{ new Date(studentClassRegistered.student.birthDate).toLocaleDateString('fr-FR') }}
+              </td>
+
+              <td>
+                <span class="badge">{{ studentClassRegistered.student.levelClass }}</span>
+              </td>
+
+              <!-- Livres -->
+              <td>
+                  <span class="books tooltip">
+                    {{ booksIndex[studentClassRegistered.id]?.count ?? 0 }}
+                    <span
+                        class="tooltip-panel"
+                        v-if="booksIndex[studentClassRegistered.id]?.count"
+                    >
+                      <strong>Livres</strong>
+                      <span class="tooltip-line"
+                            v-for="(t, i) in booksIndex[studentClassRegistered.id].list"
+                            :key="i"
+                      >
+                        • {{ t }}
+                      </span>
                     </span>
                   </span>
-                </span>
               </td>
-              <!-- ⬆️ AJOUT -->
 
+              <!-- Competition bookName -->
+              <td v-if="isCompetition">
+                <div class="bookname-edit">
+                  <input
+                      class="input"
+                      type="text"
+                      :value="bookNameDraft[studentClassRegistered.id]"
+                      @input="bookNameDraft[studentClassRegistered.id] = $event.target.value"
+                      placeholder="Nom du livre..."
+                  />
+
+                  <button
+                      type="button"
+                      class="btn btn-ok"
+                      title="Valider"
+                      :disabled="
+                        savingBookName[studentClassRegistered.id] ||
+                        (bookNameDraft[studentClassRegistered.id] || '') === (studentClassRegistered.bookName || '')
+                      "
+                      @click="updateBookName(studentClassRegistered)"
+                  >
+                    <i v-if="savingBookName[studentClassRegistered.id]" class="fas fa-spinner fa-spin"></i>
+                    <i v-else class="fas fa-check"></i>
+                  </button>
+                </div>
+              </td>
+
+              <!-- Statut -->
               <td>
-                <label class="status-switch">
-                  <input type="checkbox"
-                         :checked="studentClassRegistered.active"
-                         @change="confirmDeactivation(studentClassRegistered)">
-                  <span class="switch-slider"><span class="switch-indicator"></span></span>
+                <label class="switch">
+                  <input
+                      type="checkbox"
+                      :checked="studentClassRegistered.active"
+                      @change="confirmDeactivation(studentClassRegistered)"
+                  />
+                  <span class="switch-ui"></span>
                 </label>
               </td>
+
+              <!-- Actions -->
               <td>
-                <button class="action-btn delete-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteConfirmationModal"
-                        @click="studentToDelete = studentClassRegistered">
+                <button
+                    class="btn btn-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteConfirmationModal"
+                    @click="studentToDelete = studentClassRegistered"
+                    type="button"
+                >
                   <i class="fas fa-trash-alt"></i>
-                  <span>Supprimer</span>
+                  <span class="hide-sm">Supprimer</span>
                 </button>
               </td>
             </tr>
 
-
-            <tr v-if="!filteredStudents.length" class="empty-state">
-              <td colspan="7">
-                <div class="empty-content">
+            <tr v-if="!filteredStudents.length">
+              <td :colspan="isCompetition ? 9 : 8" class="empty">
+                <div class="empty-box">
                   <i class="fas fa-users-slash"></i>
-                  <h4>Aucun étudiant {{ filterActive ? 'actif' : 'inactif' }}</h4>
-                  <p>Cette classe ne contient aucun étudiant {{ filterActive ? 'actif' : 'inactif' }} pour le moment.</p>
+                  <div class="empty-title">
+                    Aucun étudiant {{ filterActive ? 'actif' : 'inactif' }}
+                  </div>
+                  <div class="empty-sub">
+                    Cette classe ne contient aucun étudiant {{ filterActive ? 'actif' : 'inactif' }} pour le moment.
+                  </div>
                 </div>
               </td>
             </tr>
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
 
     <!-- Modals -->
     <div class="modal fade" id="deactivationConfirmationModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modern-modal">
+        <div class="modal-content modal-modern">
           <div class="modal-header">
-            <div class="modal-icon warning-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="modal-badge warning"><i class="fas fa-exclamation-triangle"></i></div>
             <h5 class="modal-title">Désactiver l'étudiant</h5>
-            <button type="button" class="btn-close modern-close" data-bs-dismiss="modal"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
+
           <div class="modal-body">
-            <div class="warning-message">
-              <p><strong>Attention :</strong> Vérifiez que l'élève a réglé tous ses frais avant de procéder.</p>
-              <div class="action-guide">
-                <div class="guide-item valid">
-                  <i class="fas fa-check-circle"></i>
-                  <span>Paiements à jour → Désactiver</span>
-                </div>
-                <div class="guide-item invalid">
-                  <i class="fas fa-times-circle"></i>
-                  <span>Paiements en attente → Contacter l'administration</span>
-                </div>
-              </div>
+            <div class="callout">
+              <p><strong>Attention :</strong> vérifiez que l'élève a réglé tous ses frais avant de procéder.</p>
+              <ul class="callout-list">
+                <li><i class="fas fa-check-circle"></i> Paiements à jour → Désactiver</li>
+                <li><i class="fas fa-times-circle"></i> Paiements en attente → Contacter l'administration</li>
+              </ul>
             </div>
           </div>
+
           <div class="modal-footer">
-            <button type="button" class="btn-modern btn-secondary" data-bs-dismiss="modal">
+            <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">
               <i class="fas fa-times"></i> Annuler
             </button>
-            <button type="button" class="btn-modern btn-warning" @click="deactivateStudent" data-bs-dismiss="modal">
+            <button type="button" class="btn btn-warn" @click="deactivateStudent" data-bs-dismiss="modal">
               <i class="fas fa-user-slash"></i> Désactiver
             </button>
           </div>
@@ -331,27 +358,30 @@
 
     <div class="modal fade" id="deleteConfirmationModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modern-modal">
+        <div class="modal-content modal-modern">
           <div class="modal-header">
-            <div class="modal-icon danger-icon"><i class="fas fa-trash-alt"></i></div>
+            <div class="modal-badge danger"><i class="fas fa-trash-alt"></i></div>
             <h5 class="modal-title">Supprimer l'étudiant</h5>
-            <button type="button" class="btn-close modern-close" data-bs-dismiss="modal"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
+
           <div class="modal-body">
             <p>Cette action supprimera définitivement cet étudiant de la classe.</p>
             <p><strong>Cette action est irréversible.</strong></p>
           </div>
+
           <div class="modal-footer">
-            <button type="button" class="btn-modern btn-secondary" data-bs-dismiss="modal">
+            <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">
               <i class="fas fa-times"></i> Annuler
             </button>
-            <button type="button" class="btn-modern btn-danger" @click="deleteStudent" data-bs-dismiss="modal">
+            <button type="button" class="btn btn-danger" @click="deleteStudent" data-bs-dismiss="modal">
               <i class="fas fa-trash-alt"></i> Confirmer
             </button>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -364,8 +394,8 @@ export default {
   components: { Alert, NewStudentToClassModal },
   props: {
     studyClass: { type: Object, required: true },
-    studentsInStudyClass: { type: Array, required: true },        // ⬅️ Array
-    studentsNotInStudyClass: { type: Array, required: true }       // ⬅️ Array
+    studentsInStudyClass: { type: Array, required: true },
+    studentsNotInStudyClass: { type: Array, required: true }
   },
   data() {
     return {
@@ -373,28 +403,26 @@ export default {
       typeAlert: null,
       studentToDelete: null,
       studentToDeactivate: null,
+      savingBookName: {},
+      bookNameDraft: {},
       filterActive: true,
       localStudentsInStudyClass: [...this.studentsInStudyClass],
     };
   },
   computed: {
+    isCompetition() {
+      return this.studyClass?.classType === 'Competition';
+    },
     normalizedWhatsappUrl() {
       const url = this.studyClass?.whatsappUrl || '';
       if (!url) return '#';
-
-      // Si l'URL commence déjà par http(s), on la garde
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-      }
-
-      // Sinon on préfixe en https
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
       return 'https://' + url;
     },
     filteredStudents() {
       return this.localStudentsInStudyClass.filter(s => s.active === this.filterActive);
     },
     booksIndex() {
-      // indexe { registrationId: { count, list } } pour tooltip + impression
       const idx = {};
       for (const r of this.localStudentsInStudyClass) {
         const payments = r?.student?.payments || [];
@@ -408,7 +436,51 @@ export default {
       return idx;
     }
   },
+  mounted() {
+    for (const r of this.localStudentsInStudyClass) {
+      this.$set
+          ? this.$set(this.bookNameDraft, r.id, r.bookName || '')
+          : (this.bookNameDraft[r.id] = r.bookName || '');
+    }
+  },
+  watch: {
+    localStudentsInStudyClass: {
+      deep: true,
+      handler(list) {
+        for (const r of list) {
+          if (this.bookNameDraft[r.id] === undefined) {
+            this.bookNameDraft[r.id] = r.bookName || '';
+          }
+        }
+      }
+    }
+  },
   methods: {
+    async updateBookName(registration) {
+      const id = registration.id;
+      const newName = (this.bookNameDraft[id] || '').trim();
+      this.savingBookName = { ...this.savingBookName, [id]: true };
+
+      try {
+        const url = this.$routing.generate('_update_book_name_registered', { id });
+        await this.$axios.post(url, { bookName: newName }, { headers: { Accept: 'application/json' } });
+
+        this.localStudentsInStudyClass = this.localStudentsInStudyClass.map(r =>
+            r.id === id ? { ...r, bookName: newName } : r
+        );
+
+        this.messageAlert = 'Livre mis à jour.';
+        this.typeAlert = 'success';
+      } catch (e) {
+        console.error(e);
+        this.messageAlert = "Erreur lors de la mise à jour du livre.";
+        this.typeAlert = "danger";
+        this.bookNameDraft[id] = registration.bookName || '';
+      } finally {
+        this.savingBookName = { ...this.savingBookName, [id]: false };
+      }
+    },
+
     async copyWhatsappUrl() {
       const url = this.studyClass?.whatsappUrl;
       if (!url) return;
@@ -423,6 +495,7 @@ export default {
         this.typeAlert = "danger";
       }
     },
+
     printBooksReport() {
       const html = this.generateBooksPrintContent();
       const w = window.open('', '_blank');
@@ -436,8 +509,6 @@ export default {
 
     generateBooksPrintContent() {
       const currentDate = new Date().toLocaleDateString('fr-FR');
-
-      // On prend tous les élèves (actifs/inactifs) pour l’attribution ? -> ici: tous
       const registrations = this.localStudentsInStudyClass;
 
       const rows = registrations.map(r => {
@@ -448,65 +519,63 @@ export default {
             .filter(Boolean);
 
         return `
-        <tr>
-          <td>${r.student.lastName?.toUpperCase() || ''}</td>
-          <td>${r.student.firstName || ''}</td>
-          <td>${names.length}</td>
-          <td>${names.length ? names.join(' | ') : '—'}</td>
-        </tr>
-      `;
+          <tr>
+            <td>${r.student.lastName?.toUpperCase() || ''}</td>
+            <td>${r.student.firstName || ''}</td>
+            <td>${names.length}</td>
+            <td>${names.length ? names.join(' | ') : '—'}</td>
+          </tr>
+        `;
       }).join('');
 
       return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Livres à attribuer - ${this.studyClass?.name || ''}</title>
-        <style>
-          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; color: #333; }
-          h1 { margin: 0 0 4px; color: #333; }
-          .sub { color: #666; margin-bottom: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-          th { background: #f6f7ff; }
-          tr:nth-child(even){ background:#fafbff; }
-          .footer { margin-top: 24px; font-size:12px; color:#888; text-align:center; }
-          @media print {
-            body { margin: 8mm; }
-            th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Livres à attribuer</h1>
-        <div class="sub">
-          Classe: <strong>${this.studyClass?.name || ''}</strong>
-          &nbsp;•&nbsp; Spécialité: ${this.studyClass?.speciality || ''}
-          &nbsp;•&nbsp; Généré le ${currentDate}
-        </div>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Livres à attribuer - ${this.studyClass?.name || ''}</title>
+          <style>
+            body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; color:#111; }
+            h1 { margin: 0 0 6px; }
+            .sub { color:#555; margin-bottom: 16px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 10px; border-bottom: 1px solid #eee; text-align:left; vertical-align: top; }
+            th { background: #f6f7ff; }
+            tr:nth-child(even){ background:#fafbff; }
+            .footer { margin-top: 18px; font-size:12px; color:#777; text-align:center; }
+            @media print {
+              body { margin: 8mm; }
+              th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Livres à attribuer</h1>
+          <div class="sub">
+            Classe: <strong>${this.studyClass?.name || ''}</strong>
+            &nbsp;•&nbsp; Spécialité: ${this.studyClass?.speciality || ''}
+            &nbsp;•&nbsp; Généré le ${currentDate}
+          </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Prénom</th>
-              <th>Nb</th>
-              <th>Titres</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows}
-          </tbody>
-        </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Nb</th>
+                <th>Titres</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
 
-        <div class="footer">Document livres — ${currentDate}</div>
-      </body>
-      </html>
-    `;
+          <div class="footer">Document livres — ${currentDate}</div>
+        </body>
+        </html>
+      `;
     },
+
     extractBookNames(payments = []) {
-      // récupère tous les noms de livres depuis les paiements de type "livres"
       return payments
           .filter(p => p && p.serviceType === 'livres')
           .flatMap(p => Array.isArray(p.bookItems) ? p.bookItems : [])
@@ -524,6 +593,7 @@ export default {
       const names = this.extractBookNames(payments);
       return names.length ? names.join(', ') : '—';
     },
+
     formatTime(timeString) {
       if (!timeString) return '';
       const date = new Date(timeString);
@@ -531,10 +601,12 @@ export default {
         hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
       });
     },
+
     formatRoom(room) {
       if (!room) return '';
       return room.name || `Salle #${room.id ?? ''}`.trim();
     },
+
     printClassReport() {
       const printContent = this.generatePrintContent();
       const printWindow = window.open('', '_blank');
@@ -545,6 +617,7 @@ export default {
         printWindow.close();
       };
     },
+
     generatePrintContent() {
       const currentDate = new Date().toLocaleDateString('fr-FR');
       const activeStudents = this.localStudentsInStudyClass.filter(s => s.active);
@@ -556,19 +629,18 @@ export default {
           <meta charset="utf-8">
           <title>Rapport de classe - ${this.studyClass.name}</title>
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; color: #333; line-height: 1.6; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #6c63ff; padding-bottom: 20px; }
-            .header h1 { color: #6c63ff; margin-bottom: 10px; }
-            .class-info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; }
-            .class-info h2 { margin-top: 0; color: white; }
-            .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
-            .info-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px); }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
-            th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-            th { background: linear-gradient(135deg, #6c63ff, #5a52d5); color: white; font-weight: 600; }
-            tr:nth-child(even) { background-color: #f8f9ff; }
-            .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
-            @media print { body { margin: 0; } .header { page-break-after: avoid; } }
+            body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; color: #111; line-height: 1.6; }
+            .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #e9e9ff; padding-bottom: 16px; }
+            .header h1 { margin:0 0 6px; color:#2c2cf0; }
+            .class-info { background: #f6f7ff; border:1px solid #e9e9ff; padding: 16px; border-radius: 12px; margin-bottom: 20px; }
+            .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }
+            .info-item { background: #fff; border:1px solid #eee; padding: 10px; border-radius: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+            th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+            th { background: #2c2cf0; color: white; }
+            tr:nth-child(even) { background-color: #fafbff; }
+            .footer { margin-top: 28px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 14px; }
+            @media print { body { margin: 8mm; } }
           </style>
         </head>
         <body>
@@ -578,24 +650,24 @@ export default {
           </div>
 
           <div class="class-info">
-            <h2>📋 Informations sur la Classe</h2>
+            <h2>Informations sur la Classe</h2>
             <div class="info-grid">
-              <div class="info-item"><strong>🎓 Niveau :</strong> ${this.studyClass.levelClass ?? ''}</div>
-              <div class="info-item"><strong>📚 Spécialité :</strong> ${this.studyClass.speciality ?? ''}</div>
-              <div class="info-item"><strong>🏷️ Type :</strong> ${this.studyClass.classType ?? ''}</div>
-              <div class="info-item"><strong>📅 Jour :</strong> ${this.studyClass.day ?? ''}</div>
-              <div class="info-item"><strong>⏰ Horaires :</strong> ${this.formatTime(this.studyClass.startHour)} - ${this.formatTime(this.studyClass.endHour)}</div>
-              ${this.studyClass.schoolYear ? `<div class="info-item"><strong>📆 Année scolaire :</strong> ${this.studyClass.schoolYear}</div>` : ''}
-              ${this.studyClass.principalRoom ? `<div class="info-item"><strong>🚪 Salle :</strong> ${this.formatRoom(this.studyClass.principalRoom)}</div>` : ''}
-              ${this.studyClass.principalTeacher ? `<div class="info-item"><strong>👨‍🏫 Professeur :</strong> ${this.studyClass.principalTeacher.firstName} ${this.studyClass.principalTeacher.lastName}</div>` : ''}
+              <div class="info-item"><strong>Niveau :</strong> ${this.studyClass.levelClass ?? ''}</div>
+              <div class="info-item"><strong>Spécialité :</strong> ${this.studyClass.speciality ?? ''}</div>
+              <div class="info-item"><strong>Type :</strong> ${this.studyClass.classType ?? ''}</div>
+              <div class="info-item"><strong>Jour :</strong> ${this.studyClass.day ?? ''}</div>
+              <div class="info-item"><strong>Horaires :</strong> ${this.formatTime(this.studyClass.startHour)} - ${this.formatTime(this.studyClass.endHour)}</div>
+              ${this.studyClass.schoolYear ? `<div class="info-item"><strong>Année scolaire :</strong> ${this.studyClass.schoolYear}</div>` : ''}
+              ${this.studyClass.principalRoom ? `<div class="info-item"><strong>Salle :</strong> ${this.formatRoom(this.studyClass.principalRoom)}</div>` : ''}
+              ${this.studyClass.principalTeacher ? `<div class="info-item"><strong>Professeur :</strong> ${this.studyClass.principalTeacher.firstName} ${this.studyClass.principalTeacher.lastName}</div>` : ''}
             </div>
           </div>
 
           <div class="students-section">
-            <h2>👥 Étudiants Actifs (${activeStudents.length})</h2>
+            <h2>Étudiants Actifs (${activeStudents.length})</h2>
             <table>
               <thead>
-                <tr><th>ID</th><th>Nom de famille</th><th>Prénom</th><th>Date de naissance</th><th>Niveau</th></tr>
+                <tr><th>ID</th><th>Nom</th><th>Prénom</th><th>Date de naissance</th><th>Niveau</th></tr>
               </thead>
               <tbody>
                 ${activeStudents.map(s => `
@@ -606,22 +678,24 @@ export default {
                     <td>${new Date(s.student.birthDate).toLocaleDateString('fr-FR')}</td>
                     <td>${s.student.levelClass}</td>
                   </tr>`).join('')}
-                ${activeStudents.length === 0 ? '<tr><td colspan="5" style="text-align:center;color:#666;padding:40px;">Aucun étudiant actif dans cette classe</td></tr>' : ''}
+                ${activeStudents.length === 0 ? '<tr><td colspan="5" style="text-align:center;color:#666;padding:30px;">Aucun étudiant actif dans cette classe</td></tr>' : ''}
               </tbody>
             </table>
           </div>
 
-          <div class="footer">📄 Document généré automatiquement le ${currentDate}</div>
+          <div class="footer">Document généré automatiquement le ${currentDate}</div>
         </body>
         </html>
       `;
     },
+
     confirmDeactivation(student) {
       if (!student.active) return;
       this.studentToDeactivate = student;
       const deactivationModal = new this.$bootstrap.Modal(document.getElementById('deactivationConfirmationModal'));
       deactivationModal.show();
     },
+
     deactivateStudent() {
       const url = this.$routing.generate('deactivate_student_from_class', { id: this.studentToDeactivate.id });
       this.$axios.post(url)
@@ -632,6 +706,7 @@ export default {
           })
           .catch(err => console.error("Erreur lors de la désactivation", err));
     },
+
     deleteStudent() {
       const url = this.$routing.generate('delete_student_from_class', { id: this.studentToDelete.id });
       this.$axios.post(url)
@@ -651,1029 +726,480 @@ export default {
 </script>
 
 <style scoped>
-/* Variables CSS pour la cohérence */
-:root {
-  --primary-gradient: linear-gradient(135deg, #6c63ff 0%, #5a52d5 100%);
-  --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --danger-gradient: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --shadow-soft: 0 8px 32px rgba(108, 99, 255, 0.1);
-  --shadow-medium: 0 12px 40px rgba(108, 99, 255, 0.15);
-  --shadow-strong: 0 20px 60px rgba(108, 99, 255, 0.2);
-  --border-radius: 16px;
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* ✅ Astuce : :root ne fonctionne pas bien en scoped. On met les variables sur le conteneur. */
+.class-details{
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: rgba(15, 23, 42, 0.10);
+  --shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+  --radius: 16px;
 
-/* Container principal */
-.modern-container {
+  --primary: #4f46e5;
+  --primary2:#6d28d9;
+
+  --danger:#ef4444;
+  --warn:#f59e0b;
+  --ok:#10b981;
+
   min-height: 100vh;
-  background: #ffffff;
-  padding: 2rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  padding: 20px;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
 }
 
-/* Navigation flottante */
-.floating-nav {
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  right: 1rem;
-  display: flex;
+/* Topbar */
+.topbar{
+  position: sticky;
+  top: 14px;
+  z-index: 30;
+  display:flex;
   justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  max-width: calc(100vw - 2rem);
-  box-sizing: border-box;
-  margin-left: 280px;
+  align-items:center;
+  gap: 12px;
+  padding: 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.06);
 }
 
-.nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 12px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: var(--transition-smooth);
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.back-btn {
-  background: rgba(108, 99, 255, 0.1);
-  color: #6c63ff;
-  border: 1px solid rgba(108, 99, 255, 0.2);
-}
-
-.back-btn:hover {
-  background: rgba(108, 99, 255, 0.15);
-  color: #5a52d5;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(108, 99, 255, 0.2);
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.75rem;
+.topbar-actions{
+  display:flex;
+  gap: 10px;
   flex-wrap: wrap;
-}
-
-.print-btn {
-  background: var(--success-gradient);
-  color: white;
-  box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
-}
-
-.print-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4);
-}
-
-.edit-btn {
-  background: var(--primary-gradient);
-  color: white;
-  border: none;
-}
-
-.edit-btn:hover {
-  background: linear-gradient(135deg, #5a52d5 0%, #4a44c0 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(108, 99, 255, 0.3);
-}
-
-/* En-tête héro */
-.hero-header {
-  position: relative;
-  text-align: center;
-  padding: 6rem 0 4rem;
-  margin-bottom: 3rem;
-  overflow: hidden;
-  background: var(--primary-gradient);
-  border-radius: var(--border-radius);
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-}
-
-.class-badge {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 0.5rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  line-height: 1.1;
-}
-
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2rem;
-  font-weight: 300;
-}
-
-.hero-stats {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  color: white;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.stat-item i {
-  font-size: 1.2rem;
-  opacity: 0.8;
-}
-
-/* Éléments flottants décoratifs */
-.hero-decoration {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-}
-
-.floating-element {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  animation: float 6s ease-in-out infinite;
-}
-
-.element-1 {
-  width: 100px;
-  height: 100px;
-  top: 20%;
-  left: 10%;
-  animation-delay: 0s;
-}
-
-.element-2 {
-  width: 150px;
-  height: 150px;
-  top: 60%;
-  right: 15%;
-  animation-delay: 2s;
-}
-
-.element-3 {
-  width: 80px;
-  height: 80px;
-  top: 80%;
-  left: 20%;
-  animation-delay: 4s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(10deg); }
-}
-
-/* Cartes en verre */
-.glass-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: var(--border-radius);
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  transition: var(--transition-smooth);
-}
-
-.glass-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-}
-
-/* Section informations de classe */
-.card-header h2 {
-  color: #333;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.card-header h2 i {
-  color: #6c63ff;
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-.info-card {
-  background: rgba(248, 249, 250, 0.8);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: var(--transition-smooth);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.info-card:hover {
-  background: rgba(248, 249, 250, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.info-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: white;
-}
-
-.level-icon { background: var(--primary-gradient); }
-.specialty-icon { background: var(--warning-gradient); }
-.type-icon { background: var(--success-gradient); }
-.schedule-icon { background: var(--warning-gradient); }
-.time-icon { background: var(--primary-gradient); }
-.teacher-icon { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
-
-.info-content {
-  flex: 1;
-}
-
-.info-content label {
-  display: block;
-  color: rgba(0, 0, 0, 0.6);
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.info-content value {
-  display: block;
-  color: #333;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-/* Section étudiants */
-.students-section {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.students-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.section-title h3 {
-  color: #333;
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.student-count-badge {
-  background: var(--primary-gradient);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
-}
-
-.controls-container {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-/* Toggle de filtrage stylisé */
-.filter-toggle {
-  position: relative;
-}
-
-.toggle-label {
-  display: block;
-  cursor: pointer;
-}
-
-.toggle-input {
-  display: none;
-}
-
-.toggle-slider {
-  display: block;
-  width: 120px;
-  height: 40px;
-  background: rgba(218, 0, 0, 0.1);
-  border-radius: 20px;
-  position: relative;
-  transition: var(--transition-smooth);
-  border: 1px solid rgba(236, 8, 8, 0.2);
-}
-
-.toggle-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #000000;
-  font-weight: 600;
-  font-size: 0.9rem;
-  z-index: 2;
-}
-
-.toggle-slider::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 36px;
-  height: 36px;
-  background: var(--success-gradient);
-  border-radius: 18px;
-  transition: var(--transition-smooth);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.toggle-input:checked + .toggle-slider::before {
-  transform: translateX(80px);
-  background: var(--warning-gradient);
-}
-
-.toggle-input:checked + .toggle-slider {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* Bouton ajouter modernisé */
-.add-student-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: var(--primary-gradient);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
-}
-
-.add-student-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
-}
-
-/* Tableau modernisé */
-.modern-table-container {
-  background: rgba(248, 249, 250, 0.3);
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  margin-top: 1.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  border-radius: 12px;
-}
-
-.modern-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.modern-table th {
-  background: #f8f9fa;
-  color: #333;
-  padding: 1.25rem 1rem;
-  font-weight: 600;
-  text-align: left;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.modern-table th i {
-  margin-right: 0.5rem;
-  opacity: 0.7;
-  color: #6c63ff;
-}
-
-.modern-table td {
-  padding: 1.25rem 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  color: #333;
-  vertical-align: middle;
-  background: white;
-}
-
-.student-row {
-  transition: var(--transition-smooth);
-}
-
-.student-row:hover {
-  background: rgba(108, 99, 255, 0.05);
-  transform: scale(1.005);
-}
-
-.inactive-student {
-  opacity: 0.6;
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.id-cell {
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.7);
-}
-
-.name-cell {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.student-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--primary-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 1rem;
-  box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
-}
-
-.level-badge {
-  background: var(--secondary-gradient);
-  color: #000000;
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-}
-
-/* Switch de statut */
-.status-switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 30px;
-  cursor: pointer;
-}
-
-.status-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switch-slider {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.3);
-  transition: var(--transition-smooth);
-  border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.switch-slider:before {
-  position: absolute;
-  content: "";
-  height: 22px;
-  width: 22px;
-  left: 4px;
-  top: 3px;
-  background: white;
-  transition: var(--transition-smooth);
-  border-radius: 50%;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-input:checked + .switch-slider {
-  background: var(--success-gradient);
-}
-
-input:checked + .switch-slider:before {
-  transform: translateX(26px);
-}
-
-/* Boutons d'action */
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.delete-btn {
-  background: var(--danger-gradient);
-  color: #ff0000;
-  box-shadow: 0 4px 15px rgba(252, 74, 26, 0.3);
-}
-
-.delete-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(252, 74, 26, 0.4);
-}
-
-/* État vide */
-.empty-state {
-  background: none;
-}
-
-.empty-content {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.empty-content i {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  opacity: 0.3;
-  color: #6c63ff;
-}
-
-.empty-content h4 {
-  color: #333;
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.empty-content p {
-  font-size: 1rem;
-  opacity: 0.7;
-}
-
-/* Modals modernisés */
-.modern-modal {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-strong);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.modal-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: white;
-}
-
-.warning-icon {
-  background: var(--warning-gradient);
-}
-
-.danger-icon {
-  background: var(--warning-gradient);
-}
-
-.modal-title {
-  color: #333;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-  flex: 1;
-}
-
-.modern-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #999;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: var(--transition-smooth);
-}
-
-.modern-close:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #333;
-}
-
-.modal-body {
-  padding: 1.5rem 2rem;
-  color: #555;
-  line-height: 1.6;
-}
-
-.warning-message {
-  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid #ffeaa7;
-}
-
-.action-guide {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.guide-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  font-weight: 500;
-}
-
-.guide-item.valid {
-  background: rgba(17, 153, 142, 0.1);
-  color: #11998e;
-}
-
-.guide-item.invalid {
-  background: rgba(252, 74, 26, 0.1);
-  color: #fc4a1a;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem 2rem 2rem;
   justify-content: flex-end;
 }
 
-/* Boutons modernisés */
-.btn-modern {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  font-size: 0.95rem;
-}
-
-.btn-secondary {
-  background: rgba(108, 117, 125, 0.1);
-  color: #6c757d;
-  border: 1px solid rgba(108, 117, 125, 0.3);
-}
-
-.btn-secondary:hover {
-  background: rgba(108, 117, 125, 0.2);
-  transform: translateY(-1px);
-}
-
-.btn-warning {
-  background: var(--warning-gradient);
-  color: white;
-  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
-}
-
-.btn-warning:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
-}
-
-.btn-danger {
-  background: var(--danger-gradient);
-  color: #fa0000;
-  box-shadow: 0 4px 15px rgba(252, 74, 26, 0.3);
-}
-
-.btn-danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(252, 74, 26, 0.4);
-}
-
-/* Alert modernisé */
-.modern-alert {
-  margin-bottom: 2rem;
-  border-radius: var(--border-radius);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: var(--shadow-soft);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .modern-container {
-    padding: 1rem;
-  }
-
-  .floating-nav {
-    position: relative;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    left: 0;
-    right: 0;
-    top: 0;
-  }
-
-  .action-buttons {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .nav-btn {
-    flex: 1;
-    justify-content: center;
-    min-width: 0;
-  }
-
-  .hero-header {
-    padding: 4rem 0 2rem;
-  }
-
-  .hero-title {
-    font-size: 2.5rem;
-  }
-
-  .hero-stats {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .students-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .controls-container {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .table-wrapper {
-    font-size: 0.9rem;
-  }
-
-  .modern-table th,
-  .modern-table td {
-    padding: 1rem 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .floating-nav {
-    padding: 0.75rem;
-  }
-
-  .nav-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-  }
-
-  .nav-btn span {
-    display: none;
-  }
-
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.2rem;
-  }
-
-  .stat-item {
-    padding: 0.75rem 1rem;
-  }
-
-  .glass-card {
-    padding: 1.5rem;
-  }
-}
-.books-badge {
-  display: inline-block;
-  min-width: 2ch;
-  text-align: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 999px;
-  background: var(--success-gradient);
-  color: #fff;
+/* Buttons */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 10px 14px;
   font-weight: 700;
-  box-shadow: 0 2px 10px rgba(17, 153, 142, 0.25);
+  cursor:pointer;
+  text-decoration:none;
+  background: #fff;
+  color: var(--text);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+.btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(2,6,23,.08); }
+.btn:active{ transform: translateY(0px); }
+
+.btn-ghost{
+  background: transparent;
+  border-color: var(--border);
+}
+.btn-soft{
+  background: #fff;
+  border-color: var(--border);
+}
+.btn-primary{
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  color: #fff;
+  border-color: rgba(255,255,255,0.15);
+}
+.btn-danger{
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #b91c1c;
+}
+.btn-warn{
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #92400e;
+}
+.btn-ok{
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #065f46;
+  padding: 10px 12px;
+}
+.btn-whatsapp{
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  color:#fff;
+  border-color: rgba(255,255,255,0.15);
 }
 
-.books-cell {
-  max-width: 340px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* Badge nombre + tooltip */
-.tooltip-badge {
+/* Hero */
+.hero{
+  margin-top: 16px;
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  height: 28px;
-  padding: 0 8px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(135deg, #111827 0%, #1f2a65 45%, #4f46e5 100%);
+  box-shadow: var(--shadow);
+}
+.hero-main{
+  position: relative;
+  z-index: 2;
+  padding: 26px 24px;
+}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding: 8px 12px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.18);
   color: #fff;
   font-weight: 800;
-  box-shadow: 0 2px 10px rgba(58, 123, 213, 0.25);
-  cursor: default;
 }
-
-/* Contenu du tooltip (caché par défaut) */
-.tooltip-badge .tooltip-content {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%) translateY(12px);
-  bottom: calc(100% + 10px);
-  min-width: 260px;
-  max-width: 420px;
-  padding: 12px 14px;
+.hero-title{
+  margin: 12px 0 6px;
+  color:#fff;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  font-weight: 900;
+}
+.hero-subtitle{
+  margin: 0 0 16px;
+  color: rgba(255,255,255,0.86);
+  font-size: 15px;
+}
+.hero-metas{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.meta{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
   border-radius: 12px;
-  background: #111827;
-  color: #f9fafb;
-  font-size: 0.9rem;
-  line-height: 1.35;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity .2s ease, transform .2s ease, visibility .2s;
-  white-space: normal;
-  z-index: 20;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
+  font-size: 13px;
+}
+.hero-bg .blob{
+  position:absolute;
+  border-radius: 999px;
+  filter: blur(30px);
+  opacity: 0.35;
+}
+.hero-bg .b1{ width: 220px; height: 220px; background:#22c55e; top: -60px; right: -70px; }
+.hero-bg .b2{ width: 260px; height: 260px; background:#a78bfa; bottom: -100px; left: -80px; }
+.hero-bg .b3{ width: 180px; height: 180px; background:#60a5fa; top: 40%; left: 55%; }
+
+.page-alert{ margin: 16px 0; }
+
+/* Grid */
+.grid{
+  margin-top: 16px;
+  display:grid;
+  grid-template-columns: 360px 1fr;
+  gap: 16px;
 }
 
-/* Petite flèche */
-.tooltip-badge .tooltip-content::after {
-  content: "";
-  position: absolute;
-  top: 100%;
+/* Cards */
+.card{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-header{
+  padding: 16px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(79,70,229,0.06) 0%, rgba(255,255,255,1) 60%);
+}
+.card-header h2{
+  margin:0;
+  font-size: 16px;
+  font-weight: 900;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+.card-header-row{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Info list */
+.info-list{ padding: 14px 16px; display:flex; flex-direction: column; gap: 10px; }
+.info-item{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(2,6,23,0.02);
+}
+.info-label{ color: var(--muted); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+.info-value{ font-weight: 900; color: var(--text); text-align:right; }
+
+.divider{ height: 1px; background: var(--border); margin: 0 16px; }
+
+/* WhatsApp */
+.whatsapp{ padding: 14px 16px; }
+.whatsapp-head{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.whatsapp-icon{
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(37,211,102,0.14);
+  border: 1px solid rgba(18,140,126,0.25);
+  color: #128c7e;
+  font-size: 18px;
+}
+.whatsapp-title{ font-weight: 900; }
+.whatsapp-sub{ color: var(--muted); font-size: 12px; font-weight: 700; }
+.whatsapp-actions{ display:flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.whatsapp-link{ display:block; color: var(--muted); word-break: break-all; }
+
+/* Students controls */
+.students-controls{ display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+.segmented{ display:inline-flex; align-items:center; cursor:pointer; }
+.segmented input{ display:none; }
+.segmented-track{
+  display:flex;
+  align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(2,6,23,0.02);
+  min-width: 110px;
+  justify-content:center;
+}
+.segmented-option{
+  font-weight: 900;
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* Table */
+.table-wrap{
+  padding: 12px 12px 16px;
+  overflow-x: auto;   /* ✅ garde le scroll horizontal */
+  overflow-y: visible; /* ✅ laisse sortir le tooltip */
+}
+.table{
+  width:100%;
+  border-collapse: collapse;
+  overflow: visible;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.table thead th{
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #334155;
+  background: rgba(79,70,229,0.06);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 12px;
+  text-align:left;
+  white-space: nowrap;
+}
+.table tbody td{
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(15,23,42,0.06);
+  vertical-align: middle;
+}
+.row:hover td{ background: rgba(79,70,229,0.04); }
+.inactive td{ opacity: 0.65; }
+
+.muted{ color: var(--muted); font-weight: 700; }
+.badge{
+  display:inline-flex;
+  align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  background: rgba(109,40,217,0.10);
+  border: 1px solid rgba(109,40,217,0.18);
+  color: #5b21b6;
+}
+
+/* Name cell */
+.name{ display:flex; align-items:center; gap: 12px; }
+.avatar{
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  color:#fff;
+  font-weight: 900;
+}
+.name-lines{ display:flex; flex-direction: column; }
+.name-main{ font-weight: 900; }
+.name-sub{ font-size: 12px; color: var(--muted); font-weight: 800; }
+
+/* Books tooltip */
+.books{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  color: #0f172a;
+  background: rgba(59,130,246,0.14);
+  border: 1px solid rgba(59,130,246,0.22);
+  position: relative;
+}
+.tooltip{ cursor: default; }
+.tooltip-panel{
+  position:absolute;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 8px;
-  border-style: solid;
-  border-color: #111827 transparent transparent transparent;
+  bottom: calc(100% + 10px);
+  width: 320px;
+  max-width: 420px;
+  background: #0b1220;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 12px 12px;
+  box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+  z-index: 9999;
 }
-
-/* Affichage au survol */
-.tooltip-badge:hover .tooltip-content {
+.tooltip-panel strong{ display:block; margin-bottom: 8px; }
+.tooltip-line{ display:block; color: rgba(255,255,255,0.92); margin: 3px 0; font-weight: 600; }
+.tooltip:hover .tooltip-panel{
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(-2px);
 }
 
-.whatsapp-icon {
-  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+/* Book name edit */
+.bookname-edit{ display:flex; gap: 10px; align-items:center; }
+.input{
+  width: 100%;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  outline: none;
+  font-weight: 700;
+}
+.input:focus{
+  border-color: rgba(79,70,229,0.35);
+  box-shadow: 0 0 0 4px rgba(79,70,229,0.12);
 }
 
-.whatsapp-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
-}
-
-.whatsapp-open-btn,
-.whatsapp-copy-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
+/* Switch */
+.switch{ position: relative; display:inline-flex; align-items:center; }
+.switch input{ display:none; }
+.switch-ui{
+  width: 46px; height: 26px;
   border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  text-decoration: none;
-  font-weight: 600;
+  border: 1px solid var(--border);
+  background: rgba(2,6,23,0.06);
+  position: relative;
+  transition: background .15s ease;
+}
+.switch-ui::after{
+  content:'';
+  position:absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(2,6,23,0.16);
+  transition: transform .15s ease;
+}
+.switch input:checked + .switch-ui{
+  background: rgba(16,185,129,0.26);
+  border-color: rgba(16,185,129,0.35);
+}
+.switch input:checked + .switch-ui::after{
+  transform: translateX(20px);
 }
 
-.whatsapp-open-btn {
-  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
-  color: #fff;
-  box-shadow: 0 3px 10px rgba(18, 140, 126, 0.4);
+/* Empty */
+.empty{ padding: 22px !important; }
+.empty-box{
+  text-align:center;
+  padding: 26px 10px;
+  color: var(--muted);
 }
+.empty-box i{ font-size: 36px; opacity: .35; margin-bottom: 10px; }
+.empty-title{ font-weight: 900; color: var(--text); margin-bottom: 6px; }
+.empty-sub{ font-weight: 700; }
 
-.whatsapp-open-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 16px rgba(18, 140, 126, 0.55);
+/* Modals */
+.modal-modern{
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
-
-.whatsapp-copy-btn {
-  background: rgba(15, 23, 42, 0.04);
-  color: #111827;
-  border: 1px solid rgba(148, 163, 184, 0.6);
+.modal-badge{
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 18px;
 }
+.modal-badge.warning{ background: rgba(245,158,11,0.18); color:#92400e; border: 1px solid rgba(245,158,11,0.35); }
+.modal-badge.danger{ background: rgba(239,68,68,0.14); color:#b91c1c; border: 1px solid rgba(239,68,68,0.25); }
 
-.whatsapp-copy-btn:hover {
-  background: rgba(148, 163, 184, 0.12);
-  transform: translateY(-1px);
+.callout{
+  border-radius: 14px;
+  border: 1px solid rgba(245,158,11,0.25);
+  background: rgba(245,158,11,0.10);
+  padding: 12px 12px;
 }
+.callout-list{ margin: 10px 0 0; padding: 0; list-style: none; display:flex; flex-direction:column; gap: 8px; }
+.callout-list li{ display:flex; align-items:center; gap: 10px; font-weight: 800; color:#111; }
+.callout-list i{ opacity: .9; }
 
-.whatsapp-link {
-  display: block;
-  font-size: 0.8rem;
-  color: #6b7280;
-  word-break: break-all;
+.hide-sm{ display:inline; }
+
+/* Column hints */
+.col-id{ width: 70px; }
+.col-date{ width: 140px; }
+.col-level{ width: 110px; }
+.col-books{ width: 110px; }
+.col-bookname{ width: 320px; }
+.col-status{ width: 100px; }
+.col-actions{ width: 120px; }
+
+/* Responsive */
+@media (max-width: 1100px){
+  .grid{ grid-template-columns: 1fr; }
 }
-
-
+@media (max-width: 640px){
+  .class-details{ padding: 12px; }
+  .hero-title{ font-size: 26px; }
+  .btn span{ display:none; }
+  .hide-sm{ display:none; }
+  .col-bookname{ width: auto; }
+  .tooltip-panel{ width: 260px; }
+}
 </style>

@@ -16,6 +16,7 @@ import RegistrationList from './pages/registers/RegistrationList.vue';
 import NewSession from './pages/session/NewSession.vue';
 import ListInvoiceNew from './pages/session/ListInvoiceNew.vue';
 import ShowInvoice from './pages/invoice/ShowInvoice.vue';
+import EditParent from './pages/parent/EditParent.vue';
 import ShowParent from './pages/parent/ShowParent.vue';
 import ListParents from './pages/parent/ListParents.vue';
 import TeacherShow from './pages/teacher/TeacherShow.vue';
@@ -87,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     app.component('EditStudyClass', EditStudyClass);
     app.component('NewStudyClass', NewStudyClass);
     app.component('ShowParent', ShowParent);
+    app.component('EditParent', EditParent);
     app.component('PlanningStudyClass', PlanningStudyClass);
     app.component('SessionShow', SessionShow);
     app.component('SessionEdit', SessionEdit);
