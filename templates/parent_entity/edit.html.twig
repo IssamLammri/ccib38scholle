@@ -1,12 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Parent{% endblock %}
+{% block title %} Modifier un parent{% endblock %}
 
 {% block body %}
     <edit-parent
-            :parent='{{ parent_entity|json_encode|raw }}'
+            :parent="{{ parent|json_encode }}"
             :students='{{ students|json_encode|raw }}'
-            update-url="{{ path("api_parent_update", { id: parent_entity.id }) }}"
-            csrf-token="{{ csrf_token('edit_parent_' ~ parent_entity.id) }}"
+            update-url="{{ path("api_parent_update", { id: parent.id }) }}"
+            csrf-token="{{ csrf_token('edit_parent_' ~ parent.id) }}"
     ></edit-parent>
 {% endblock %}

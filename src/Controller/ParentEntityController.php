@@ -93,9 +93,8 @@ class ParentEntityController extends AbstractController
             'enable_max_depth' => true,
             'circular_reference_handler' => fn($o) => method_exists($o, 'getId') ? $o->getId() : spl_object_id($o),
         ]), true);
-
         return $this->render('parent_entity/edit.html.twig', [
-            'parent_entity' => $parentJson,
+            'parent' => $parentJson,
             'students' => $studentsJson,
         ]);
     }
