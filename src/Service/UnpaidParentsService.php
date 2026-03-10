@@ -46,9 +46,9 @@ class UnpaidParentsService
             }
 
             if (!isset($parents[$parentId])) {
-                // ✅ DÛ vient UNIQUEMENT de la DB
-                $dueArabe   = (float) $parent->getAmountDueArabic();
-                $dueSoutien = (float) $parent->getAmountDueSoutien();
+                // DÛ vient uniquement de la DB, arrondi à l’euro près
+                $dueArabe   = (int) round((float) $parent->getAmountDueArabic());
+                $dueSoutien = (int) round((float) $parent->getAmountDueSoutien());
 
                 $parents[$parentId] = [
                     'parentId'   => $parentId,
@@ -56,27 +56,27 @@ class UnpaidParentsService
                     'email'      => $this->guessEmail($parent),
                     'phone'      => $this->guessPhone($parent),
 
-                    // (optionnel) tu peux garder ces champs à 0 si le front les affiche
+                    // optionnel si le front les affiche
                     'arabChildrenCount'         => 0,
                     'soutienRegistrationsCount' => 0,
 
-                    // ✅ DÛ DB
+                    // DÛ DB sans virgule
                     'dueArabe'   => $dueArabe,
                     'dueSoutien' => $dueSoutien,
 
                     // Paiements
-                    'paidArabe'   => 0.0,
-                    'paidSoutien' => 0.0,
+                    'paidArabe'   => 0,
+                    'paidSoutien' => 0,
 
                     // Totaux
                     'totalDue'  => $dueArabe + $dueSoutien,
-                    'totalPaid' => 0.0,
-                    'remaining' => 0.0,
+                    'totalPaid' => 0,
+                    'remaining' => 0,
                 ];
             }
         }
 
-        // ✅ Paiements : inchangé, mais attention à StudyClass null
+        // Paiements : inchangé, mais arrondis aussi à l’euro
         $payments = $this->paymentRepository->findAllPayementsForSchoolYear($schoolYear);
 
         foreach ($payments as $payment) {
@@ -90,7 +90,7 @@ class UnpaidParentsService
                 continue;
             }
 
-            $amount = (float) $payment->getAmountPaid();
+            $amount = (int) round((float) $payment->getAmountPaid());
             $serviceType = (string) $payment->getServiceType();
 
             // Sécurise studyClass
@@ -108,20 +108,20 @@ class UnpaidParentsService
             $parents[$parentId]['totalPaid'] += $amount;
         }
 
-        // ✅ Totaux & reste
-        $totalDueAll       = 0.0;
-        $totalPaidAll      = 0.0;
-        $totalRemainingAll = 0.0;
+        // Totaux & reste
+        $totalDueAll       = 0;
+        $totalPaidAll      = 0;
+        $totalRemainingAll = 0;
         $rows              = [];
 
         foreach ($parents as $parentId => $data) {
-            // Recalcul total dû (au cas où)
-            $data['totalDue'] = (float) $data['dueArabe'] + (float) $data['dueSoutien'];
+            // Recalcul total dû
+            $data['totalDue'] = (int) $data['dueArabe'] + (int) $data['dueSoutien'];
 
-            $remaining = $data['totalDue'] - (float) $data['totalPaid'];
+            $remaining = (int) round($data['totalDue'] - (int) $data['totalPaid']);
 
             // on garde uniquement ceux qui doivent encore
-            if ($remaining <= 0.01) {
+            if ($remaining <= 0) {
                 continue;
             }
 
@@ -141,9 +141,9 @@ class UnpaidParentsService
             'parents'    => $rows,
             'totals'     => [
                 'parentsCount'   => count($rows),
-                'totalDue'       => round($totalDueAll, 2),
-                'totalPaid'      => round($totalPaidAll, 2),
-                'totalRemaining' => round($totalRemainingAll, 2),
+                'totalDue'       => (int) round($totalDueAll),
+                'totalPaid'      => (int) round($totalPaidAll),
+                'totalRemaining' => (int) round($totalRemainingAll),
             ],
         ];
     }
